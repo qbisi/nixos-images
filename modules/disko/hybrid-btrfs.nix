@@ -5,7 +5,7 @@
     devices = {
       disk.${config.disko.label} = {
         imageSize = "2G";
-        device = "/dev/disk/by-diskseq/1";
+        device = config.disko.device;
         type = "disk";
         content = {
           type = "gpt";
