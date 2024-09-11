@@ -33,7 +33,7 @@ in
             modules = [
               { disko.label = "${device}-${diskType}"; }
               ./${device}.nix
-              ../modules/all-modules.nix
+              self.nixosModules.default
               inputs.disko.nixosModules.default
             ];
           }
