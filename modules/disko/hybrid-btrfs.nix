@@ -5,7 +5,7 @@
     devices = {
       disk.${config.disko.label} = {
         imageSize = "2G";
-        device = config.disko.device;
+        device = config.boot.loader.grub.device;
         type = "disk";
         content = {
           type = "gpt";

@@ -31,7 +31,7 @@ in
               inherit inputs self;
             };
             modules = [
-              { disko.label = "${device}-${diskType}"; }
+              { disko.label = diskType; }
               ./${device}.nix
               self.nixosModules.default
               inputs.disko.nixosModules.default

@@ -14,12 +14,17 @@
 
   imports = [
     (modulesPath + "/profiles/all-hardware.nix")
-    ../modules/disko/hybrid-btrfs.nix
+    self.nixosModules.hybrid-btrfs
   ];
 
   boot = {
     growPartition.enable = true;
-    kernelParams = [ "net.ifnames=0" ];
+    kernelParams = [
+      "net.ifnames=0"
+      "console=ttyS0"
+      "console=tty1"
+      "earlycon"
+    ];
     loader = {
       efi.efiSysMountPoint = "/boot/efi";
       grub = {
@@ -27,6 +32,11 @@
         efiSupport = true;
         efiInstallAsRemovable = true;
         device = "/dev/disk/by-diskseq/1";
+        extraConfig = ''
+          serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
+          terminal_input --append serial
+          terminal_output --append serial
+        '';
       };
     };
   };
