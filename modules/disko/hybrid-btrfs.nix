@@ -3,7 +3,8 @@
   disko = {
     enableConfig = true;
     devices = {
-      disk.${config.disko.label} = {
+      disk.main = {
+        name = config.disko.type; 
         imageSize = "2G";
         device = config.boot.loader.grub.device;
         type = "disk";

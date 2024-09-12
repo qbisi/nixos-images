@@ -14,7 +14,7 @@ let
     "sd"
     "usb"
     "nvme"
-    "hdd"
+    "scsi"
   ];
   imageNames = mapCartesianProduct ({ device, diskType }: "${device}-${diskType}") {
     inherit device diskType;
@@ -31,7 +31,7 @@ in
               inherit inputs self;
             };
             modules = [
-              { disko.label = diskType; }
+              { disko.type = diskType; disko.label = device; }
               ./${device}.nix
               self.nixosModules.default
               inputs.disko.nixosModules.default
