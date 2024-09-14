@@ -20,6 +20,7 @@
       imports = [
         ./devices
         ./modules
+        ./lib
       ];
       perSystem =
         { config, pkgs, ... }:

@@ -8,13 +8,9 @@
   ...
 }:
 {
-  nixpkgs = {
-    system = "x86_64-linux";
-  };
-
   imports = [
     (modulesPath + "/profiles/all-hardware.nix")
-    self.nixosModules.hybrid-btrfs
+    self.nixosModules.btrfs
   ];
 
   boot = {
@@ -31,7 +27,6 @@
         enable = true;
         efiSupport = true;
         efiInstallAsRemovable = true;
-        device = "/dev/disk/by-diskseq/1";
         extraConfig = ''
           serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
           terminal_input --append serial

@@ -6,7 +6,7 @@
           ./all-modules.nix
         ];
       };
-      hybrid-btrfs = ./disko/hybrid-btrfs.nix;
+      btrfs = ./disko/btrfs.nix;
     };
   };
 }
