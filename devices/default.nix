@@ -56,7 +56,6 @@ in
           }
           "${self}/devices/${image.system}/${image.device}.nix"
           self.nixosModules.default
-          inputs.disko.nixosModules.default
         ];
       })
     );
