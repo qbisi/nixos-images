@@ -1,17 +1,20 @@
-{
-  config,
-  pkgs,
-  lib,
-  modulesPath,
-  inputs,
-  self,
-  ...
+{ config
+, pkgs
+, lib
+, modulesPath
+, inputs
+, self
+, ...
 }:
 {
   imports = [
     (modulesPath + "/profiles/all-hardware.nix")
-    self.nixosModules.btrfs
   ];
+
+  disko = {
+    enableConfig = true;
+    profile.use = "btrfs";
+  };
 
   boot = {
     growPartition.enable = true;
@@ -21,19 +24,7 @@
       "console=tty1"
       "earlycon"
     ];
-    loader = {
-      efi.efiSysMountPoint = "/boot/efi";
-      grub = {
-        enable = true;
-        efiSupport = true;
-        efiInstallAsRemovable = true;
-        extraConfig = ''
-          serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
-          terminal_input --append serial
-          terminal_output --append serial
-        '';
-      };
-    };
+    loader.grub.enable = true;
   };
 
   users.users.root = {
@@ -42,6 +33,7 @@
 
   networking = {
     firewall.enable = false;
+    useDHCP = false;
     useNetworkd = true;
   };
 

@@ -6,7 +6,6 @@
           ./all-modules.nix
         ];
       };
-      btrfs = ./disko/btrfs.nix;
     };
   };
 }

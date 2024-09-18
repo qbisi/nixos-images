@@ -1,8 +1,7 @@
-{
-  self,
-  inputs,
-  lib,
-  ...
+{ self
+, inputs
+, lib
+, ...
 }:
 {
   flake = {

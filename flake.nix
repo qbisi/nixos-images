@@ -25,7 +25,7 @@
       perSystem =
         { config, pkgs, ... }:
         {
-          formatter = pkgs.nixfmt-rfc-style;
+          formatter = pkgs.nixpkgs-fmt;
         };
     };
 }

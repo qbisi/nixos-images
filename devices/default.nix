@@ -1,18 +1,17 @@
-{
-  self,
-  inputs,
-  lib,
-  ...
+{ self
+, inputs
+, lib
+, ...
 }:
 with lib;
-with self.lib;
 let
+  inherit (self.lib) genAttrs' listNixName;
   x86_64-devices = cartesianProduct {
-    name = listNixname "${self}/devices/x86_64-linux";
+    name = listNixName "${self}/devices/x86_64-linux";
     system = [ "x86_64-linux" ];
   };
   aarch64-devices = cartesianProduct {
-    name = [ ];
+    name = listNixName "${self}/devices/aarch64-linux";
     system = [ "aarch64-linux" ];
   };
   devices = x86_64-devices ++ aarch64-devices;
@@ -49,10 +48,12 @@ in
         };
         modules = [
           {
-            disko.type = image.diskType;
-            disko.label = image.device;
+            disko.profile = {
+              partLabel = image.diskType;
+              imageName = image.name;
+            };
           }
-          ./${image.system}/${image.device}.nix
+          "${self}/devices/${image.system}/${image.device}.nix"
           self.nixosModules.default
           inputs.disko.nixosModules.default
         ];
