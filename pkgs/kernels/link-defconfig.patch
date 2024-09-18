@@ -1,0 +1,8 @@
+diff --git a/arch/arm64/configs/linux_defconfig b/arch/arm64/configs/linux_defconfig
+new file mode 120000
+index 000000000000..bc92e8b2a024
+--- /dev/null
++++ b/arch/arm64/configs/linux_defconfig
+@@ -0,0 +1 @@
++../../../debian.rockchip/config/config.common.ubuntu
+\ No newline at end of file

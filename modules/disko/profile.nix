@@ -36,7 +36,7 @@ in
       imageName = mkOption {
         type = types.str;
         description = "name for the disk images";
-        default = "nixos-${cfg.platform}-${cfg.use}-${cfg.partlabel}";
+        default = "nixos-${cfg.platform}-${cfg.use}-${cfg.partLabel}";
       };
 
       partLabel = mkOption {
