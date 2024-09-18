@@ -11,7 +11,8 @@ let
     system = [ "x86_64-linux" ];
   };
   aarch64-devices = cartesianProduct {
-    name = listNixName "${self}/devices/aarch64-linux";
+    # name = listNixName "${self}/devices/aarch64-linux";
+    name = [];
     system = [ "aarch64-linux" ];
   };
   devices = x86_64-devices ++ aarch64-devices;

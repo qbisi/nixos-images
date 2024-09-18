@@ -89,7 +89,7 @@ in
     ];
 
     disko = {
-      extraPostVM =
+      imageBuilder.extraPostVM =
         let
           oldImageName = "${config.disko.devices.disk.main.name}.raw";
           newImageName = "${cfg.imageName}.raw";
