@@ -9,6 +9,13 @@ let
 in
 {
   options = {
+    disko.imageBuilder.extraPostVM.type = mkForce (mkOption {
+      # type = types.lines;
+      type = types.string;
+      default = "";
+      description = "extra command";
+    });
+
     disko.profile = {
       use = mkOption {
         type = types.str;
@@ -91,8 +98,9 @@ in
     disko = {
       imageBuilder.extraPostVM =
         let
-          oldImageName = "${config.disko.devices.disk.main.name}.raw";
-          newImageName = "${cfg.imageName}.raw";
+          fmt = config.disko.imageBuilder.imageFormat;
+          oldImageName = "${config.disko.devices.disk.main.name}.${fmt}";
+          newImageName = "${cfg.imageName}.${fmt}";
         in
         ''
           mv "$out/${oldImageName}" "$out/${newImageName}"

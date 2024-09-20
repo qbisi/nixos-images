@@ -1,0 +1,16 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	
+	compatible = "hinlink,h88k";
+
+	fragment@0 {
+		target = <&display_subsystem>;
+
+		__overlay__ {
+			clocks = <&hdptxphy_hdmi0>, <&hdptxphy_hdmi1>;
+			clock-names = "hdmi0_phy_pll", "hdmi1_phy_pll";
+		};
+	};
+};

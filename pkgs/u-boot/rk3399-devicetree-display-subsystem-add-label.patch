@@ -1,0 +1,13 @@
+diff --git a/dts/upstream/src/arm64/rockchip/rk3399.dtsi b/dts/upstream/src/arm64/rockchip/rk3399.dtsi
+index 6e12c5a920..1503ea308d 100644
+--- a/dts/upstream/src/arm64/rockchip/rk3399.dtsi
++++ b/dts/upstream/src/arm64/rockchip/rk3399.dtsi
+@@ -177,7 +177,7 @@
+ 		};
+ 	};
+ 
+-	display-subsystem {
++	display_subsystem: display-subsystem {
+ 		compatible = "rockchip,display-subsystem";
+ 		ports = <&vopl_out>, <&vopb_out>;
+ 	};

@@ -5,7 +5,10 @@
 , ...
 }:
 {
+  disabledModules = [ "system/boot/loader/grub/grub.nix" ];
+
   imports = [
+    ./overlay/system/boot/loader/grub.nix
     ./disko/profile.nix
     ./disko/btrfs.nix
     ./system/grow-partition.nix

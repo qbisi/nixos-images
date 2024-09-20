@@ -1,0 +1,24 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+	
+	compatible = "hinlink,h88k";
+
+	fragment@0 {
+		target = <&uart3>;
+
+		__overlay__ {
+            status = "okay";
+		};
+	};
+
+	fragment@1 {
+		target = <&uart4>;
+
+		__overlay__ {
+            pinctrl-0 = <&uart4m0_xfer>;
+            status = "okay";
+		};
+	};
+};

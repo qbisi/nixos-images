@@ -11,8 +11,7 @@ let
     system = [ "x86_64-linux" ];
   };
   aarch64-devices = cartesianProduct {
-    # name = listNixName "${self}/devices/aarch64-linux";
-    name = [];
+    name = listNixName "${self}/devices/aarch64-linux";
     system = [ "aarch64-linux" ];
   };
   devices = x86_64-devices ++ aarch64-devices;
@@ -45,6 +44,7 @@ in
       (lib.nixosSystem {
         system = image.system;
         specialArgs = {
+          system = image.system;
           inherit inputs self;
         };
         modules = [

@@ -1,0 +1,196 @@
+diff --git a/arch/arm/dts/rk3328-roc-cc-u-boot.dtsi b/arch/arm/dts/rk3328-roc-cc-u-boot.dtsi
+index 582d6ba49b..37f0b5f656 100644
+--- a/arch/arm/dts/rk3328-roc-cc-u-boot.dtsi
++++ b/arch/arm/dts/rk3328-roc-cc-u-boot.dtsi
+@@ -7,6 +7,7 @@
+ #include "rk3328-sdram-ddr4-666.dtsi"
+ 
+ / {
++	/delete-node/ smbios;
+ 	smbios {
+ 		compatible = "u-boot,sysinfo-smbios";
+ 
+@@ -14,6 +15,7 @@
+ 			system {
+ 				manufacturer = "firefly";
+ 				product = "roc-rk3328-cc";
++				family = "Rockchip/RK3328";
+ 			};
+ 
+ 			baseboard {
+diff --git a/arch/arm/dts/rk3328-rock-pi-e-u-boot.dtsi b/arch/arm/dts/rk3328-rock-pi-e-u-boot.dtsi
+index d314bfad6f..24dd03db5c 100644
+--- a/arch/arm/dts/rk3328-rock-pi-e-u-boot.dtsi
++++ b/arch/arm/dts/rk3328-rock-pi-e-u-boot.dtsi
+@@ -7,6 +7,7 @@
+ #include "rk3328-sdram-ddr3-666.dtsi"
+ 
+ / {
++	/delete-node/ smbios;
+ 	smbios {
+ 		compatible = "u-boot,sysinfo-smbios";
+ 
+@@ -14,6 +15,7 @@
+ 			system {
+ 				manufacturer = "radxa";
+ 				product = "rock-pi-e_rk3328";
++				family = "Rockchip/RK3328";
+ 			};
+ 
+ 			baseboard {
+diff --git a/arch/arm/dts/rk3328-rock64-u-boot.dtsi b/arch/arm/dts/rk3328-rock64-u-boot.dtsi
+index 22f128090f..f686682de6 100644
+--- a/arch/arm/dts/rk3328-rock64-u-boot.dtsi
++++ b/arch/arm/dts/rk3328-rock64-u-boot.dtsi
+@@ -7,6 +7,7 @@
+ #include "rk3328-sdram-lpddr3-1600.dtsi"
+ 
+ / {
++	/delete-node/ smbios;
+ 	smbios {
+ 		compatible = "u-boot,sysinfo-smbios";
+ 
+@@ -14,6 +15,7 @@
+ 			system {
+ 				manufacturer = "pine64";
+ 				product = "rock64_rk3328";
++				family = "Rockchip/RK3328";
+ 			};
+ 
+ 			baseboard {
+diff --git a/arch/arm/dts/rk3368-lion-haikou-u-boot.dtsi b/arch/arm/dts/rk3368-lion-haikou-u-boot.dtsi
+index a3c2b707e9..2cf048d9ad 100644
+--- a/arch/arm/dts/rk3368-lion-haikou-u-boot.dtsi
++++ b/arch/arm/dts/rk3368-lion-haikou-u-boot.dtsi
+@@ -16,6 +16,7 @@
+ 		u-boot,spl-boot-order = &emmc, &sdmmc;
+ 	};
+ 
++	/delete-node/ smbios;
+ 	smbios {
+ 		compatible = "u-boot,sysinfo-smbios";
+ 
+@@ -23,6 +24,7 @@
+ 			system {
+ 				manufacturer = "rockchip";
+ 				product = "sheep_rk3368";
++				family = "Rockchip/RK3368";
+ 			};
+ 
+ 			baseboard {
+diff --git a/arch/arm/dts/rk3399-nanopi-r4s-u-boot.dtsi b/arch/arm/dts/rk3399-nanopi-r4s-u-boot.dtsi
+index 69800cc368..fd51c02550 100644
+--- a/arch/arm/dts/rk3399-nanopi-r4s-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-nanopi-r4s-u-boot.dtsi
+@@ -16,6 +16,7 @@
+ #include "rk3399-sdram-lpddr4-100.dtsi"
+ 
+ / {
++	/delete-node/ smbios;
+ 	smbios {
+ 		compatible = "u-boot,sysinfo-smbios";
+ 
+@@ -23,6 +24,7 @@
+ 			system {
+ 				manufacturer = "FriendlyELEC";
+ 				product = "NanoPi R4S";
++				family = "Rockchip/RK3399";
+ 			};
+ 
+ 			baseboard {
+diff --git a/arch/arm/dts/rk3399-rockpro64-u-boot.dtsi b/arch/arm/dts/rk3399-rockpro64-u-boot.dtsi
+index 43b67991fe..032da583be 100644
+--- a/arch/arm/dts/rk3399-rockpro64-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-rockpro64-u-boot.dtsi
+@@ -7,12 +7,14 @@
+ #include "rk3399-sdram-lpddr4-100.dtsi"
+ 
+ / {
++        /delete-node/ smbios;
+         smbios {
+                 compatible = "u-boot,sysinfo-smbios";
+                 smbios {
+                         system {
+                                 manufacturer = "Pine64";
+                                 product = "RockPro64";
++				family = "Rockchip/RK3399";
+                         };
+ 
+                         baseboard {
+diff --git a/arch/arm/dts/rockchip-u-boot.dtsi b/arch/arm/dts/rockchip-u-boot.dtsi
+index c8c928c7e5..ae466b100f 100644
+--- a/arch/arm/dts/rockchip-u-boot.dtsi
++++ b/arch/arm/dts/rockchip-u-boot.dtsi
+@@ -9,6 +9,47 @@
+ 	binman: binman {
+ 		multiple-images;
+ 	};
++
++#ifdef CONFIG_SYSINFO_SMBIOS
++	smbios{
++		compatible = "u-boot,sysinfo-smbios";
++		smbios {
++			system {
++#ifdef CONFIG_SYSINFO_SMBIOS_MANUFACTURER	
++				manufacturer = CONFIG_SYSINFO_SMBIOS_MANUFACTURER;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_PRODUCT
++				product = CONFIG_SYSINFO_SMBIOS_PRODUCT;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_VERSION
++				version = CONFIG_SYSINFO_SMBIOS_VERSION;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_FAMILY
++				family = CONFIG_SYSINFO_SMBIOS_FAMILY;
++#endif
++			};
++
++			baseboard {
++#ifdef CONFIG_SYSINFO_SMBIOS_MANUFACTURER	
++				manufacturer = CONFIG_SYSINFO_SMBIOS_MANUFACTURER;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_PRODUCT
++				product = CONFIG_SYSINFO_SMBIOS_PRODUCT;
++#endif
++			};
++
++			chassis {
++#ifdef CONFIG_SYSINFO_SMBIOS_MANUFACTURER	
++				manufacturer = CONFIG_SYSINFO_SMBIOS_MANUFACTURER;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_PRODUCT
++				product = CONFIG_SYSINFO_SMBIOS_PRODUCT;
++#endif
++			};
++		};
++	};
++#endif
++
+ };
+ 
+ #ifdef CONFIG_SPL
+diff --git a/drivers/sysinfo/Kconfig b/drivers/sysinfo/Kconfig
+index 2030e4babc..04a07386b6 100644
+--- a/drivers/sysinfo/Kconfig
++++ b/drivers/sysinfo/Kconfig
+@@ -52,4 +52,20 @@ config SYSINFO_GPIO
+ 	  This ternary number is then mapped to a board revision name using
+ 	  device tree properties.
+ 
++config SYSINFO_SMBIOS_MANUFACTURER
++	depends on SYSINFO_SMBIOS
++	string "Smbios manufacturer"
++
++config SYSINFO_SMBIOS_PRODUCT
++	depends on SYSINFO_SMBIOS
++	string "Smbios product"
++
++config SYSINFO_SMBIOS_VERSION
++	depends on SYSINFO_SMBIOS
++	string "Smbios version"
++
++config SYSINFO_SMBIOS_FAMILY
++	depends on SYSINFO_SMBIOS
++	string "Smbios family"
++
+ endif
