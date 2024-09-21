@@ -21,7 +21,7 @@ in
         imageName = "${diskoCfg.devices.disk.main.name}.${diskoCfg.imageBuilder.imageFormat}";
       in
       ''
-        ${pkgs.coreutils}/bin/dd of = $out/${imageName} if=${pkgs-self.ubootHinlinkH88k}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
+        ${pkgs.coreutils}/bin/dd of=$out/${imageName} if=${pkgs-self.ubootHinlinkH88k}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
       '';
     enableConfig = true;
     profile.use = "btrfs";
