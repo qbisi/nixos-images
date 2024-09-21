@@ -4,7 +4,7 @@
  
  
  static const struct usb_device_id option_ids[] = {
-+	{ USB_DEVICE(MEDIATEK_VENDOR_ID, 0x7127) },
++	{ USB_DEVICE(MEDIATEK_VENDOR_ID, 0x7126) },
  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
  	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA_LIGHT) },
@@ -13,7 +13,7 @@
  		return -ENODEV;
  
 +	if(id->idVendor == MEDIATEK_VENDOR_ID &&
-+ 	     (id->idProduct == cpu_to_le16(0x7127) &&
++ 	     (id->idProduct == cpu_to_le16(0x7126) &&
 +	        ((serial->interface->cur_altsetting->desc.bInterfaceNumber <= 5) ||
 +		(serial->interface->cur_altsetting->desc.bInterfaceNumber >= 7))))
 +	{

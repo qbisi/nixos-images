@@ -7,6 +7,7 @@
         disabledModules = [ "system/boot/loader/grub/grub.nix" ];
 
         imports = [
+          ./disko/uboot.nix
           ./disko/profile.nix
           ./disko/btrfs.nix
           ./overlay/system/boot/loader/grub.nix
