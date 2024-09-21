@@ -8,30 +8,28 @@
 , ...
 }:
 let
-  selfpkgs = self.packages.${system};
-  fmt = config.disko.imageBuilder.imageFormat;
-  oldImageName = "${config.disko.devices.disk.main.name}.${fmt}";
-  newImageName = "${config.disko.profile.imageName}.${fmt}";
+  pkgs-self = self.packages.${system};
 in
 {
   networking.hostName = "hinlink-h88k";
 
   disko = {
-    # memSize = 2048;
     memSize = 4096;
-    imageBuilder.kernelPackages = pkgs.linuxPackages;
-    imageBuilder.extraPostVM = lib.mkForce ''
-      ${pkgs.coreutils}/bin/dd of=$out/${oldImageName} if=${selfpkgs.ubootHinlinkH88k}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
-      mv "$out/${oldImageName}" "$out/${newImageName}"
-      ${pkgs.xz}/bin/xz -zk "$out/${newImageName}"
-    '';
+    profile.extraPostVM =
+      let
+        diskoCfg = config.disko;
+        imageName = "${diskoCfg.devices.disk.main.name}.${diskoCfg.imageBuilder.imageFormat}";
+      in
+      ''
+        ${pkgs.coreutils}/bin/dd of = $out/${imageName} if=${pkgs-self.ubootHinlinkH88k}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
+      '';
     enableConfig = true;
     profile.use = "btrfs";
-    profile.espStart = "16M";
+    profile.espStart = lib.mkIf (builtins.elem config.disko.profile.partLabel [ "mmc" "sd" ]) "16M";
   };
 
   hardware = {
-    firmware = [ selfpkgs.mali-panthor-g610-firmware ];
+    firmware = [ pkgs-self.mali-panthor-g610-firmware ];
     deviceTree = {
       name = "rockchip/rk3588-hinlink-h88k.dtb";
       overlays = [
@@ -39,58 +37,22 @@ in
         { name = "h88k-enable-rs232-rs485"; dtsFile = "${self}/dts/overlay/h88k-enable-rs232-rs485.dts"; }
       ];
     };
+    serial = {
+      enable = true;
+      unit = 2;
+      baudrate = 1500000;
+    };
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor selfpkgs.linux_rkbsp_joshua;
-    initrd.availableKernelModules = lib.mkForce [ "uas" ];
-    growPartition.enable = true;
+    kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rkbsp_joshua;
+    initrd.availableKernelModules = lib.mkForce (lib.optional (config.disko.profile.partLabel == "usb") "uas");
     kernelParams = [
       "net.ifnames=0"
-      "console=ttyS2,1500000"
       "console=tty1"
       "earlycon"
     ];
     loader.grub.enable = true;
-    loader.grub.extraConfig = ''
-      serial --unit=0 --speed=1500000 --word=8 --parity=no --stop=1
-      terminal_input --append serial
-      terminal_output --append serial
-    '';
   };
-
-  users.users.root = {
-    hashedPassword = "";
-  };
-
-  networking = {
-    firewall.enable = false;
-    useDHCP = false;
-    useNetworkd = true;
-  };
-
-  systemd.network.networks."eth" = {
-    matchConfig.Name = "eth*";
-    networkConfig = {
-      DHCP = "yes";
-    };
-    linkConfig.RequiredForOnline = "no";
-  };
-
-  services = {
-    openssh = {
-      enable = true;
-      settings = {
-        PermitRootLogin = "yes";
-        PermitEmptyPasswords = "yes";
-      };
-    };
-  };
-
-  security.pam.services.sshd.allowNullPassword = true;
-
-  environment.systemPackages = with pkgs; [
-    vim
-  ];
 
 }

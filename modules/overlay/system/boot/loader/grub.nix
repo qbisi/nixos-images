@@ -118,12 +118,9 @@ let
 
   defaultSplash = pkgs.nixos-artwork.wallpapers.simple-dark-gray-bootloader.gnomeFilePath;
 
-  devicetree = with config.hardware.deviceTree;
-    if isNull name then "/" else "${package}/${name}";
+  deviceTree = with config.hardware.deviceTree;
+    if isNull name then null else "${package}/${name}";
 
-  extraBuilderCommands = lib.optionalString (lib.pathIsRegularFile devicetree) ''
-      ln -s ${devicetree} $out/fdtfile
-    '';
 in
 
 {
@@ -710,7 +707,7 @@ in
     };
 
   };
-  
+
   ###### implementation
 
   config = mkMerge [
@@ -738,7 +735,9 @@ in
       system.systemBuilderCommands =
         ''
           echo -n "$configurationName" > $out/configuration-name
-        '' + extraBuilderCommands;
+        '' + optionalString (deviceTree != null) ''
+          ln -s ${deviceTree} $out/fdtfile
+        '';
 
       system.build.installBootLoader =
         let

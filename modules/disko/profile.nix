@@ -9,13 +9,6 @@ let
 in
 {
   options = {
-    disko.imageBuilder.extraPostVM.type = mkForce (mkOption {
-      # type = types.lines;
-      type = types.string;
-      default = "";
-      description = "extra command";
-    });
-
     disko.profile = {
       use = mkOption {
         type = types.str;
@@ -47,7 +40,7 @@ in
       };
 
       partLabel = mkOption {
-        type = types.str;
+        type = types.enum [ "mmc" "sd" "usb" "nvme" "scsi" ];
         default = "scsi";
         example = "nvme";
         description = ''
@@ -84,6 +77,12 @@ in
           default = null;
         };
 
+      extraPostVM = mkOption {
+        type = types.lines;
+        default = "";
+        description = "extra command post vm creation";
+      };
+
     };
   };
 
@@ -95,17 +94,25 @@ in
       }
     ];
 
+    boot.initrd.availableKernelModules = mkIf (cfg.partLabel == "usb") [ "uas" ];
+
     disko = {
-      imageBuilder.extraPostVM =
+      imageBuilder = {
+          kernelPackages = pkgs.linuxPackages;
+          extraPostVM = cfg.extraPostVM;
+      };
+
+      profile.extraPostVM =
         let
           fmt = config.disko.imageBuilder.imageFormat;
           oldImageName = "${config.disko.devices.disk.main.name}.${fmt}";
           newImageName = "${cfg.imageName}.${fmt}";
         in
-        ''
+        mkAfter ''
           mv "$out/${oldImageName}" "$out/${newImageName}"
           ${pkgs.xz}/bin/xz -z "$out/${newImageName}"
         '';
+        
       devices = {
         disk.main = {
           name = cfg.partLabel;

@@ -16,7 +16,13 @@ with lib;
 
   options = {
     boot.growPartition = {
-      enable = mkEnableOption "growing the root partition on boot";
+      enable = mkOption {
+        default = true;
+        type = types.bool;
+        description = ''
+          growing the root partition on boot
+        '';
+      };
       mountPoint = mkOption {
         default = "/";
         example = "/nix";

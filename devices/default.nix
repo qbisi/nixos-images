@@ -56,6 +56,7 @@ in
           }
           "${self}/devices/${image.system}/${image.device}.nix"
           self.nixosModules.default
+          self.nixosModules.bootstrap
         ];
       })
     );
