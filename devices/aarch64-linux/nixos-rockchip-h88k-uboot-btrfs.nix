@@ -37,8 +37,8 @@ in
     deviceTree = {
       name = "rockchip/rk3588-hinlink-h88k.dtb";
       overlays = [
-        { name = "h88k-enable-hdmiphy"; dtsFile = "${self}/dts/overlay/h88k-enable-hdmiphy.dts"; }
-        { name = "h88k-enable-rs232-rs485"; dtsFile = "${self}/dts/overlay/h88k-enable-rs232-rs485.dts"; }
+        { name = "h88k-enable-hdmiphy"; dtsFile = ../../dts/overlay/h88k-enable-hdmiphy.dts; }
+        { name = "h88k-enable-rs232-rs485"; dtsFile = ../../dts/overlay/h88k-enable-rs232-rs485.dts; }
       ];
     };
     serial = {
