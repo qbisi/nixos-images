@@ -19,7 +19,6 @@
   boot = {
     kernelParams = [
       "net.ifnames=0"
-      "console=tty1"
     ];
     loader.grub.enable = true;
   };
