@@ -7,7 +7,6 @@
         disabledModules = [ "system/boot/loader/grub/grub.nix" ];
 
         imports = [
-          ./disko/uboot.nix
           ./disko/profile.nix
           ./disko/btrfs.nix
           ./overlay/system/boot/loader/grub.nix
@@ -18,6 +17,7 @@
       bootstrap = { config, pkgs, modulesPath, ... }: {
         imports = [
           "${modulesPath}/profiles/all-hardware.nix"
+          ./disko/uboot.nix
           ./config/networking.nix
           ./system/grow-partition.nix
           ./config/passless.nix
