@@ -44,7 +44,7 @@ in
       (lib.nixosSystem {
         system = image.system;
         specialArgs = {
-          system = image.system;
+          # system = image.system;
           inherit inputs self;
         };
         modules = [

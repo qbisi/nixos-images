@@ -4,9 +4,12 @@
 , modulesPath
 , inputs
 , self
-, system
 , ...
 }:
+let
+  system = config.nixpkgs.system;
+  pkgs-self = self.packages.${system};
+in
 {
   disabledModules = [
     "profiles/all-hardware.nix"
@@ -23,7 +26,7 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor self.packages.${system}.linux_phytium_6_6;
+    kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_phytium_6_6;
     kernelParams = [
       "net.ifnames=0"
       "console=tty1"

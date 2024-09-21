@@ -4,10 +4,10 @@
 , modulesPath
 , inputs
 , self
-, system
 , ...
 }:
 let
+  system = config.nixpkgs.system;
   pkgs-self = self.packages.${system};
 in
 {
@@ -15,7 +15,7 @@ in
     "profiles/all-hardware.nix"
   ];
 
-  networking.hostName = "hinlink-h88k";
+  networking.hostName = lib.mkDefault "hinlink-h88k";
 
   disko = {
     memSize = 4096;
