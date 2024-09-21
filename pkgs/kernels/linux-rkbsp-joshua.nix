@@ -1,4 +1,4 @@
-{ lib, buildLinux, fetchurl, fetchFromGitHub, gcc10Stdenv, ... }:
+{ lib, buildLinux, fetchurl, fetchFromGitHub, ... }:
 let
   version = "6.1.75-rkbsp-joshua";
   modDirVersion = "6.1.75";
@@ -21,6 +21,14 @@ let
     {
       name = "link-defconfig";
       patch = ./link-defconfig.patch;
+    }
+    {
+      name = "gobinet-for-longsung";
+      patch = ./gobinet-for-longsung.patch;
+    }
+    {
+      name = "serial-option-for-fm350";
+      patch = ./serial-option-for-fm350.patch;
     }
   ];
   defconfig = "linux_defconfig";

@@ -1,0 +1,35 @@
+diff --git a/drivers/net/usb/qmi_wwan.c b/drivers/net/usb/qmi_wwan.c
+index 68829a5a9..532da7c5e 100644
+--- a/drivers/net/usb/qmi_wwan.c
++++ b/drivers/net/usb/qmi_wwan.c
+@@ -1429,6 +1429,7 @@ static const struct usb_device_id products[] = {
+ 	{QMI_QUIRK_SET_DTR(0x1546, 0x1342, 4)},	/* u-blox LARA-L6 */
+ 
+ 	/* 4. Gobi 1000 devices */
++	{QMI_GOBI1K_DEVICE(0x2df3, 0x5b01)},	/* Longsung EX510 Modem Device */
+ 	{QMI_GOBI1K_DEVICE(0x05c6, 0x9212)},	/* Acer Gobi Modem Device */
+ 	{QMI_GOBI1K_DEVICE(0x03f0, 0x1f1d)},	/* HP un2400 Gobi Modem Device */
+ 	{QMI_GOBI1K_DEVICE(0x04da, 0x250d)},	/* Panasonic Gobi Modem device */
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index 119641761..cb19a44d0 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -75,6 +75,9 @@ static void option_instat_callback(struct urb *urb);
+ #define OPTION_PRODUCT_ETNA_KOI_MODEM		0x7100
+ #define OPTION_PRODUCT_GTM380_MODEM		0x7201
+ 
++#define LONGSUNG_EX510_VID 0x2df3
++#define LONGSUNG_EX510_PID 0x5b01
++
+ #define HUAWEI_VENDOR_ID			0x12D1
+ #define HUAWEI_PRODUCT_E173			0x140C
+ #define HUAWEI_PRODUCT_E1750			0x1406
+@@ -650,6 +653,8 @@ static const struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_MODEM_EX) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_ETNA_KOI_MODEM) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_GTM380_MODEM) },
++	{ USB_DEVICE(LONGSUNG_EX510_VID, LONGSUNG_EX510_PID),
++	.driver_info = RSVD(2)|RSVD(3)|RSVD(4)|RSVD(5)},
+ 	{ USB_DEVICE(QUANTA_VENDOR_ID, QUANTA_PRODUCT_Q101) },
+ 	{ USB_DEVICE(QUANTA_VENDOR_ID, QUANTA_PRODUCT_Q111) },
+ 	{ USB_DEVICE(QUANTA_VENDOR_ID, QUANTA_PRODUCT_GLX) },
