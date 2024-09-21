@@ -11,6 +11,10 @@ let
   pkgs-self = self.packages.${system};
 in
 {
+  disabledModules = [
+    "profiles/all-hardware.nix"
+  ];
+
   networking.hostName = "hinlink-h88k";
 
   disko = {

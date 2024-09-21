@@ -8,9 +8,12 @@
 , ...
 }:
 {
+  disabledModules = [
+    "profiles/all-hardware.nix"
+  ];
 
   disko = {
-    memSize = 2048;
+    memSize = 4096;
     enableConfig = true;
     profile.use = "btrfs";
   };

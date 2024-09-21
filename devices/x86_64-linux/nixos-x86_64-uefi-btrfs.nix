@@ -7,10 +7,6 @@
 , ...
 }:
 {
-  imports = [
-    (modulesPath + "/profiles/all-hardware.nix")
-  ];
-
   disko = {
     enableConfig = true;
     profile.use = "btrfs";

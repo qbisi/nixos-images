@@ -14,8 +14,9 @@
           inputs.disko.nixosModules.default
         ];
       };
-      bootstrap = { config, pkgs, ... }: {
+      bootstrap = { config, pkgs, modulesPath, ... }: {
         imports = [
+          "${modulesPath}/profiles/all-hardware.nix"
           ./config/networking.nix
           ./system/grow-partition.nix
           ./config/passless.nix
