@@ -7,10 +7,12 @@
 , ...
 }:
 let
-  system = config.nixpkgs.system;
-  pkgs-self = self.packages.${system};
+  system = "aarch64-linux";
+  pkgs-self = self.legacyPackages.${system};
 in
 {
+  nixpkgs.system = system;
+
   disabledModules = [
     "profiles/all-hardware.nix"
   ];
@@ -21,6 +23,7 @@ in
     memSize = 4096;
     enableConfig = true;
     profile.use = "btrfs";
+    profile.uboot.enable = builtins.elem config.disko.profile.partLabel [ "mmc" "sd" ];
     profile.uboot.package = pkgs-self.ubootHinlinkH88k;
   };
 

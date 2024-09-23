@@ -5,10 +5,7 @@ in
 {
   options = {
     disko.profile.uboot = {
-      enable = mkOption {
-        type = types.bool;
-        default = builtins.elem config.disko.profile.partLabel [ "mmc" "sd" ];
-      };
+      enable = mkEnableOption "uboot part in disk";
 
       package = mkOption
         {

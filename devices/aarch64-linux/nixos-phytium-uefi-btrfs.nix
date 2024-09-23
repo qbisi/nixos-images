@@ -7,10 +7,12 @@
 , ...
 }:
 let
-  system = config.nixpkgs.system;
+  system = "aarch64-linux";
   pkgs-self = self.packages.${system};
 in
 {
+  nixpkgs.system = system;
+
   disabledModules = [
     "profiles/all-hardware.nix"
   ];

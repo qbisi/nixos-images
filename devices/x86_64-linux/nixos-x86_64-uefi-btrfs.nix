@@ -7,6 +7,8 @@
 , ...
 }:
 {
+  nixpkgs.system = "x86_64-linux";
+
   disko = {
     enableConfig = true;
     profile.use = "btrfs";
