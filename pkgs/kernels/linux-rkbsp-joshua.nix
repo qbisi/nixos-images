@@ -26,10 +26,10 @@ let
       name = "gobinet-for-longsung";
       patch = ./gobinet-for-longsung.patch;
     }
-    {
-      name = "serial-option-for-fm350";
-      patch = ./serial-option-for-fm350.patch;
-    }
+    # {
+    #   name = "serial-option-for-fm350";
+    #   patch = ./serial-option-for-fm350.patch;
+    # }
   ];
   defconfig = "linux_defconfig";
   structuredExtraConfig = with lib.kernel; {
