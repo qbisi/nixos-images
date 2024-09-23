@@ -8,7 +8,7 @@
 }:
 let
   system = "aarch64-linux";
-  pkgs-self = self.packages.${system};
+  pkgs-self = self.legacyPackages.${system};
 in
 {
   nixpkgs.system = system;
