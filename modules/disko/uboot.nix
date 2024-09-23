@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 with lib;
 let cfg = config.disko.profile;
 in
@@ -9,7 +9,7 @@ in
 
       package = mkOption
         {
-          type = types.nullOr types.pkgs;
+          type = types.nullOr types.package;
           default = null;
         };
     };
@@ -18,7 +18,7 @@ in
   config = mkIf (cfg.use != "" && cfg.uboot.enable) {
     assertions = [
       {
-        assertion = cfg.package != null;
+        assertion = cfg.uboot.package != null;
         message = "disko.profile.uboot.pacakges should not be null";
       }
     ];
@@ -30,7 +30,7 @@ in
           imageName = "${diskoCfg.devices.disk.main.name}.${diskoCfg.imageBuilder.imageFormat}";
         in
         mkBefore ''
-          ${pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.pacakge}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
+          ${pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.package}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
         '';
       espStart = "16M";
     };

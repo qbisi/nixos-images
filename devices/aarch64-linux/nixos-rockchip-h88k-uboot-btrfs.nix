@@ -28,7 +28,7 @@ in
   };
 
   hardware = {
-    firmware = [ pkgs-self.mali-panthor-g610-firmware ];
+    firmware = [ pkgs-self.mali-panthor-g610-firmware pkgs.linux-firmware ];
     deviceTree = {
       name = "rockchip/rk3588-hinlink-h88k.dtb";
       overlays = [
