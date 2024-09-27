@@ -1,5 +1,6 @@
 { config
 , pkgs
+, pkgs-self
 , lib
 , modulesPath
 , inputs
@@ -8,7 +9,6 @@
 }:
 let
   system = "aarch64-linux";
-  pkgs-self = self.legacyPackages.${system};
 in
 {
   nixpkgs.system = system;
@@ -24,7 +24,7 @@ in
   };
 
   hardware = {
-    firmware = [ ];
+    firmware = [ pkgs-self.brcmfmac_sdio-firmware ];
     serial = {
       enable = true;
       unit = 2;

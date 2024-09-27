@@ -38,6 +38,7 @@ in
         system = image.system;
         specialArgs = {
           inherit inputs self;
+          pkgs-self = self.legacyPackages.${image.system};
         };
         modules = [
           {

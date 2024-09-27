@@ -1,5 +1,6 @@
 { config
 , pkgs
+, pkgs-self
 , lib
 , modulesPath
 , inputs
@@ -8,7 +9,6 @@
 }:
 let
   system = "aarch64-linux";
-  pkgs-self = self.legacyPackages.${system};
 in
 {
   nixpkgs.system = system;
