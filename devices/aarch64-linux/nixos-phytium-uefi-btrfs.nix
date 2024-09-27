@@ -13,10 +13,6 @@ in
 {
   nixpkgs.system = system;
 
-  disabledModules = [
-    "profiles/all-hardware.nix"
-  ];
-
   disko = {
     memSize = 4096;
     enableConfig = true;

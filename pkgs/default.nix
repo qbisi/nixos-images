@@ -1,6 +1,11 @@
 { lib, config, self, inputs, ... }:
 {
-  perSystem = { config, pkgs, lib, system, ... }: {
-    legacyPackages = import ./top-level.nix { inherit pkgs; };
+  perSystem = { config, lib, system, ... }: {
+    legacyPackages = import ./top-level.nix {
+      pkgs = import inputs.nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    };
   };
 }

@@ -13,10 +13,6 @@ in
 {
   nixpkgs.system = system;
 
-  disabledModules = [
-    "profiles/all-hardware.nix"
-  ];
-
   networking.hostName = lib.mkDefault "hinlink-h88k";
 
   disko = {
@@ -28,7 +24,7 @@ in
   };
 
   hardware = {
-    firmware = [ pkgs-self.mali-panthor-g610-firmware pkgs.linux-firmware ];
+    firmware = [ pkgs-self.mali_panthor_g610-firmware pkgs.linux-firmware ];
     deviceTree = {
       name = "rockchip/rk3588-hinlink-h88k.dtb";
       overlays = [

@@ -41,6 +41,9 @@ in
         };
         modules = [
           {
+            nixpkgs.config.allowUnfree = true;
+          }
+          {
             disko.profile = {
               partLabel = image.diskType;
               imageName = image.name;
