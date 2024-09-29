@@ -6,33 +6,23 @@
 }:
 stdenv.mkDerivation rec {
   pname = "brcmfmac_sdio-firmware";
-  version = "v0.0.1";
+  version = "unstable-2024-09-29";
 
-  src1 = fetchurl {
-    url = "https://files.kos.org.cn/rockchip/sw799/sw799-ap6236驱动.7z";
-    hash = "sha256-ZvDxSRyN1N/oId0q5rXR378N9eWs6b0BpNFE4C1Ww8c=";
-  };
-
-  src2 = fetchFromGitHub {
-      owner = "LibreELEC";
+  src = fetchFromGitHub {
+      owner = "qbisi";
       repo = "brcmfmac_sdio-firmware";
-      rev = "88e46425ef489513c0b8bf7c2747d262367be1cc";
-      sha256 = "sha256-VTS1yIjnphliObjjoWDi+4Uh2iNcxqrw1uyMWmcpKxw=";
+      rev = "240139ab39e3b13b2676a7b0aabbcd268b82b4ea";
+      sha256 = "sha256-cV5dR6bLU5pVvHGjdAQkanCH+TtwrgVv/PF8xMzUrqk=";
   };
-
-  srcs = [src1 src2]; 
-
-  sourceRoot = "."; 
-
-  unpackCmd = ''
-    ${p7zip}/bin/7za x -oap6236 ${src1}
-  '';
 
   installPhase = ''
     install -d $out/lib/firmware/brcm
-    install -m 444 ap6236/brcm* $out/lib/firmware/brcm/
-    install -m 444 ${src2}/* $out/lib/firmware/brcm/
+    install -m 644 * $out/lib/firmware/brcm/
   '';
+
+  # Firmware blobs do not need fixing and should not be modified
+  dontBuild = true;
+  dontFixup = true;
 
   passthru = {
     compressFirmware = false;
