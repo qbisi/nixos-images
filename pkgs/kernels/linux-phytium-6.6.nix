@@ -12,13 +12,10 @@ let
   };
   structuredExtraConfig = with lib.kernel; {
     DRM_AST = yes; 
-    BTRFS_FS = yes;
-    USB_UAS = module;
   };
 in
 buildLinux {
   inherit src modDirVersion version;
-  # inherit structuredExtraConfig;
-  # autoModules = false;
+  inherit structuredExtraConfig;
 }
 

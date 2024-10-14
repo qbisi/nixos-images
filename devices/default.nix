@@ -15,22 +15,6 @@ let
     system = [ "aarch64-linux" ];
   };
   images = x86_64-devices ++ aarch64-devices;
-  # images = mapCartesianProduct
-  #   ({ devices, diskType }: {
-  #     name = "${devices.device}-${diskType}";
-  #     inherit (devices) device system;
-  #     inherit diskType;
-  #   })
-  #   {
-  #     devices = x86_64-devices ++ aarch64-devices;
-  #     diskType = [
-  #       "mmc"
-  #       "sd"
-  #       "usb"
-  #       "nvme"
-  #       "scsi"
-  #     ];
-  #   };
 in
 {
   flake = {
