@@ -36,7 +36,6 @@ in
 
   boot = {
     kernelPackages = pkgs.linuxPackages_latest;
-    initrd.availableKernelModules = lib.optional (config.disko.profile.partLabel == "usb") "uas";
     kernelParams = [
       "net.ifnames=0"
       "console=tty1"

@@ -7,17 +7,13 @@
 , self
 , ...
 }:
-let
-  system = "aarch64-linux";
-in
 {
-  nixpkgs.system = system;
+  nixpkgs.system = "aarch64-linux";
 
   disko = {
     memSize = 4096;
     enableConfig = true;
     profile.use = "btrfs";
-    profile.partLabel = "nvme";
   };
 
   hardware = {

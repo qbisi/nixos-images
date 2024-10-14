@@ -17,10 +17,13 @@
       };
       bootstrap = { config, pkgs, modulesPath, ... }: {
         imports = [
+          "${modulesPath}/profiles/all-hardware.nix"
           ./config/networking.nix
           ./system/grow-partition.nix
           ./config/passless.nix
         ];
+
+        boot.initrd.availableKernelModules = [ "mpt3sas" ];
 
         environment.systemPackages = with pkgs; [
           vim

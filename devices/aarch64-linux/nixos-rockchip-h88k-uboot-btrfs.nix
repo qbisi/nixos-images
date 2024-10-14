@@ -7,11 +7,8 @@
 , self
 , ...
 }:
-let
-  system = "aarch64-linux";
-in
 {
-  nixpkgs.system = system;
+  nixpkgs.system = "aarch64-linux";
 
   networking.hostName = lib.mkDefault "hinlink-h88k";
 
@@ -40,7 +37,7 @@ in
 
   boot = {
     kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rkbsp_joshua;
-    initrd.availableKernelModules = lib.mkForce (lib.optional (config.disko.profile.partLabel == "usb") "uas");
+    initrd.availableKernelModules = lib.mkForce [];
     kernelParams = [
       "net.ifnames=0"
       "console=tty1"

@@ -16,12 +16,6 @@ in
         description = "disko preset profile to use";
       };
 
-      platform = mkOption {
-        type = types.str;
-        default = config.nixpkgs.system;
-        description = "Device platform, use for image naming.";
-      };
-
       enableBiosBoot = mkEnableOption "biosboot partition in gpt disk";
 
       imageSize = mkOption {
@@ -36,12 +30,12 @@ in
       imageName = mkOption {
         type = types.str;
         description = "name for the disk images";
-        default = "nixos-${cfg.platform}-${cfg.use}-${cfg.partLabel}";
+        default = "nixos-${config.nixpkgs.system}-${cfg.use}-${cfg.partLabel}";
       };
 
       partLabel = mkOption {
         type = types.str;
-        default = "scsi";
+        default = "main";
         example = "nvme";
         description = ''
           Disko use partlabel to identify and mount disk, use different partlabel
