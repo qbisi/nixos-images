@@ -11,7 +11,7 @@ in
   options = {
     disko.profile = {
       use = mkOption {
-        type = types.str;
+        type = types.enum [ "" "btrfs" ];
         default = "";
         description = "disko preset profile to use";
       };
@@ -53,7 +53,7 @@ in
         type = types.str;
         default = "gpt";
         description = ''
-          disk partition type
+          disk partition type.
         '';
       };
 
@@ -76,13 +76,6 @@ in
           internal = true;
           default = null;
         };
-
-      extraPostVM = mkOption {
-        type = types.lines;
-        default = "";
-        description = "extra command post vm creation";
-      };
-
     };
   };
 
@@ -98,24 +91,16 @@ in
 
     disko = {
       imageBuilder = {
-          kernelPackages = pkgs.linuxPackages;
-          extraPostVM = cfg.extraPostVM;
+        kernelPackages = pkgs.linuxPackages;
+        extraPostVM = mkAfter ''
+          ${pkgs.xz}/bin/xz -z $out/*${config.disko.imageBuilder.imageFormat}
+        '';
       };
 
-      profile.extraPostVM =
-        let
-          fmt = config.disko.imageBuilder.imageFormat;
-          oldImageName = "${config.disko.devices.disk.main.name}.${fmt}";
-          newImageName = "${cfg.imageName}.${fmt}";
-        in
-        mkAfter ''
-          mv "$out/${oldImageName}" "$out/${newImageName}"
-          ${pkgs.xz}/bin/xz -z "$out/${newImageName}"
-        '';
-        
       devices = {
         disk.main = {
           name = cfg.partLabel;
+          imageName = cfg.imageName;
           imageSize = cfg.imageSize;
           device =
             let

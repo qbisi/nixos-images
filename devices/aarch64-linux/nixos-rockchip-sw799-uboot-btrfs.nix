@@ -19,7 +19,9 @@ in
     memSize = 4096;
     enableConfig = true;
     profile.use = "btrfs";
-    profile.uboot.enable = builtins.elem config.disko.profile.partLabel [ "mmc" "sd" ];
+    profile.partLabel = "mmc";
+    profile.espStart = "16M";
+    profile.uboot.enable = true;
     profile.uboot.package = pkgs-self.ubootBozzSW799;
   };
 

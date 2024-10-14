@@ -11,7 +11,7 @@
           ./disko/profile.nix
           ./disko/btrfs.nix
           ./overlay/system/boot/loader/grub.nix
-          ./system/loader.nix
+          ./hardware/serial.nix
           inputs.disko.nixosModules.default
         ];
       };

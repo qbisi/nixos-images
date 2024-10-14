@@ -6,7 +6,8 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     disko = {
-      url = "github:nix-community/disko";
+      # url = "github:nix-community/disko";
+      url = "github:qbisi/disko/develop";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

@@ -23,16 +23,13 @@ in
       }
     ];
 
-    disko.profile = {
-      extraPostVM =
-        let
-          diskoCfg = config.disko;
-          imageName = "${diskoCfg.devices.disk.main.name}.${diskoCfg.imageBuilder.imageFormat}";
-        in
-        mkBefore ''
-          ${pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.package}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
-        '';
-      espStart = "16M";
-    };
+    disko.imageBuilder.extraPostVM =
+      let
+        diskoCfg = config.disko;
+        imageName = "${diskoCfg.devices.disk.main.imageName}.${diskoCfg.imageBuilder.imageFormat}";
+      in
+      mkBefore ''
+        ${pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.package}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
+      '';
   };
 }

@@ -12,10 +12,11 @@
     ./nixos-rockchip-h88k-uboot-btrfs.nix
   ];
 
-  disko = {
-    profile.partLabel = lib.mkForce "mmc";
-    profile.uboot.enable = true;
-    profile.uboot.package = pkgs-self.ubootHinlinkH88k;
+  disko.profile = {
+    partLabel = lib.mkForce "mmc";
+    espStart = "16M";
+    uboot.enable = true;
+    uboot.package = pkgs-self.ubootHinlinkH88k;
   };
 
 }
