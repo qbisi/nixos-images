@@ -7,29 +7,30 @@ let
   inherit (lib) nixosSystem mapAttrs mapCartesianProduct cartesianProduct;
   inherit (self.lib) genAttrs' listNixName;
   x86_64-devices = cartesianProduct {
-    device = listNixName "${self}/devices/x86_64-linux";
+    name = listNixName "${self}/devices/x86_64-linux";
     system = [ "x86_64-linux" ];
   };
   aarch64-devices = cartesianProduct {
-    device = listNixName "${self}/devices/aarch64-linux";
+    name = listNixName "${self}/devices/aarch64-linux";
     system = [ "aarch64-linux" ];
   };
-  images = mapCartesianProduct
-    ({ devices, diskType }: {
-      name = "${devices.device}-${diskType}";
-      inherit (devices) device system;
-      inherit diskType;
-    })
-    {
-      devices = x86_64-devices ++ aarch64-devices;
-      diskType = [
-        "mmc"
-        "sd"
-        "usb"
-        "nvme"
-        "scsi"
-      ];
-    };
+  images = x86_64-devices ++ aarch64-devices;
+  # images = mapCartesianProduct
+  #   ({ devices, diskType }: {
+  #     name = "${devices.device}-${diskType}";
+  #     inherit (devices) device system;
+  #     inherit diskType;
+  #   })
+  #   {
+  #     devices = x86_64-devices ++ aarch64-devices;
+  #     diskType = [
+  #       "mmc"
+  #       "sd"
+  #       "usb"
+  #       "nvme"
+  #       "scsi"
+  #     ];
+  #   };
 in
 {
   flake = {
@@ -43,14 +44,9 @@ in
         modules = [
           {
             nixpkgs.config.allowUnfree = true;
+            disko.profile.imageName = image.name;
           }
-          {
-            disko.profile = {
-              partLabel = image.diskType;
-              imageName = image.name;
-            };
-          }
-          "${self}/devices/${image.system}/${image.device}.nix"
+          "${self}/devices/${image.system}/${image.name}.nix"
           self.nixosModules.default
           self.nixosModules.bootstrap
         ];

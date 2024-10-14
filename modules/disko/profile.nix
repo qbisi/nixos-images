@@ -40,7 +40,6 @@ in
       };
 
       partLabel = mkOption {
-        # type = types.enum [ "mmc" "sd" "usb" "nvme" "scsi" ];
         type = types.str;
         default = "scsi";
         example = "nvme";

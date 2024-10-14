@@ -19,8 +19,7 @@ in
     memSize = 4096;
     enableConfig = true;
     profile.use = "btrfs";
-    profile.uboot.enable = builtins.elem config.disko.profile.partLabel [ "mmc" "sd" ];
-    profile.uboot.package = pkgs-self.ubootHinlinkH88k;
+    profile.partLabel = "nvme";
   };
 
   hardware = {

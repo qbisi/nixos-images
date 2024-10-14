@@ -17,6 +17,7 @@ in
     memSize = 4096;
     enableConfig = true;
     profile.use = "btrfs";
+    profile.partLabel = "nvme";
   };
 
   hardware = {
