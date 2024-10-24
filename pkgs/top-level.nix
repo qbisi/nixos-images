@@ -10,7 +10,8 @@ let
     inherit (callPackage ./u-boot { })
       ubootHinlinkH88k
       ubootRock5ModelB
-      ubootBozzSW799;
+      ubootBozzSW799
+      ubootCdhxRb30;
   };
 in
 packages

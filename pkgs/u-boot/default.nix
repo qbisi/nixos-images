@@ -260,6 +260,16 @@ in
     ROCKCHIP_TPL = "${rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
   };
 
+  ubootCdhxRb30 = ubootRockchip {
+    defconfig = "evb-rk3399_defconfig";
+    deviceTree = "rockchip/rk3399-cdhx-rb30";
+    manufacturer = "Cdhx";
+    product = "Cdhx Rb30";
+    family = "Rockchip/RK3399";
+    BL31 = "${armTrustedFirmwareRK3399}/bl31.elf";
+    ROCKCHIP_TPL = "${rkbin}/bin/rk33/rk3399_ddr_933MHz_v1.30.bin";
+  };
+
   ubootFine3399 = ubootRockchip {
     defconfig = "evb-rk3399_defconfig";
     deviceTree = "rockchip/rk3399-fine3399";
