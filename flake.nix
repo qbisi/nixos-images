@@ -19,6 +19,7 @@
       ];
       imports = [
         ./devices
+        ./hosts
         ./lib
         ./modules
         ./pkgs

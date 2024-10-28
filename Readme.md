@@ -37,6 +37,10 @@ For cloud servers, you can use the [bin456789/reinstall](https://github.com/bin4
 bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --img=https://github.com/qbisi/nixos-images/releases/download/20240912/nixos-x86_64-generic-btrfs-scsi.raw.xz && reboot
 ```
 
+## Custom your own configuration
+
+See [Hosts readme](./hosts/readme.md).
+
 ## Building the Image Yourself
 
 For advanced users looking to build a custom NixOS image from this Nix-based flake source, follow the steps below:
@@ -54,10 +58,10 @@ Ensure you have the following installed:
   
 ### Build Process
 
-Use the following command to build your desired NixOS image. Replace ${device} and ${mediatype} with the appropriate values (e.g., nixos-x86_64-generic-btrfs for device type and scsi for media type):
+Use the following command to build your desired NixOS image. Replace ${device} with the appropriate values (e.g., nixos-x86_64-generic-btrfs for device type):
 
 ```bash
-nix build github:qbisi/nixos-images#images.${device}-${mediatype}
+nix build github:qbisi/nixos-images#images.${device}
 ```
 
 Once the build is complete, the resulting image will be located in the result directory:

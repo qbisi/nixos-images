@@ -35,7 +35,7 @@ in
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_latest;
+    # kernelPackages = pkgs.linuxPackages_latest;
     kernelParams = [
       "net.ifnames=0"
       "console=tty1"
