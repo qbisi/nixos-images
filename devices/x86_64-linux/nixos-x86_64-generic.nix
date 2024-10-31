@@ -8,7 +8,7 @@
 }:
 {
   imports = [
-    ./nixos-x86_64-uefi-btrfs.nix
+    ./nixos-x86_64-uefi.nix
   ];
 
   disko.profile.enableBiosBoot = true;

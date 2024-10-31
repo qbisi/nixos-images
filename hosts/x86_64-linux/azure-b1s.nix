@@ -12,7 +12,7 @@
   };
 
   imports = [
-    ../../devices/x86_64-linux/nixos-x86_64-uefi-btrfs.nix
+    ../../devices/x86_64-linux/nixos-x86_64-uefi.nix
   ];
 
   boot.initrd.availableKernelModules = [ "sd_mod" ];

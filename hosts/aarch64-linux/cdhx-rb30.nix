@@ -19,7 +19,7 @@
   };
 
   imports = [
-    ../../devices/aarch64-linux/nixos-rockchip-cdhx-rb30-uboot-btrfs.nix
+    ../../devices/aarch64-linux/nixos-rockchip-cdhx-rb30.nix
     ../../modules/config/desktop.nix
   ];
 
@@ -35,7 +35,6 @@
   users.users.root = {
     password = "root";
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIc0M/36MG2YkGTPpx7nEc3gILV9VbovrRga1ig1P69b"
     ];
   };
 
