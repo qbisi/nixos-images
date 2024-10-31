@@ -17,7 +17,7 @@
   };
 
   imports = [
-    ./nixos-rockchip-h88k.nix
+    ./nixos-rockchip-rock5a.nix
     ../../modules/config/desktop.nix
   ];
 
