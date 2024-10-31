@@ -34,6 +34,12 @@ let
     url = "https://ftp.denx.de/pub/u-boot/u-boot-${defaultVersion}.tar.bz2";
     hash = "sha256-9ZHamrkO89az0XN2bQ3f+QxO1zMGgIl0hhF985DYPI8=";
   };
+  drmSrc = fetchFromGitHub {
+      owner = "qbisi";
+      repo = "u-boot";
+      rev = "drm-dirty";
+      sha256 = "sha256-BpjM544grcM6vDcxbm2sfkKMLZNln4g6BSmvK3vzRhA=";
+  };
 
   # Dependencies for the tools need to be included as either native or cross,
   # depending on which we're building
@@ -280,25 +286,76 @@ in
     ROCKCHIP_TPL = "${rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
   };
 
-  ubootHinlinkH88k = ubootRockchip {
-    defconfig = "evb-rk3588_defconfig";
-    deviceTree = "rockchip/rk3588-hinlink-h88k";
-    manufacturer = "HINLINK";
-    product = "HINLINK H88K";
-    family = "Rockchip/RK3588";
-    drmSupport = true;
-    BL31 = "${rkbin}/bin/rk35/rk3588_bl31_v1.45.elf";
+  # ubootHinlinkH88k = ubootRockchip {
+  #   defconfig = "evb-rk3588_defconfig";
+  #   deviceTree = "rockchip/rk3588-hinlink-h88k";
+  #   manufacturer = "HINLINK";
+  #   product = "HINLINK H88K";
+  #   family = "Rockchip/RK3588";
+  #   drmSupport = true;
+  #   BL31 = "${rkbin}/bin/rk35/rk3588_bl31_v1.45.elf";
+  #   ROCKCHIP_TPL = rkbin.TPL_RK3588;
+  # };
+
+  ubootHinlinkH88k = buildUBoot {
+    src = drmSrc;
+    version = defaultVersion;
+    defconfig = "hinlink-h88k-rk3588_defconfig";
+    extraMeta.platforms = ["aarch64-linux"];
+    BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
     ROCKCHIP_TPL = rkbin.TPL_RK3588;
+    filesToInstall = [ "u-boot.itb" "idbloader.img" "u-boot-rockchip.bin" ];
   };
 
-  ubootRock5ModelB = ubootRockchip {
-    defconfig = "rock5b-rk3588_defconfig";
-    manufacturer = "Radxa";
-    product = "Rock 5B";
-    family = "Rockchip/RK3588";
-    drmSupport = true;
-    BL31 = "${rkbin}/bin/rk35/rk3588_bl31_v1.45.elf";
+  ubootOrangePi5 = buildUBoot {
+    src = drmSrc;
+    version = defaultVersion;
+    defconfig = "orangepi-5-rk3588s_defconfig";
+    extraMeta.platforms = ["aarch64-linux"];
+    BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
     ROCKCHIP_TPL = rkbin.TPL_RK3588;
+    filesToInstall = [ "u-boot.itb" "idbloader.img" "u-boot-rockchip.bin" "u-boot-rockchip-spi.bin" ];
   };
+
+  ubootOrangePi5Plus = buildUBoot {
+    src = drmSrc;
+    version = defaultVersion;
+    defconfig = "orangepi-5-plus-rk3588_defconfig";
+    extraMeta.platforms = ["aarch64-linux"];
+    BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
+    ROCKCHIP_TPL = rkbin.TPL_RK3588;
+    filesToInstall = [ "u-boot.itb" "idbloader.img" "u-boot-rockchip.bin" "u-boot-rockchip-spi.bin" ];
+  };
+
+  ubootNanoPCT6 = buildUBoot {
+    src = drmSrc;
+    version = defaultVersion;
+    defconfig = "nanopc-t6-rk3588_defconfig";
+    extraMeta.platforms = ["aarch64-linux"];
+    BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
+    ROCKCHIP_TPL = rkbin.TPL_RK3588;
+    filesToInstall = [ "u-boot.itb" "idbloader.img" "u-boot-rockchip.bin" "u-boot-rockchip-spi.bin" ];
+  };
+
+  ubootRock5ModelB = buildUBoot {
+    src = drmSrc;
+    version = defaultVersion;
+    defconfig = "rock5b-rk3588_defconfig";
+    extraMeta.platforms = ["aarch64-linux"];
+    BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
+    ROCKCHIP_TPL = rkbin.TPL_RK3588;
+    filesToInstall = [ "u-boot.itb" "idbloader.img" "u-boot-rockchip.bin" "u-boot-rockchip-spi.bin" ];
+  };
+
+  ubootRock5ModelA = buildUBoot {
+    src = drmSrc;
+    version = defaultVersion;
+    defconfig = "rock5a-rk3588s_defconfig";
+    extraMeta.platforms = ["aarch64-linux"];
+    BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
+    ROCKCHIP_TPL = rkbin.TPL_RK3588;
+    filesToInstall = [ "u-boot.itb" "idbloader.img" "u-boot-rockchip.bin" ];
+  };
+
 }
 
