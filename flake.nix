@@ -9,6 +9,10 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    colmena = {
+      url = "github:zhaofengli/colmena";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs =
     inputs:
@@ -29,7 +33,7 @@
         {
           formatter = pkgs.nixpkgs-fmt;
           devShells.default = pkgs.mkShell {
-            packages = with pkgs; [dtc];
+            packages = with pkgs; [ dtc ];
           };
         };
     };

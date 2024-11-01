@@ -1,6 +1,8 @@
-{ inputs
-, ...
-}: {
+{
+  inputs,
+  ...
+}:
+{
   flake = {
     nixosModules = {
       default = {
@@ -15,23 +17,38 @@
           inputs.disko.nixosModules.default
         ];
       };
-      bootstrap = { config, pkgs, modulesPath, ... }: {
-        imports = [
-          "${modulesPath}/profiles/all-hardware.nix"
-          ./config/networking.nix
-          ./system/grow-partition.nix
-          ./config/passless.nix
-        ];
+      bootstrap =
+        {
+          config,
+          pkgs,
+          modulesPath,
+          ...
+        }:
+        {
+          imports = [
+            "${modulesPath}/profiles/all-hardware.nix"
+            ./config/networking.nix
+            ./system/grow-partition.nix
+            ./config/passless.nix
+            ./services/rsync-nixosconfig.nix
+          ];
 
-        boot.initrd.availableKernelModules = [ "mpt3sas" ];
+          boot.initrd.availableKernelModules = [ "mpt3sas" ];
 
-        environment.systemPackages = with pkgs; [
-          vim
-          grub2_efi
-        ];
+          environment.systemPackages = with pkgs; [
+            vim
+            grub2_efi
+          ];
 
-        system.stateVersion = config.system.nixos.release;
-      };
+          nix.settings = {
+            experimental-features = [
+              "nix-command"
+              "flakes"
+            ];
+          };
+
+          system.stateVersion = config.system.nixos.release;
+        };
     };
   };
 }
