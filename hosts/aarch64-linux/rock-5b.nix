@@ -9,17 +9,13 @@
 }:
 {
   deployment = {
-    targetHost = "cdhx-rb30";
+    targetHost = config.networking.hostName;
     buildOnTarget = false;
-    tags = [ "rk3399" ];
-  };
-
-  nixpkgs.config = {
-    allowUnfree = true;
+    tags = [ "rk3588" ];
   };
 
   imports = [
-    ../../devices/aarch64-linux/nixos-rockchip-cdhx-rb30.nix
+    ../../devices/aarch64-linux/nixos-radxa-rock-5b.nix
     ../../modules/config/desktop.nix
   ];
 
@@ -48,7 +44,6 @@
     htop
     git
     neofetch
-    vscode-fhs
   ];
 
   nix.settings = {

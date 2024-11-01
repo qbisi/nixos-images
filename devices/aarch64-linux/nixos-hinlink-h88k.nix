@@ -11,7 +11,7 @@
 {
   nixpkgs.system = "aarch64-linux";
 
-  networking.hostName = lib.mkDefault "hinlink-h88k";
+  networking.hostName = lib.mkDefault "h88k";
 
   disko = {
     memSize = 4096;

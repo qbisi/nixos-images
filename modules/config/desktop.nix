@@ -1,26 +1,5 @@
 { pkgs, ... }:
 {
-  disabledModules = [ ./passless.nix ];
-
-  users.users.nixos = {
-    password = "nixos";
-    # use mkpasswd to generate hashedPassword
-    # hashedPassword = "$y$j9T$20Q2FTEqEYm1hzP10L1UA.$HLsxMJKmYnIHM2kGVJrLHh0dCtMz.TSVlWb0S2Ja29C";
-    isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-    openssh.authorizedKeys.keys = [ ];
-  };
-
-  users.users.root = {
-    password = "root";
-    openssh.authorizedKeys.keys = [
-    ];
-  };
-
-  services.openssh = {
-    enable = true;
-  };
-
   hardware = {
     graphics.enable = true;
     bluetooth.enable = true;
@@ -42,16 +21,6 @@
   services.logind.extraConfig = ''
     HibernateKeyIgnoreInhibited=no
   '';
-
-  environment.systemPackages = with pkgs; [
-    firefox
-    vim
-    wget
-    htop
-    git
-    neofetch
-  ];
-
 
   fonts.packages = with pkgs; [
     noto-fonts

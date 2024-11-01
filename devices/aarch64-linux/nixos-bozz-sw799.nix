@@ -13,7 +13,7 @@ in
 {
   nixpkgs.system = system;
 
-  networking.hostName = lib.mkDefault "cdhx-rb30";
+  networking.hostName = lib.mkDefault "sw799";
 
   disko = {
     memSize = 4096;
@@ -21,7 +21,7 @@ in
     profile.use = "btrfs";
     profile.espStart = "16M";
     profile.uboot.enable = true;
-    profile.uboot.package = pkgs-self.ubootCdhxRb30;
+    profile.uboot.package = pkgs-self.ubootBozzSW799;
   };
 
   hardware = {
@@ -34,7 +34,7 @@ in
   };
 
   boot = {
-    # kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = pkgs.linuxPackages_latest;
     kernelParams = [
       "net.ifnames=0"
       "console=tty1"
