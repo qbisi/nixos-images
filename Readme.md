@@ -6,8 +6,6 @@ Bootstrap NixOS images for servers, PCs, and SBCs. The provided images use a pre
 
 **Note:** The bootstrap system disables the firewall and allows root login via SSH without a password. Therefore, leaving the system unchanged on the public internet is unsafe and dangerous. You should set your own password or SSH key as soon as possible.
 
-You can use the Colmena tool to deploy your settings. ~~Typical examples are provided in the repository: [github:/qbisi/nixos-config](https://github.com/qbisi/nixos-config).~~
-
 ---
 
 ## Features
@@ -40,6 +38,9 @@ bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinst
 ## Custom your own configuration
 
 See [Hosts readme](./hosts/readme.md).
+
+### Remote deploy
+You can use the Colmena tool to deploy your settings. ~~Typical examples are provided in the repository: [github:/qbisi/nixos-config](https://github.com/qbisi/nixos-config).~~
 
 ## Building the Image Yourself
 
