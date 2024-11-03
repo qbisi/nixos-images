@@ -1,11 +1,12 @@
-{ config
-, pkgs
-, pkgs-self
-, lib
-, modulesPath
-, inputs
-, self
-, ...
+{
+  config,
+  pkgs,
+  pkgs-self,
+  lib,
+  modulesPath,
+  inputs,
+  self,
+  ...
 }:
 {
   nixpkgs.system = "aarch64-linux";
@@ -17,7 +18,9 @@
   };
 
   hardware = {
-    serial.enable = true;
+    serial = {
+      enable = true;
+    };
   };
 
   boot = {
@@ -26,6 +29,7 @@
       "console=tty1"
       "earlycon"
     ];
+
     loader.grub.enable = true;
   };
 

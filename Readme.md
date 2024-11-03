@@ -32,7 +32,10 @@ For cloud servers, you can use the [bin456789/reinstall](https://github.com/bin4
 **Run the following one-liner to reinstall the NixOS image on your cloud server:**
 
 ```bash
-bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --img=https://github.com/qbisi/nixos-images/releases/download/20240912/nixos-x86_64-generic-btrfs-scsi.raw.xz && reboot
+## x86_64-linux
+bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --password 123@@@ --img=https://github.com/qbisi/nixos-images/releases/download/20241101/nixos-x86_64-generic.raw.xz && reboot
+## aarch64
+bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --password 123@@@ --img=https://github.com/qbisi/nixos-images/releases/download/20241101/nixos-aarch64-uefi.raw.xz && reboot
 ```
 
 ## Custom your own configuration

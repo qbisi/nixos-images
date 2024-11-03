@@ -27,7 +27,6 @@ in
         };
         modules = [
           {
-            nixpkgs.config.allowUnfree = true;
             disko.profile.imageName = image.name;
           }
           "${self}/devices/${image.system}/${image.name}.nix"
