@@ -43,7 +43,7 @@ bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinst
 See [Hosts readme](./hosts/readme.md).
 
 ### Remote deploy
-You can use the Colmena tool to deploy your settings. ~~Typical examples are provided in the repository: [github:/qbisi/nixos-config](https://github.com/qbisi/nixos-config).~~
+You can use the Colmena tool to deploy your settings. Typical examples are provided in the repository: [github:/qbisi/nixos-config](https://github.com/qbisi/nixos-config).
 
 ## Building the Image Yourself
 
