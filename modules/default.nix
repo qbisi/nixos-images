@@ -6,13 +6,17 @@
   flake = {
     nixosModules = {
       default = {
-        disabledModules = [ "system/boot/loader/grub/grub.nix" ];
+        disabledModules = [
+          "system/boot/loader/grub/grub.nix"
+          "hardware/device-tree.nix"
+        ];
 
         imports = [
           ./disko/uboot.nix
           ./disko/profile.nix
           ./disko/btrfs.nix
           ./overlay/system/boot/loader/grub.nix
+          ./overlay/hardware/device-tree.nix
           ./hardware/serial.nix
           inputs.disko.nixosModules.default
         ];
