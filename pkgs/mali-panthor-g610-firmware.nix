@@ -1,6 +1,6 @@
-{ stdenv
-, fetchurl
-,
+{
+  stdenv,
+  fetchurl,
 }:
 stdenv.mkDerivation {
   pname = "mali-panthor-g610-firmware";

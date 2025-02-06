@@ -33,7 +33,10 @@
             ./services/rsync-nixosconfig.nix
           ];
 
-          boot.initrd.availableKernelModules = [ "mpt3sas" "hv_storvsc" ];
+          boot.initrd.availableKernelModules = [
+            "mpt3sas"
+            "hv_storvsc"
+          ];
 
           environment.systemPackages = with pkgs; [
             vim

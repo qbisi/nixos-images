@@ -1,4 +1,5 @@
-{ lib, config, ... }: {
+{ lib, config, ... }:
+{
 
   users.users.root = {
     hashedPassword = "";

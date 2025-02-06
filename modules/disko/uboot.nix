@@ -1,17 +1,22 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
-let cfg = config.disko.profile;
+let
+  cfg = config.disko.profile;
 in
 {
   options = {
     disko.profile.uboot = {
       enable = mkEnableOption "uboot part in disk";
 
-      package = mkOption
-        {
-          type = types.nullOr types.package;
-          default = null;
-        };
+      package = mkOption {
+        type = types.nullOr types.package;
+        default = null;
+      };
     };
   };
 

@@ -2,10 +2,11 @@
 # This allows an instance to be created with a bigger root filesystem
 # than provided by the machine image.
 
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
 
 with lib;

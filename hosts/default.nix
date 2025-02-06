@@ -1,7 +1,8 @@
-{ self
-, inputs
-, lib
-, ...
+{
+  self,
+  inputs,
+  lib,
+  ...
 }:
 let
   inherit (lib) nixosSystem cartesianProduct;
@@ -47,10 +48,11 @@ in
         meta = {
           nixpkgs = import inputs.nixpkgs { system = "x86_64-linux"; };
           machinesFile = "/etc/nix/machines";
-          nodeNixpkgs = genAttrs' hosts
-            (host: (import inputs.nixpkgs { inherit (host) system; }));
-          nodeSpecialArgs = genAttrs' hosts
-            (host: { inherit inputs self; pkgs-self = self.legacyPackages.${host.system}; });
+          nodeNixpkgs = genAttrs' hosts (host: (import inputs.nixpkgs { inherit (host) system; }));
+          nodeSpecialArgs = genAttrs' hosts (host: {
+            inherit inputs self;
+            pkgs-self = self.legacyPackages.${host.system};
+          });
         };
       };
   };

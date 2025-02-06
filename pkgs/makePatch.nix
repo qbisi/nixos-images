@@ -1,5 +1,6 @@
 { lib, stdenv }:
-{ src, prefix }: stdenv.mkDerivation {
+{ src, prefix }:
+stdenv.mkDerivation {
   name = "makePatch";
 
   inherit src;

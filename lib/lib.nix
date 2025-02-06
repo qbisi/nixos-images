@@ -1,7 +1,8 @@
-{ self
-, inputs
-, lib
-, ...
+{
+  self,
+  inputs,
+  lib,
+  ...
 }:
 with lib;
 rec {

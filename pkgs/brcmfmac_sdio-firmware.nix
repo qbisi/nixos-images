@@ -9,10 +9,10 @@ stdenv.mkDerivation rec {
   version = "unstable-2024-09-29";
 
   src = fetchFromGitHub {
-      owner = "qbisi";
-      repo = "brcmfmac_sdio-firmware";
-      rev = "240139ab39e3b13b2676a7b0aabbcd268b82b4ea";
-      sha256 = "sha256-cV5dR6bLU5pVvHGjdAQkanCH+TtwrgVv/PF8xMzUrqk=";
+    owner = "qbisi";
+    repo = "brcmfmac_sdio-firmware";
+    rev = "240139ab39e3b13b2676a7b0aabbcd268b82b4ea";
+    sha256 = "sha256-cV5dR6bLU5pVvHGjdAQkanCH+TtwrgVv/PF8xMzUrqk=";
   };
 
   installPhase = ''

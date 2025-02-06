@@ -1,10 +1,11 @@
-{ config
-, pkgs
-, lib
-, modulesPath
-, inputs
-, self
-, ...
+{
+  config,
+  pkgs,
+  lib,
+  modulesPath,
+  inputs,
+  self,
+  ...
 }:
 {
   nixpkgs.system = "x86_64-linux";

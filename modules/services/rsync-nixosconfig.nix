@@ -1,7 +1,8 @@
-{ lib
-, pkgs
-, self
-, ...
+{
+  lib,
+  pkgs,
+  self,
+  ...
 }:
 {
   systemd.services.rsync-nixosconfigurations = {

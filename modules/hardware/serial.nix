@@ -1,6 +1,7 @@
 { config, lib, ... }:
 with lib;
-let cfg = config.hardware.serial;
+let
+  cfg = config.hardware.serial;
 in
 {
   options = {
@@ -26,7 +27,11 @@ in
 
       parity = mkOption {
         default = "no";
-        type = types.enum [ "no" "odd" "even" ];
+        type = types.enum [
+          "no"
+          "odd"
+          "even"
+        ];
       };
 
       stop = mkOption {

@@ -1,11 +1,12 @@
-{ config
-, pkgs
-, pkgs-self
-, lib
-, modulesPath
-, inputs
-, self
-, ...
+{
+  config,
+  pkgs,
+  pkgs-self,
+  lib,
+  modulesPath,
+  inputs,
+  self,
+  ...
 }:
 let
   system = "aarch64-linux";

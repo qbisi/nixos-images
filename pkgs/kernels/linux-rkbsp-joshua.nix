@@ -1,4 +1,10 @@
-{ lib, buildLinux, fetchurl, fetchFromGitHub, ... }:
+{
+  lib,
+  buildLinux,
+  fetchurl,
+  fetchFromGitHub,
+  ...
+}:
 let
   version = "6.1.75-rkbsp-joshua";
   modDirVersion = "6.1.75";
@@ -40,10 +46,14 @@ let
   };
 in
 buildLinux {
-  inherit src modDirVersion version defconfig;
+  inherit
+    src
+    modDirVersion
+    version
+    defconfig
+    ;
   inherit kernelPatches;
   inherit structuredExtraConfig;
   autoModules = false;
   extraMakeFlags = [ "KCFLAGS=-march=armv8-a+crypto" ];
 }
-

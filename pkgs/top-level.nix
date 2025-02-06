@@ -15,7 +15,8 @@ let
       ubootRock5ModelB
       ubootRock5ModelA
       ubootBozzSW799
-      ubootCdhxRb30;
+      ubootCdhxRb30
+      ;
   };
 in
 packages

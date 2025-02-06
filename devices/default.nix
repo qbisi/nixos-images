@@ -1,10 +1,16 @@
-{ self
-, inputs
-, lib
-, ...
+{
+  self,
+  inputs,
+  lib,
+  ...
 }:
 let
-  inherit (lib) nixosSystem mapAttrs mapCartesianProduct cartesianProduct;
+  inherit (lib)
+    nixosSystem
+    mapAttrs
+    mapCartesianProduct
+    cartesianProduct
+    ;
   inherit (self.lib) genAttrs' listNixName;
   x86_64-devices = cartesianProduct {
     name = listNixName "${self}/devices/x86_64-linux";
@@ -19,7 +25,8 @@ in
 {
   flake = {
     nixosConfigurations = genAttrs' images (
-      image: (nixosSystem {
+      image:
+      (nixosSystem {
         system = image.system;
         specialArgs = {
           inherit inputs self;
@@ -35,7 +42,6 @@ in
         ];
       })
     );
-    images = mapAttrs (name: value: value.config.system.build.diskoImages)
-      self.nixosConfigurations;
+    images = mapAttrs (name: value: value.config.system.build.diskoImages) self.nixosConfigurations;
   };
 }

@@ -1,4 +1,9 @@
-{ lib, buildLinux, fetchFromGitHub, ... }:
+{
+  lib,
+  buildLinux,
+  fetchFromGitHub,
+  ...
+}:
 let
   version = "6.6.0-phytium";
   modDirVersion = "6.6.0";
@@ -11,11 +16,10 @@ let
     hash = "sha256-6u9VQdmKUrUOmE+K1z38pDwKmmb0LiUA7LeCl7oJmGw=";
   };
   structuredExtraConfig = with lib.kernel; {
-    DRM_AST = yes; 
+    DRM_AST = yes;
   };
 in
 buildLinux {
   inherit src modDirVersion version;
   inherit structuredExtraConfig;
 }
-

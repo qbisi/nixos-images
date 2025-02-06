@@ -1,11 +1,12 @@
-{ config
-, pkgs
-, pkgs-self
-, lib
-, modulesPath
-, inputs
-, self
-, ...
+{
+  config,
+  pkgs,
+  pkgs-self,
+  lib,
+  modulesPath,
+  inputs,
+  self,
+  ...
 }:
 {
   nixpkgs.system = "aarch64-linux";
@@ -24,7 +25,10 @@
   };
 
   hardware = {
-    firmware = [ pkgs-self.mali_panthor_g610-firmware pkgs.linux-firmware ];
+    firmware = [
+      pkgs-self.mali_panthor_g610-firmware
+      pkgs.linux-firmware
+    ];
     deviceTree = {
       name = "rockchip/rk3588-orangepi-5-plus.dtb";
     };
@@ -37,7 +41,7 @@
 
   boot = {
     kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rkbsp_joshua;
-    initrd.availableKernelModules = lib.mkForce [];
+    initrd.availableKernelModules = lib.mkForce [ ];
     kernelParams = [
       "net.ifnames=0"
       "console=tty1"

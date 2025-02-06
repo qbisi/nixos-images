@@ -1,7 +1,8 @@
-{ lib
-, config
-, pkgs
-, ...
+{
+  lib,
+  config,
+  pkgs,
+  ...
 }:
 with lib;
 let
@@ -11,7 +12,10 @@ in
   options = {
     disko.profile = {
       use = mkOption {
-        type = types.enum [ "" "btrfs" ];
+        type = types.enum [
+          ""
+          "btrfs"
+        ];
         default = "";
         description = "disko preset profile to use";
       };
@@ -64,12 +68,11 @@ in
         description = "esp partition size";
       };
 
-      _extraPartition = mkOption
-        {
-          type = types.nullOr types.attrs;
-          internal = true;
-          default = null;
-        };
+      _extraPartition = mkOption {
+        type = types.nullOr types.attrs;
+        internal = true;
+        default = null;
+      };
     };
   };
 
@@ -113,24 +116,23 @@ in
                 };
               })
 
-              (mkIf (cfg.type == "gpt")
-                {
-                  ESP = {
-                    start = mkIf (cfg.espStart != null) cfg.espStart;
-                    size = cfg.espSize;
-                    type = "EF00";
-                    priority = 1;
-                    content = {
-                      type = "filesystem";
-                      format = "vfat";
-                      mountpoint = "/boot/efi";
-                      mountOptions = [
-                        "fmask=0077"
-                        "dmask=0077"
-                      ];
-                    };
+              (mkIf (cfg.type == "gpt") {
+                ESP = {
+                  start = mkIf (cfg.espStart != null) cfg.espStart;
+                  size = cfg.espSize;
+                  type = "EF00";
+                  priority = 1;
+                  content = {
+                    type = "filesystem";
+                    format = "vfat";
+                    mountpoint = "/boot/efi";
+                    mountOptions = [
+                      "fmask=0077"
+                      "dmask=0077"
+                    ];
                   };
-                })
+                };
+              })
 
               (mkIf (cfg._extraPartition != null) cfg._extraPartition)
             ];
