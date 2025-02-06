@@ -1,7 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # nixpkgs.url = "github:qbisi/nixpkgs/grub_efi";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
