@@ -17,6 +17,7 @@
       legacyPackages = import ./top-level.nix {
         pkgs = import inputs.nixpkgs {
           inherit system;
+          config.allowUnfree = true;
         };
       };
     };
