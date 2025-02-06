@@ -32,7 +32,7 @@
       perSystem =
         { config, pkgs, ... }:
         {
-          formatter = pkgs.nixpkgs-fmt;
+          formatter = pkgs.nixfmt-rfc-style;
           devShells.default = pkgs.mkShell {
             packages = with pkgs; [ dtc ];
           };
