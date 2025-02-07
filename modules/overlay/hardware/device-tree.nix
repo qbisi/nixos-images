@@ -62,6 +62,32 @@ let
     };
   };
 
+  kernelSource = "${lib.getDev cfg.kernelPackage}/lib/modules/${cfg.kernelPackage.modDirVersion}/source";
+
+  dtbFile = if (cfg.dtbFile != null) then
+      cfg.dtbFile
+    else if (cfg.dtsFile != null) then
+      let
+        includePaths = cfg.dtbBuildExtraIncludePaths
+          ++ ["${kernelSource}/scripts/dtc/include-prefixes"]
+          ++ lib.optional (cfg.platform !=null) "${kernelSource}/arch/${pkgs.stdenv.hostPlatform.linuxArch}/boot/dts/${cfg.platform}";
+        extraPreprocessorFlags = cfg.dtbBuildExtraPreprocessorFlags;
+      in
+        pkgs.deviceTree.compileDTS {
+          name = "${cfg.name}.dtb";
+          inherit (cfg) dtsFile;
+          inherit includePaths extraPreprocessorFlags;
+        }
+    else null;
+
+  dtbSource = if (dtbFile == null)
+    then
+      cfg.dtbSource
+    else
+      pkgs.runCommand "single-dtb" {} ''
+        install -D ${dtbFile} $out/${cfg.name}
+      '';
+
   filterDTBs = src: if cfg.filter == null
     then src
     else
@@ -72,13 +98,13 @@ let
           | xargs -0 cp -v --no-preserve=mode --target-directory $out --parents
       '';
 
-  filteredDTBs = filterDTBs cfg.dtbSource;
+  filteredDTBs = filterDTBs dtbSource;
 
   # Fill in `dtboFile` for each overlay if not set already.
   # Existence of one of these is guarded by assertion below
   withDTBOs = xs: lib.flip map xs (o: o // { dtboFile =
     let
-      includePaths = ["${lib.getDev cfg.kernelPackage}/lib/modules/${cfg.kernelPackage.modDirVersion}/source/scripts/dtc/include-prefixes"] ++ cfg.dtboBuildExtraIncludePaths;
+      includePaths = ["${kernelSource}/scripts/dtc/include-prefixes"] ++ cfg.dtboBuildExtraIncludePaths;
       extraPreprocessorFlags = cfg.dtboBuildExtraPreprocessorFlags;
     in
     if o.dtboFile == null then
@@ -115,6 +141,28 @@ in
           type = lib.types.path;
           description = ''
             Kernel package where device tree include directory is from. Also used as default source of dtb package to apply overlays to
+          '';
+        };
+
+        dtbBuildExtraPreprocessorFlags = lib.mkOption {
+          default = [];
+          example = lib.literalExpression "[ \"-DMY_DTB_DEFINE\" ]";
+          type = lib.types.listOf lib.types.str;
+          description = ''
+            Additional flags to pass to the preprocessor during dtb compilations.
+          '';
+        };
+
+        dtbBuildExtraIncludePaths = lib.mkOption {
+          default = [];
+          example = lib.literalExpression ''
+            [
+              \${cfg.kernelPackage.src}/arch/arm64/boot/dts/rockchip
+            ]
+          '';
+          type = lib.types.listOf lib.types.path;
+          description = ''
+            Additional include paths that will be passed to the preprocessor when compiling the .dts into .dtb.
           '';
         };
 
@@ -159,6 +207,34 @@ in
             The name of an explicit dtb to be loaded, relative to the dtb base.
             Useful in extlinux scenarios if the bootloader doesn't pick the
             right .dtb file from FDTDIR.
+          '';
+        };
+
+        platform = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = lib.literalExpression ''
+            Platform of this device.
+            Path \${lib.getDev cfg.kernelPackage}/lib/modules/\${cfg.kernelPackage.modDirVersion}/source\
+            /arch/\${pkgs.stdenv.hostPlatform.linuxArch}/boot/dts/\${cfg.platform} will be appended to
+            dtbBuildExtraIncludePaths.
+          '';
+        };
+
+        dtsFile = lib.mkOption {
+          type = lib.types.nullOr lib.types.path;
+          description = ''
+            Path to .dts file
+          '';
+          default = null;
+          example = lib.literalExpression "./dts/overlays.dts";
+        };
+
+        dtbFile = lib.mkOption {
+          type = lib.types.nullOr lib.types.path;
+          default = null;
+          description = ''
+            Path to .dtb compiled file
           '';
         };
 
@@ -207,14 +283,28 @@ in
 
     assertions = let
       invalidOverlay = o: (o.dtsFile == null) && (o.dtsText == null) && (o.dtboFile == null);
-    in lib.singleton {
+    in [
+      {
       assertion = lib.all (o: !invalidOverlay o) cfg.overlays;
       message = ''
         deviceTree overlay needs one of dtsFile, dtsText or dtboFile set.
         Offending overlay(s):
         ${toString (map (o: o.name) (builtins.filter invalidOverlay cfg.overlays))}
       '';
-    };
+      }
+      {
+      assertion = cfg.dtsFile != null -> (cfg.name != null);
+      message = ''
+        deviceTree.dtsFile need deviceTree.name set.
+      '';
+      }
+      {
+      assertion = cfg.dtbFile != null -> (cfg.name != null);
+      message = ''
+        deviceTree.dtbFile need deviceTree.name set.
+      '';
+      }
+    ];
 
     hardware.deviceTree.package = if (cfg.overlays != [])
       then pkgs.deviceTree.applyOverlays filteredDTBs (withDTBOs cfg.overlays)

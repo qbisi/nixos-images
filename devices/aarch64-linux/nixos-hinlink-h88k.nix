@@ -31,16 +31,8 @@
     ];
     deviceTree = {
       name = "rockchip/rk3588-hinlink-h88k.dtb";
-      overlays = [
-        {
-          name = "h88k-enable-hdmiphy";
-          dtsFile = ../../dts/overlay/h88k-enable-hdmiphy.dts;
-        }
-        {
-          name = "h88k-enable-rs232-rs485";
-          dtsFile = ../../dts/overlay/h88k-enable-rs232-rs485.dts;
-        }
-      ];
+      platform = "rockchip";
+      dtsFile = ../../dts/rk3588-hinlink-h88k.dts;
     };
     serial = {
       enable = true;
@@ -50,7 +42,7 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rkbsp_joshua;
+    kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rockchip64_6_12;
     initrd.availableKernelModules = lib.mkForce [ ];
     kernelParams = [
       "net.ifnames=0"
