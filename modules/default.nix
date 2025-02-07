@@ -15,6 +15,7 @@
           ./disko/uboot.nix
           ./disko/profile.nix
           ./disko/btrfs.nix
+          ./disko/ext4.nix
           ./overlay/system/boot/loader/grub.nix
           ./overlay/hardware/device-tree.nix
           ./hardware/serial.nix

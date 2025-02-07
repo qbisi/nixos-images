@@ -14,6 +14,7 @@ in
       use = mkOption {
         type = types.enum [
           ""
+          "ext4"
           "btrfs"
         ];
         default = "";
