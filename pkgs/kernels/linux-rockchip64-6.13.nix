@@ -1,9 +1,7 @@
 {
   lib,
   buildLinux,
-  fetchurl,
   fetchFromGitHub,
-  makePatch,
   linux_6_13,
   ...
 }:
