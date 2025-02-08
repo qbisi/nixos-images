@@ -8,9 +8,6 @@
   ...
 }:
 let
-  version = linux_6_12.modDirVersion;
-  modDirVersion = version;
-  src = linux_6_12.src;
   armbianBuild = fetchFromGitHub {
     owner = "qbisi";
     repo = "build";
@@ -37,11 +34,8 @@ let
     PHY_ROCKCHIP_SNPS_PCIE3 = yes;
   };
 in
-buildLinux {
+linux_6_12.override {
   inherit
-    src
-    modDirVersion
-    version
     defconfigFile
     kernelPatches
     structuredExtraConfig
