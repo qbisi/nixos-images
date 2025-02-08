@@ -42,7 +42,7 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rockchip64_6_12;
+    kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rockchip64_6_13;
     initrd.availableKernelModules = lib.mkForce [ ];
     kernelParams = [
       "net.ifnames=0"
@@ -51,5 +51,8 @@
     ];
     loader.grub.enable = true;
   };
+
+  # keep kernel source for compiling out-of-tree devicetree source
+  system.extraDependencies = [ (lib.getDev config.boot.kernelPackages.kernel) ];
 
 }
