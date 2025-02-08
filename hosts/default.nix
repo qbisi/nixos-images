@@ -5,54 +5,55 @@
   ...
 }:
 let
-  inherit (lib) nixosSystem cartesianProduct;
-  inherit (self.lib) genAttrs' listNixName;
-  x86_64-hosts = cartesianProduct {
-    name = listNixName ./x86_64-linux;
-    system = [ "x86_64-linux" ];
-  };
-  aarch64-hosts = cartesianProduct {
-    name = listNixName ./aarch64-linux;
-    system = [ "aarch64-linux" ];
-  };
-  hosts = x86_64-hosts ++ aarch64-hosts;
+  x86_64-hosts = lib.filesystem.listFilesRecursive ./x86_64-linux;
+  aarch64-hosts = lib.filesystem.listFilesRecursive ./aarch64-linux;
+  all-hosts = lib.listToAttrs (
+    map (
+      path:
+      let
+        system = baseNameOf (dirOf path);
+        name = lib.removeSuffix ".nix" (baseNameOf path);
+      in
+      lib.nameValuePair name { inherit path system; }
+    ) (x86_64-hosts ++ aarch64-hosts)
+  );
 in
 {
   flake = {
-    nixosConfigurations = genAttrs' hosts (
-      host:
-      (nixosSystem {
-        inherit (host) system;
+    nixosConfigurations = lib.mapAttrs (
+      n: v:
+      lib.nixosSystem {
+        inherit (v) system;
         specialArgs = {
           inherit inputs self;
-          pkgs-self = self.legacyPackages.${host.system};
+          pkgs-self = self.legacyPackages.${v.system};
         };
         modules = [
-          "${self}/hosts/${host.system}/${host.name}.nix"
+          v.path
           self.nixosModules.default
           inputs.colmena.nixosModules.deploymentOptions
         ];
-      })
-    );
+      }
+    ) all-hosts;
     colmena =
-      (genAttrs' hosts (host: {
+      (lib.mapAttrs (n: v: {
         imports = [
           # SSH to llmnr hosts need retry to wait for hostname resolution.
           # Requires colmena version > 0.5.0.
           # { deployment.sshOptions = [ "-o" "ConnectionAttempts=2" ]; }
-          "${self}/hosts/${host.system}/${host.name}.nix"
+          v.path
           self.nixosModules.default
         ];
-      }))
+      }) all-hosts)
       // {
         meta = {
           nixpkgs = import inputs.nixpkgs { system = "x86_64-linux"; };
           machinesFile = "/etc/nix/machines";
-          nodeNixpkgs = genAttrs' hosts (host: (import inputs.nixpkgs { inherit (host) system; }));
-          nodeSpecialArgs = genAttrs' hosts (host: {
+          nodeNixpkgs = lib.mapAttrs (n: v: (import inputs.nixpkgs { inherit (v) system; })) all-hosts;
+          nodeSpecialArgs = lib.mapAttrs (n: v: {
             inherit inputs self;
-            pkgs-self = self.legacyPackages.${host.system};
-          });
+            pkgs-self = self.legacyPackages.${v.system};
+          }) all-hosts;
         };
       };
   };
