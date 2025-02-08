@@ -32,7 +32,7 @@
     deviceTree = {
       name = "rockchip/rk3588-hinlink-h88k.dtb";
       platform = "rockchip";
-      dtsFile = ../../dts/rk3588-hinlink-h88k.dts;
+      dtsFile = ../../dts/mainline/rk3588-hinlink-h88k.dts;
     };
     serial = {
       enable = true;

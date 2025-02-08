@@ -296,9 +296,9 @@ let
     src = emptyDirectory;
     patchCommands = ''
       mkdir -p arch/arm/dts
-      install -m 644 -D ${../../dts/u-boot}/*.dtsi arch/arm/dts
+      install -m 644 -D ${../../dts/mainline}/*u-boot.dtsi arch/arm/dts
       mkdir -p dts/upstream/src/arm64/rockchip
-      install -m 644 -D ${../../dts/kernel}/*.dts dts/upstream/src/arm64/rockchip
+      install -m 644 -D ${../../dts/mainline}/*.dts dts/upstream/src/arm64/rockchip
     '';
   };
 in

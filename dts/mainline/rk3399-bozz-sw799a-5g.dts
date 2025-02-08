@@ -1,27 +1,26 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
-// Thank https://github.com/QXY716
 /dts-v1/;
 
 #include <dt-bindings/input/linux-event-codes.h>
 #include <dt-bindings/pwm/pwm.h>
 #include <dt-bindings/input/input.h>
 #include "rk3399.dtsi"
-#include "rk3399-op1-opp.dtsi"
+#include "rk3399-opp.dtsi"
 
 
 / {
-	model = "Fine3399";
-	compatible = "rockchip,rk3399";
+	model = "Bozz SW799A";
+	compatible = "rockchip,rk3399-bozz", "rockchip,rk3399";
 
 	aliases {
-		ethernet0 = &gmac;
-		mmc0 = &sdio0;
+		mmc2 = &sdio0;
 		mmc1 = &sdmmc;
-		mmc2 = &sdhci;
+		mmc0 = &sdhci;
 	};
 
 	chosen {
 		stdout-path = "serial2:1500000n8";
+		bootargs = "earlycon=uart8250,mmio32,0xff1a0000";
 	};
 
 	clkin_gmac: external-gmac-clock {
@@ -31,13 +30,13 @@
 		#clock-cells = <0>;
 	};
 
-	dc_12v: dc-12v {
+	dc_5v: dc-5v {
 		compatible = "regulator-fixed";
-		regulator-name = "dc_12v";
+		regulator-name = "dc_5v";
 		regulator-always-on;
 		regulator-boot-on;
-		regulator-min-microvolt = <12000000>;
-		regulator-max-microvolt = <12000000>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
 	};
 
 	sdio_pwrseq: sdio-pwrseq {
@@ -67,7 +66,7 @@
 		regulator-boot-on;
 		regulator-min-microvolt = <3300000>;
 		regulator-max-microvolt = <3300000>;
-		vin-supply = <&dc_12v>;
+		vin-supply = <&dc_5v>;
 	};
 
 	vcc_sys: vcc-sys { // sch
@@ -77,8 +76,19 @@
 		regulator-boot-on;
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
-		vin-supply = <&dc_12v>;
+		vin-supply = <&dc_5v>;
 	};
+
+	// vcc5v0_host: vcc5v0-host-regulator {
+	// 	compatible = "regulator-fixed";
+	// 	enable-active-high;
+	// 	gpio = <&gpio4 RK_PD1 GPIO_ACTIVE_HIGH>;
+	// 	pinctrl-names = "default";
+	// 	pinctrl-0 = <&vcc5v0_host_en>;
+	// 	regulator-always-on;
+	// 	regulator-name = "vcc5v0_host";
+	// 	vin-supply = <&vcc_sys>;
+	// };
 
 	vcc_phy: vcc-phy-regulator {
 		compatible = "regulator-fixed";
@@ -120,7 +130,7 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&power_key>;
 
-		key-power {
+		power {
 			debounce-interval = <100>;
 			gpios = <&gpio0 RK_PA5 GPIO_ACTIVE_LOW>; // bsp
 			label = "GPIO Key Power";
@@ -131,17 +141,10 @@
 
 	fan0: pwm-fan {
 		compatible = "pwm-fan";
-		cooling-levels = <0 25 50 75 100 150>;
+		cooling-levels = <0 150 200 255>;
 		#cooling-cells = <2>;
 		fan-supply = <&vcc_sys>;
 		pwms = <&pwm1 0 40000 0>;
-	};
-
-	backlight: backlight {
-		compatible = "pwm-backlight";
-		brightness-levels = <0 36 72 108 144 180 216 255>;
-		default-brightness-level = <144>;
-		pwms = <&pwm0 0 1000000 0>;
 	};
 
 	// pwm3
@@ -461,8 +464,10 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&gpu_sleep>;
 		regulator-name = "vdd_gpu";
-		regulator-min-microvolt = <712500>;
-		regulator-max-microvolt = <1500000>;
+		// regulator-min-microvolt = <712500>;
+		// regulator-max-microvolt = <1500000>;
+		regulator-min-microvolt = <875000>;
+		regulator-max-microvolt = <975000>;
 		regulator-ramp-delay = <1000>;
 		regulator-always-on;
 		regulator-boot-on;
@@ -484,7 +489,7 @@
 // HDMI sound
 &i2s2 {
 	#sound-dai-cells = <0>;
-	status = "okay";
+	status = "disabled";
 };
 
 &io_domains {
@@ -506,9 +511,9 @@
 };
 
 &pcie0 {
-	ep-gpios = <&gpio4 RK_PD3 GPIO_ACTIVE_HIGH>; // sch
-	max-link-speed = <2>;
-	num-lanes = <2>;
+	ep-gpios = <&gpio4 RK_PD4 GPIO_ACTIVE_HIGH>; // sch
+	num-lanes = <1>;
+	max-link-speed = <1>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pcie_clkreqn_cpm>;
 	status = "okay";
@@ -580,22 +585,29 @@
 
 	buttons {
 		power_key: power_key {
-			rockchip,pins = 
+			rockchip,pins =
 				<0 RK_PA5 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
-};
 
-// LCD
+	// usb2 {
+	// 	vcc5v0_host_en: vcc5v0-host-en {
+	// 		rockchip,pins = <4 RK_PD1 RK_FUNC_GPIO &pcfg_pull_none>;
+	// 	};
+	// };
+};
+/*
+// TFT
 &pwm0 {
 	status = "okay";
 };
-
+*/
+/*
 // FAN
 &pwm1 {
 	status = "okay";
 };
-
+*/
 &pwm2 {
 	status = "okay";
 };
@@ -605,7 +617,6 @@
 	status = "okay";
 };
 
-// if kernel panic at system boot, try to disable WiFi
 &sdio0 {
 	bus-width = <4>;
 	cap-sd-highspeed;
@@ -622,6 +633,7 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 	status = "okay";
+	// status = "okay";
 
 	brcmf: wifi@1 {
 		reg = <1>;
@@ -629,9 +641,10 @@
 		interrupt-parent = <&gpio0>;
 		interrupts = <RK_PA3 GPIO_ACTIVE_HIGH>;
 		interrupt-names = "host-wake";
-		brcm,drive-strength = <5>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&wifi_host_wake_l>;
+		status = "okay";
+		// status = "okay";
 	};
 };
 
@@ -651,9 +664,11 @@
 
 &sdhci {
 	bus-width = <8>;
-	mmc-hs400-1_8v;
-	mmc-hs400-enhanced-strobe;
+	mmc-hs200-1_8v;
+	// mmc-hs400-1_8v;
+	// mmc-hs400-enhanced-strobe;
 	keep-power-in-suspend;
+	card-detect-delay = <1000>;
 	non-removable;
 	status = "okay";
 };
@@ -668,30 +683,25 @@
 	};
 };
 */
-
+/*
 &spi2 {
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi2_clk &spi2_tx &spi2_cs0>;
 
 	panel@0 {
-		compatible = "sitronix,st7735s", "sitronix,st7735r", "sitronix,st7789v", "jianda,jd-t18003-t01";
+		compatible = "sitronix,st7789v";
 		reg = <0>;
-		rgb;
-		width = <80>;
-		height = <160>;
-		fps = <30>;
-		buswidth = <8>;
-		rotate = <90>;
-		backlight = <&backlight>;
+		// backlight = <&pwm0>;
 		dc-gpios = <&gpio4 RK_PD5 GPIO_ACTIVE_HIGH>;
 		reset-gpios = <&gpio4 RK_PD1 GPIO_ACTIVE_LOW>;
 		led-gpios = <&gpio4 RK_PC2 GPIO_ACTIVE_HIGH>;
-		spi-max-frequency = <32000000>;
-		debug = <0>;
-		spi-cpol;
-		spi-cpha;
+		spi-max-frequency = <15000000>;
+		spi-cs-high;
+		status = "okay";
 	};
 };
-
+*/
 &tcphy0 {
 	status = "okay";
 };
@@ -710,26 +720,28 @@
 
 &u2phy0 {
 	status = "okay";
+};
 
-	u2phy0_otg: otg-port {
-		status = "okay";
-	};
+&u2phy0_host {
+	// phy-supply = <&vcc5v0_host>;
+	status = "okay";
+};
 
-	u2phy0_host: host-port {
-		status = "okay";
-	};
+&u2phy0_otg {
+	status = "okay";
 };
 
 &u2phy1 {
 	status = "okay";
+};
 
-	u2phy1_otg: otg-port {
-		status = "okay";
-	};
+&u2phy1_host {
+	// phy-supply = <&vcc5v0_host>;
+	status = "okay";
+};
 
-	u2phy1_host: host-port {
-		status = "okay";
-	};
+&u2phy1_otg {
+	status = "okay";
 };
 
 &uart0 {
@@ -744,11 +756,11 @@
 		device-wakeup-gpios = <&gpio2 RK_PD2 GPIO_ACTIVE_HIGH>;
 		host-wakeup-gpios = <&gpio0 RK_PA4 GPIO_ACTIVE_HIGH>;
 		shutdown-gpios = <&gpio0 RK_PB1 GPIO_ACTIVE_HIGH>;
-		max-speed = <4000000>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&bt_host_wake_l &bt_wake_l &bt_enable_h>;
 		vbat-supply = <&vcc3v3_sys>;
 		vddio-supply = <&vcc_1v8>;
+		status = "okay";
 	};
 };
 
@@ -811,6 +823,14 @@
 	status = "okay";
 };
 
+&hdmi_in_vopb {
+	status = "okay";
+};
+
+&hdmi_in_vopl {
+	status = "disabled";
+};
+
 &display_subsystem {
 	route {
 		route_hdmi: route-hdmi {
@@ -823,3 +843,35 @@
 		};
 	};
 };
+
+&vpu_mmu {
+	status = "okay";
+};
+
+&vdec_mmu {
+	status = "okay";
+};
+
+// &vpu {
+// 	status = "okay";
+// };
+
+// &vdec {
+// 	status = "okay";
+// };
+
+// &mpp_srv {
+// 	status = "okay";
+// };
+
+// &vepu {
+// 	status = "okay";
+// };
+
+// &vdpu {
+// 	status = "okay";
+// };
+
+// &rkvdec {
+// 	status = "okay";
+// };

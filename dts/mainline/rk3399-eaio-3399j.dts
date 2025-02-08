@@ -67,7 +67,7 @@
 			wakeup-source;
 		};
 	};
-	
+
 	ir-receiver {
 		compatible = "gpio-ir-receiver";
 		gpios = <&gpio0 RK_PA6 GPIO_ACTIVE_LOW>;
@@ -833,19 +833,19 @@
 
 	sdio-pwrseq {
 		wifi_host_wake_l: wifi-host-wake-l {
-			rockchip,pins = 
+			rockchip,pins =
 				<0 RK_PA3 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
 
 	sdmmc {
 		sdmmc0_det_l: sdmmc0-det-l {
-			rockchip,pins = 
+			rockchip,pins =
 				<0 RK_PA7 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 
 		sdmmc0_pwr_h: sdmmc0-pwr-h {
-			rockchip,pins = 
+			rockchip,pins =
 				<2 RK_PD4 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
@@ -1016,7 +1016,7 @@
 
 &vopl_mmu {
 	status = "okay";
-};  
+};
 
 &i2c3_xfer {
 	rockchip,pins =
