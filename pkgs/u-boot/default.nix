@@ -51,6 +51,8 @@ let
     openssl # tools/mkimage
   ];
 
+  _stdenv = stdenv;
+
   buildUBoot = lib.makeOverridable (
     {
       version ? null,
@@ -64,7 +66,7 @@ let
       extraMakeFlags ? [ ],
       extraMeta ? { },
       crossTools ? false,
-      stdenv ? gcc12Stdenv,
+      stdenv ? _stdenv,
       ...
     }@args:
     stdenv.mkDerivation (
@@ -323,6 +325,8 @@ in
     family = "Rockchip/RK3399";
     BL31 = "${armTrustedFirmwareRK3399}/bl31.elf";
     ROCKCHIP_TPL = "${rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
+    extraPatches = [
+    ];
   };
 
   ubootCdhxRb30 = ubootRockchip {
@@ -360,6 +364,7 @@ in
     src = drmSrc;
     version = defaultVersion;
     defconfig = "hinlink-h88k-rk3588_defconfig";
+    stdenv = gcc12Stdenv;
     extraMeta.platforms = [ "aarch64-linux" ];
     BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
     ROCKCHIP_TPL = rkbin.TPL_RK3588;
@@ -374,6 +379,7 @@ in
     src = drmSrc;
     version = defaultVersion;
     defconfig = "orangepi-5-rk3588s_defconfig";
+    stdenv = gcc12Stdenv;
     extraMeta.platforms = [ "aarch64-linux" ];
     BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
     ROCKCHIP_TPL = rkbin.TPL_RK3588;
@@ -389,6 +395,7 @@ in
     src = drmSrc;
     version = defaultVersion;
     defconfig = "orangepi-5-plus-rk3588_defconfig";
+    stdenv = gcc12Stdenv;
     extraMeta.platforms = [ "aarch64-linux" ];
     BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
     ROCKCHIP_TPL = rkbin.TPL_RK3588;
@@ -404,6 +411,7 @@ in
     src = drmSrc;
     version = defaultVersion;
     defconfig = "nanopc-t6-rk3588_defconfig";
+    stdenv = gcc12Stdenv;
     extraMeta.platforms = [ "aarch64-linux" ];
     BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
     ROCKCHIP_TPL = rkbin.TPL_RK3588;
@@ -419,6 +427,7 @@ in
     src = drmSrc;
     version = defaultVersion;
     defconfig = "rock5b-rk3588_defconfig";
+    stdenv = gcc12Stdenv;
     extraMeta.platforms = [ "aarch64-linux" ];
     BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
     ROCKCHIP_TPL = rkbin.TPL_RK3588;
@@ -434,6 +443,7 @@ in
     src = drmSrc;
     version = defaultVersion;
     defconfig = "rock5a-rk3588s_defconfig";
+    stdenv = gcc12Stdenv;
     extraMeta.platforms = [ "aarch64-linux" ];
     BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
     ROCKCHIP_TPL = rkbin.TPL_RK3588;
