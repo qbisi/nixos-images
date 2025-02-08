@@ -24,20 +24,8 @@ let
         hash = "sha256-fDrl634LFH4Ou6Ky3dGit5WqASUvPlr9ngdb6a/wsss=";
       };
     }
-    {
-      name = "link-defconfig";
-      patch = ./link-defconfig.patch;
-    }
-    {
-      name = "gobinet-for-longsung";
-      patch = ./gobinet-for-longsung.patch;
-    }
-    # {
-    #   name = "serial-option-for-fm350";
-    #   patch = ./serial-option-for-fm350.patch;
-    # }
   ];
-  defconfig = "linux_defconfig";
+  defconfigFile = "${src}/debian.rockchip/config/config.common.ubuntu";
   structuredExtraConfig = with lib.kernel; {
     BTRFS_FS = yes;
     VIDEO_HANTRO = yes;
@@ -50,10 +38,10 @@ buildLinux {
     src
     modDirVersion
     version
-    defconfig
+    defconfigFile
+    kernelPatches
+    structuredExtraConfig
     ;
-  inherit kernelPatches;
-  inherit structuredExtraConfig;
+  ignoreConfigErrors = true;
   autoModules = false;
-  extraMakeFlags = [ "KCFLAGS=-march=armv8-a+crypto" ];
 }
