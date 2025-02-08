@@ -27,6 +27,7 @@
   armTrustedFirmwareS905,
   buildPackages,
   makePatch,
+  emptyDirectory,
   gcc12Stdenv,
 }:
 let
@@ -191,26 +192,6 @@ let
     assert (!isNull version) -> smbiosSupport;
     assert (!isNull family) -> smbiosSupport;
     let
-      upstreamSrc =
-        with lib.fileset;
-        toSource {
-          root = ../../dts/kernel;
-          fileset = ../../dts/kernel;
-        };
-      ubootSrc =
-        with lib.fileset;
-        toSource {
-          root = ../../dts/u-boot;
-          fileset = ../../dts/u-boot;
-        };
-      dts-u-boot-patch1 = makePatch {
-        src = upstreamSrc;
-        prefix = "dts/upstream/src/arm64/rockchip";
-      };
-      dts-u-boot-patch2 = makePatch {
-        src = ubootSrc;
-        prefix = "arch/arm/dts";
-      };
       preBootcommand =
         lib.optionalString nvmeSupport "pci enum;nvme scan;" + lib.optionalString usbSupport "usb start;";
     in
@@ -221,8 +202,6 @@ let
           ./add-smbios-config.patch
           ./rk3399-devicetree-display-subsystem-add-label.patch
           ./drm.patch
-          dts-u-boot-patch1
-          dts-u-boot-patch2
         ] ++ extraPatches;
         extraConfig =
           lib.optionalString (!isNull deviceTree) ''
@@ -313,6 +292,15 @@ let
         "extraPatches"
       ]
     ));
+  dtsPatch = makePatch {
+    src = emptyDirectory;
+    patchCommands = ''
+      mkdir -p arch/arm/dts
+      install -m 644 -D ${../../dts/u-boot}/*.dtsi arch/arm/dts
+      mkdir -p dts/upstream/src/arm64/rockchip
+      install -m 644 -D ${../../dts/kernel}/*.dts dts/upstream/src/arm64/rockchip
+    '';
+  };
 in
 {
   inherit ubootRockchip;
@@ -325,8 +313,7 @@ in
     family = "Rockchip/RK3399";
     BL31 = "${armTrustedFirmwareRK3399}/bl31.elf";
     ROCKCHIP_TPL = "${rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
-    extraPatches = [
-    ];
+    extraPatches = [ dtsPatch];
   };
 
   ubootCdhxRb30 = ubootRockchip {
@@ -337,6 +324,7 @@ in
     family = "Rockchip/RK3399";
     BL31 = "${armTrustedFirmwareRK3399}/bl31.elf";
     ROCKCHIP_TPL = "${rkbin}/bin/rk33/rk3399_ddr_933MHz_v1.30.bin";
+    extraPatches = [ dtsPatch];
   };
 
   ubootFine3399 = ubootRockchip {
@@ -347,6 +335,7 @@ in
     family = "Rockchip/RK3399";
     BL31 = "${armTrustedFirmwareRK3399}/bl31.elf";
     ROCKCHIP_TPL = "${rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
+    extraPatches = [ dtsPatch];
   };
 
   # ubootHinlinkH88k = ubootRockchip {

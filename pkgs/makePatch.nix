@@ -1,22 +1,19 @@
-{ lib, stdenv }:
-{ src, prefix }:
-stdenv.mkDerivation {
-  name = "makePatch";
+{ runCommand, ... }:
+{
+  name ? "unnamed",
+  src,
+  patchCommands,
+}:
+(runCommand "${name}.patch" { inherit src; } ''
+  unpackPhase
 
-  inherit src;
+  orig=$sourceRoot
+  new=$sourceRoot-modded
+  cp -r $orig/. $new/
 
-  sourceRoot = ".";
+  pushd $new >/dev/null
+  ${patchCommands}
+  popd >/dev/null
 
-  buildPhase = ''
-    mkdir -p a/${prefix} b/${prefix}
-    cp -r source/* b/${prefix}
-    if [ -e source/Makefile ]; then
-      touch a/${prefix}/Makefile
-    fi
-    diff -Naur a b > add-files.patch || return 0
-  '';
-
-  installPhase = ''
-    install -m 444 add-files.patch $out
-  '';
-}
+  diff -Naur $orig $new > $out || true
+'')
