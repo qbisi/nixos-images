@@ -47,19 +47,12 @@
     kernelParams = [
       "console=tty1"
       "earlycon"
+      "net.ifnames=0"
     ];
     loader.grub.enable = true;
   };
 
   # keep kernel source for compiling out-of-tree devicetree source
   system.extraDependencies = [ (lib.getDev config.boot.kernelPackages.kernel) ];
-
-  # map predictable iface
-  services.udev.extraRules = ''
-    SUBSYSTEM=="net", ACTION=="add", ENV{ID_PATH}=="platform-fe1b0000.ethernet", NAME="eth0"
-    SUBSYSTEM=="net", ACTION=="add", ENV{ID_PATH}=="platform-a40c00000.pcie-pci-0003:31:00.0", NAME="eth1"
-    SUBSYSTEM=="net", ACTION=="add", ENV{ID_PATH}=="platform-a41000000.pcie-pci-0004:41:00.0", NAME="eth2"
-    SUBSYSTEM=="net", ACTION=="add", DEVPATH=="/devices/platform/fc400000.usb/xhci-hcd.6.auto/usb8/8-1/8-1.1/8-1.1:1.8/net/wwan0", NAME="wwan0"
-  '';
 
 }
