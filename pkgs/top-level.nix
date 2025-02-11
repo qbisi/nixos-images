@@ -11,14 +11,15 @@ let
     makePatch = callPackage ../pkgs/makePatch.nix { };
     inherit (callPackage ./u-boot { })
       ubootHinlinkH88k
-      ubootOrangePi5
-      ubootOrangePi5Plus
-      ubootNanoPCT6
-      ubootRock5ModelB
-      ubootRock5ModelA
+      # ubootOrangePi5
+      # ubootOrangePi5Plus
+      # ubootNanoPCT6
+      # ubootRock5ModelB
+      # ubootRock5ModelA
       ubootBozzSW799
       ubootCdhxRb30
       ;
+    inherit (pkgs) armTrustedFirmwareRK3588 ubootOrangePi5Plus;
   };
 in
 packages
