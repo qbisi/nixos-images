@@ -40,7 +40,7 @@ let
     owner = "qbisi";
     repo = "u-boot";
     rev = "drm-dirty";
-    sha256 = "sha256-BpjM544grcM6vDcxbm2sfkKMLZNln4g6BSmvK3vzRhA=";
+    sha256 = "sha256-dbyolZb8XC11vlHYbhVkM3nTJ6lA7sK4XXdN26tAA+0=";
   };
 
   # Dependencies for the tools need to be included as either native or cross,
