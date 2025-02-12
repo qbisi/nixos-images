@@ -7,6 +7,7 @@
 with lib;
 let
   cfg = config.disko.profile;
+  partLabel = if cfg.partLabel == "" then "main" else cfg.partLabel;
 in
 {
   options = {
@@ -35,12 +36,12 @@ in
       imageName = mkOption {
         type = types.str;
         description = "name for the disk images";
-        default = "nixos-${config.nixpkgs.system}-${cfg.use}-${cfg.partLabel}";
+        default = "nixos-${config.nixpkgs.system}-${cfg.use}-${partLabel}";
       };
 
       partLabel = mkOption {
         type = types.str;
-        default = "main";
+        default = builtins.getEnv "PARTLABEL";
         example = "nvme";
         description = ''
           Disko use partlabel to identify and mount disk, use different partlabel
@@ -85,7 +86,7 @@ in
       }
     ];
 
-    boot.initrd.availableKernelModules = mkIf (cfg.partLabel == "usb") [ "uas" ];
+    boot.initrd.availableKernelModules = mkIf (partLabel == "usb") [ "uas" ];
 
     disko = {
       imageBuilder = {
@@ -97,7 +98,7 @@ in
 
       devices = {
         disk.main = {
-          name = cfg.partLabel;
+          name = partLabel;
           imageName = cfg.imageName;
           imageSize = cfg.imageSize;
           device =

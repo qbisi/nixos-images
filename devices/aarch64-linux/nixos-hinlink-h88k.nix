@@ -17,6 +17,7 @@
     memSize = 4096;
     enableConfig = true;
     profile = {
+      imageSize = "3G";
       use = "btrfs";
       espStart = "16M";
       uboot.enable = true;
