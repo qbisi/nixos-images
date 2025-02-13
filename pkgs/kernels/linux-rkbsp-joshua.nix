@@ -42,6 +42,8 @@ buildLinux {
     kernelPatches
     structuredExtraConfig
     ;
+  enableCommonConfig = false;
+  extraConfig = "";
   ignoreConfigErrors = true;
   autoModules = false;
 }

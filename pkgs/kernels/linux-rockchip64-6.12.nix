@@ -26,18 +26,26 @@ let
     }) (lib.filesystem.listFilesRecursive patchDir)
   );
   structuredExtraConfig = with lib.kernel; {
-    # hdmi display phy
+    # HDMI
     PHY_ROCKCHIP_SAMSUNG_HDPTX = yes;
-    # pcie phy
+    # NVME
     PHY_ROCKCHIP_SNPS_PCIE3 = yes;
+    # MMC
+    MMC_BLOCK = yes;
+    # USB
+    TYPEC = yes;
+    PHY_ROCKCHIP_USBDP = yes;
   };
 in
-linux_6_12.override {
+linux_6_13.override {
   inherit
     defconfigFile
     kernelPatches
     structuredExtraConfig
     ;
+  enableCommonConfig = false;
+  extraConfig = "";
   ignoreConfigErrors = true;
-  autoModules = true;
+  autoModules = false;
+  extraMakeFlags = [ "KCFLAGS=-march=armv8-a+crypto" ];
 }

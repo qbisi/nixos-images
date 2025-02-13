@@ -17,7 +17,7 @@
     memSize = 4096;
     enableConfig = true;
     profile = {
-      imageSize = "3G";
+      imageSize = "2G";
       use = "btrfs";
       espStart = "16M";
       uboot.enable = true;
@@ -27,8 +27,13 @@
 
   hardware = {
     firmware = [
-      pkgs-self.mali_panthor_g610-firmware
-      pkgs.linux-firmware
+      (pkgs-self.armbian-firmware.override {
+        filters = [
+          "arm/mali/*"
+          "rtl_nic/*"
+          "mediatek/*"
+        ];
+      })
     ];
     deviceTree = {
       name = "rockchip/rk3588-hinlink-h88k.dtb";
@@ -54,6 +59,6 @@
   };
 
   # keep kernel source for compiling out-of-tree devicetree source
-  system.extraDependencies = [ (lib.getDev config.boot.kernelPackages.kernel) ];
+  # system.extraDependencies = [ (lib.getDev config.boot.kernelPackages.kernel) ];
 
 }

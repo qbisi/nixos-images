@@ -20,6 +20,7 @@ let
       ubootCdhxRb30
       ;
     inherit (pkgs) armTrustedFirmwareRK3588 ubootOrangePi5Plus;
+    armbian-firmware = callPackage ./firmware/armbian-firmware.nix { };
   };
 in
 packages
