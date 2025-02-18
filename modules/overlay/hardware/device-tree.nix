@@ -67,7 +67,7 @@ let
     };
   };
 
-  kernelSource = "${lib.getDev cfg.kernelPackage}/lib/modules/${cfg.kernelPackage.modDirVersion}/source";
+  kernelSource = pkgs.srcOnly cfg.kernelPackage;
 
   dtbFile =
     if (cfg.dtbFile != null) then
@@ -76,10 +76,10 @@ let
       let
         includePaths =
           cfg.dtbBuildExtraIncludePaths
-          ++ [ "${kernelSource}/scripts/dtc/include-prefixes" ]
+          ++ [ "${kernelSource}/include" ]
           ++
             lib.optional (cfg.platform != null)
-              "${kernelSource}/scripts/dtc/include-prefixes/${pkgs.stdenv.hostPlatform.linuxArch}/${cfg.platform}";
+              "${kernelSource}/arch/${pkgs.stdenv.hostPlatform.linuxArch}/boot/dts/${cfg.platform}";
         extraPreprocessorFlags = cfg.dtbBuildExtraPreprocessorFlags;
       in
       pkgs.deviceTree.compileDTS {
@@ -122,7 +122,7 @@ let
       // {
         dtboFile =
           let
-            includePaths = [ "${kernelSource}/scripts/dtc/include-prefixes" ] ++ cfg.dtboBuildExtraIncludePaths;
+            includePaths = [ "${kernelSource}/include" ] ++ cfg.dtboBuildExtraIncludePaths;
             extraPreprocessorFlags = cfg.dtboBuildExtraPreprocessorFlags;
           in
           if o.dtboFile == null then

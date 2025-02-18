@@ -118,16 +118,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1739437262,
-        "narHash": "sha256-Inn+HiFQ4m1MfyWQ+6cwc2opUX9DuFoCg9lkGLP9mTg=",
+        "lastModified": 1739429047,
+        "narHash": "sha256-5A+nqo8lpgFSzCUFX7vAY4qQzdmXXDw46wi0hdENmHI=",
         "owner": "qbisi",
         "repo": "nixpkgs",
-        "rev": "f5df1ef58c00792a896911a571176b8153c226e1",
+        "rev": "45202b084ee88c466387888f60f24157702a0f05",
         "type": "github"
       },
       "original": {
         "owner": "qbisi",
-        "ref": "kernel-next",
+        "ref": "buildLinux",
         "repo": "nixpkgs",
         "type": "github"
       }
