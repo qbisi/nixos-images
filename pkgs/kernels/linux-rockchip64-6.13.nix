@@ -2,20 +2,26 @@
   lib,
   buildLinux,
   fetchFromGitHub,
-  linux_6_13,
+  fetchurl,
+  stdenv,
   ...
 }:
 let
+  version = "6.13.3";
+  src = fetchurl {
+    url = "mirror://kernel/linux/kernel/v${lib.versions.major version}.x/linux-${version}.tar.xz";
+    hash = "sha256-2jP7Fe0mKKqqi3hwtfKd7HlLITSm2lIIFJ0OFOPKwCw=";
+  };
   armbianBuild = fetchFromGitHub {
     owner = "qbisi";
     repo = "build";
-    rev = "d86616fd67c980e4d1df48232e826f20d6f72fbf";
+    rev = "fe748696ea14a7f317fd2d049de431bfbc44dfc3";
     nonConeMode = true;
     sparseCheckout = [
       "config/kernel/*.config"
       "patch/kernel/**/*.patch"
     ];
-    hash = "sha256-OQpdLcTo83c+ZUy0fNTNelKxCoyWeF1Zj4S0Q4CAt+k=";
+    hash = "sha256-BYrRIdCKfWPitlGkT63KVn6aVK2CKJxCEBnc3InV918=";
   };
   defconfigFile = "${armbianBuild}/config/kernel/linux-rockchip64-edge.config";
   patchDir = "${armbianBuild}/patch/kernel/archive/rockchip64-6.13";
@@ -26,6 +32,9 @@ let
     }) (lib.filesystem.listFilesRecursive patchDir)
   );
   structuredExtraConfig = with lib.kernel; {
+    # FW_LOADER
+    FW_LOADER_COMPRESS = yes;
+    FW_LOADER_COMPRESS_ZSTD = yes;
     # HDMI
     PHY_ROCKCHIP_SAMSUNG_HDPTX = yes;
     # NVME
@@ -37,8 +46,10 @@ let
     PHY_ROCKCHIP_USBDP = yes;
   };
 in
-linux_6_13.override {
+buildLinux {
   inherit
+    version
+    src
     defconfigFile
     kernelPatches
     structuredExtraConfig
