@@ -67,7 +67,15 @@ let
     };
   };
 
-  kernelSource = pkgs.srcOnly cfg.kernelPackage;
+  filteredKernelSource = lib.overrideDerivation (pkgs.srcOnly cfg.kernelPackage) (oldAttrs: {
+    installPhase = ''
+      mkdir -p $out
+      rsync -avL scripts/dtc/include-prefixes/ $out \
+        --include="${pkgs.stdenv.hostPlatform.linuxArch}/**" \
+        --include="dt-bindings/**" \
+        --exclude="*/**"
+    '';
+  });
 
   dtbFile =
     if (cfg.dtbFile != null) then
@@ -76,10 +84,10 @@ let
       let
         includePaths =
           cfg.dtbBuildExtraIncludePaths
-          ++ [ "${kernelSource}/include" ]
-          ++
-            lib.optional (cfg.platform != null)
-              "${kernelSource}/arch/${pkgs.stdenv.hostPlatform.linuxArch}/boot/dts/${cfg.platform}";
+          ++ [ "${filteredKernelSource}" ]
+          ++ lib.optional (
+            cfg.platform != null
+          ) "${filteredKernelSource}/${pkgs.stdenv.hostPlatform.linuxArch}/${cfg.platform}";
         extraPreprocessorFlags = cfg.dtbBuildExtraPreprocessorFlags;
       in
       pkgs.deviceTree.compileDTS {
@@ -122,7 +130,7 @@ let
       // {
         dtboFile =
           let
-            includePaths = [ "${kernelSource}/include" ] ++ cfg.dtboBuildExtraIncludePaths;
+            includePaths = [ "${filteredKernelSource}" ] ++ cfg.dtboBuildExtraIncludePaths;
             extraPreprocessorFlags = cfg.dtboBuildExtraPreprocessorFlags;
           in
           if o.dtboFile == null then
@@ -303,6 +311,15 @@ in
           A path containing the result of applying `overlays` to `kernelPackage`.
         '';
       };
+
+      filteredKernelSource = lib.mkOption {
+        default = null;
+        type = lib.types.nullOr lib.types.package;
+        internal = true;
+        description = ''
+          Filtered kernel source for compiling out-of-tree dtbs .
+        '';
+      };
     };
   };
 
@@ -335,10 +352,14 @@ in
         }
       ];
 
+    hardware.deviceTree.filteredKernelSource = filteredKernelSource;
+
     hardware.deviceTree.package =
       if (cfg.overlays != [ ]) then
         pkgs.deviceTree.applyOverlays filteredDTBs (withDTBOs cfg.overlays)
       else
         filteredDTBs;
+
+    system.extraDependencies = lib.optional (cfg.filteredKernelSource != null) cfg.filteredKernelSource;
   };
 }
