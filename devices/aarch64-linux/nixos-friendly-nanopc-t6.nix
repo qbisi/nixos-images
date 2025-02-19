@@ -26,8 +26,7 @@
 
   hardware = {
     firmware = [
-      pkgs-self.mali_panthor_g610-firmware
-      pkgs.linux-firmware
+      pkgs-self.armbian-firmware
     ];
     deviceTree = {
       name = "rockchip/rk3588-nanopc-t6.dtb";
@@ -40,7 +39,7 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rkbsp_joshua;
+    kernelPackages = pkgs.linuxPackagesFor pkgs-self.linux_rockchip64_6_13;
     initrd.availableKernelModules = lib.mkForce [ ];
     kernelParams = [
       "net.ifnames=0"

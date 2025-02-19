@@ -32,6 +32,7 @@
           "arm/mali/*"
           "rtl_nic/*"
           "mediatek/*"
+          "regulatory.db"
         ];
       })
     ];
