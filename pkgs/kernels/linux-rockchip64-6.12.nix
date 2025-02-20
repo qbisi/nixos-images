@@ -13,7 +13,7 @@ let
     hash = "sha256-X/W9hOoOIsU0NzAttdOU0Kkti4saiM4g0QmCmOn3Ywo=";
   };
   armbianBuild = fetchFromGitHub {
-    owner = "qbisi";
+    owner = "armbian";
     repo = "build";
     rev = "fe748696ea14a7f317fd2d049de431bfbc44dfc3";
     nonConeMode = true;
@@ -35,8 +35,6 @@ let
     # FW_LOADER
     FW_LOADER_COMPRESS = yes;
     FW_LOADER_COMPRESS_ZSTD = yes;
-    # LED_TRIGGER
-    LEDS_TRIGGER_NETDEV = yes;
     # HDMI
     PHY_ROCKCHIP_SAMSUNG_HDPTX = yes;
     # NVME
