@@ -35,6 +35,8 @@ let
     # FW_LOADER
     FW_LOADER_COMPRESS = yes;
     FW_LOADER_COMPRESS_ZSTD = yes;
+    # LED_TRIGGER
+    LEDS_TRIGGER_NETDEV = yes;
     # HDMI
     PHY_ROCKCHIP_SAMSUNG_HDPTX = yes;
     # NVME

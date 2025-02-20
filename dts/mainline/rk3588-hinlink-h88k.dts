@@ -73,6 +73,14 @@
 		net {
 			label = "blue:net";
 			gpios = <&gpio2 RK_PC3 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "netdev";
+
+			netdev {
+				link;
+				tx;
+				rx;
+				device-name = "wwan0";
+			};
 		};
 
 		sata {
