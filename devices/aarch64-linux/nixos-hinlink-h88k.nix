@@ -33,6 +33,7 @@
           "rtl_nic/*"
           "mediatek/*"
           "regulatory.db"
+          "hinlink-h88k-240x135-lcd.bin"
         ];
       })
     ];
@@ -58,8 +59,5 @@
     ];
     loader.grub.enable = true;
   };
-
-  # keep kernel source for compiling out-of-tree devicetree source
-  # system.extraDependencies = [ (lib.getDev config.boot.kernelPackages.kernel) ];
 
 }
