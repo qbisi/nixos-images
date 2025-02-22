@@ -2,7 +2,7 @@
 let
   callPackage = pkgs.newScope packages;
   packages = rec {
-    linux_rkbsp_joshua = callPackage ./kernels/linux-rkbsp-joshua.nix { };
+    linux_rkbsp_6_1 = callPackage ./kernels/linux-rkbsp-6.1.nix { };
     linux_phytium_6_6 = callPackage ./kernels/linux-phytium-6.6.nix { };
     linux_rockchip64_6_13 = callPackage ./kernels/linux-rockchip64-6.13.nix { };
     linux_rockchip64_6_12 = callPackage ./kernels/linux-rockchip64-6.12.nix { };
@@ -11,15 +11,15 @@ let
     makePatch = callPackage ../pkgs/makePatch.nix { };
     inherit (callPackage ./u-boot { })
       ubootHinlinkH88k
-      # ubootOrangePi5
-      # ubootOrangePi5Plus
-      # ubootNanoPCT6
-      # ubootRock5ModelB
-      # ubootRock5ModelA
+      ubootOrangePi5
+      ubootOrangePi5Plus
+      ubootNanoPCT6
+      ubootRock5ModelB
+      ubootRock5ModelA
       ubootBozzSW799
       ubootCdhxRb30
       ;
-    inherit (pkgs) armTrustedFirmwareRK3588 ubootOrangePi5Plus;
+    inherit (pkgs) armTrustedFirmwareRK3588;
     armbian-firmware = callPackage ./firmware/armbian-firmware.nix { };
   };
 in
