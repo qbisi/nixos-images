@@ -7,10 +7,10 @@
   ...
 }:
 let
-  version = "6.14-rc4";
+  version = "6.14-rc5";
   src = fetchurl {
     url = "https://git.kernel.org/torvalds/t/linux-${version}.tar.gz";
-    hash = "sha256-zhSxiC70rSZgelr93Uc8mVeVD6Fw+1BHktjtIXV/Qjg=";
+    hash = "sha256-KjLn0ghiOtQm3izH/L+27htXBcl8ledOh1/6Kopw0s0=";
   };
   armbianBuild = fetchFromGitHub {
     owner = "armbian";
