@@ -1,8 +1,7 @@
 { config, lib, ... }:
-with lib;
 {
-  config = mkIf (config.disko.enableConfig && config.disko.profile.use == "btrfs") {
-    disko.profile._extraPartition = {
+  config = lib.mkIf (config.disko.enableConfig && config.disko.bootImage.fileSystem == "btrfs") {
+    disko.bootImage._extraPartition = {
       nix = {
         size = "100%";
         content = {

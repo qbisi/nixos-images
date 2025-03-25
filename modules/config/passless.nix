@@ -1,4 +1,3 @@
-{ lib, config, ... }:
 {
 
   users.users.root = {

@@ -1,0 +1,77 @@
+diff --git a/arch/arm/dts/rockchip-u-boot.dtsi b/arch/arm/dts/rockchip-u-boot.dtsi
+index c8c928c7e5..ae466b100f 100644
+--- a/arch/arm/dts/rockchip-u-boot.dtsi
++++ b/arch/arm/dts/rockchip-u-boot.dtsi
+@@ -9,6 +9,47 @@
+ 	binman: binman {
+ 		multiple-images;
+ 	};
++
++#ifdef CONFIG_SYSINFO_SMBIOS
++	smbios{
++		compatible = "u-boot,sysinfo-smbios";
++		smbios {
++			system {
++#ifdef CONFIG_SYSINFO_SMBIOS_MANUFACTURER	
++				manufacturer = CONFIG_SYSINFO_SMBIOS_MANUFACTURER;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_PRODUCT
++				product = CONFIG_SYSINFO_SMBIOS_PRODUCT;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_VERSION
++				version = CONFIG_SYSINFO_SMBIOS_VERSION;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_FAMILY
++				family = CONFIG_SYSINFO_SMBIOS_FAMILY;
++#endif
++			};
++
++			baseboard {
++#ifdef CONFIG_SYSINFO_SMBIOS_MANUFACTURER	
++				manufacturer = CONFIG_SYSINFO_SMBIOS_MANUFACTURER;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_PRODUCT
++				product = CONFIG_SYSINFO_SMBIOS_PRODUCT;
++#endif
++			};
++
++			chassis {
++#ifdef CONFIG_SYSINFO_SMBIOS_MANUFACTURER	
++				manufacturer = CONFIG_SYSINFO_SMBIOS_MANUFACTURER;
++#endif
++#ifdef CONFIG_SYSINFO_SMBIOS_PRODUCT
++				product = CONFIG_SYSINFO_SMBIOS_PRODUCT;
++#endif
++			};
++		};
++	};
++#endif
++
+ };
+ 
+ #ifdef CONFIG_SPL
+diff --git a/drivers/sysinfo/Kconfig b/drivers/sysinfo/Kconfig
+index 2030e4babc..04a07386b6 100644
+--- a/drivers/sysinfo/Kconfig
++++ b/drivers/sysinfo/Kconfig
+@@ -52,4 +52,20 @@ config SYSINFO_GPIO
+ 	  This ternary number is then mapped to a board revision name using
+ 	  device tree properties.
+ 
++config SYSINFO_SMBIOS_MANUFACTURER
++	depends on SYSINFO_SMBIOS
++	string "Smbios manufacturer"
++
++config SYSINFO_SMBIOS_PRODUCT
++	depends on SYSINFO_SMBIOS
++	string "Smbios product"
++
++config SYSINFO_SMBIOS_VERSION
++	depends on SYSINFO_SMBIOS
++	string "Smbios version"
++
++config SYSINFO_SMBIOS_FAMILY
++	depends on SYSINFO_SMBIOS
++	string "Smbios family"
++
+ endif

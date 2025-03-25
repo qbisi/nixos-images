@@ -26,7 +26,7 @@
 		simple-audio-card,name = "Analog";
 		simple-audio-card,format = "i2s";
 		simple-audio-card,mclk-fs = <256>;
-		simple-audio-card,hp-det-gpio = <&gpio1 RK_PD5 GPIO_ACTIVE_LOW>;
+		simple-audio-card,hp-det-gpios = <&gpio1 RK_PD5 GPIO_ACTIVE_HIGH>;
 		simple-audio-card,bitclock-master = <&daicpu>;
 		simple-audio-card,frame-master = <&daicpu>;
 
@@ -76,20 +76,43 @@
 			linux,default-trigger = "netdev";
 		};
 
-		sata {
-			label = "amber:sata";
+		ssd {
+			label = "amber:ssd";
 			gpios = <&gpio2 RK_PC5 GPIO_ACTIVE_HIGH>;
 		};
 
 		user {
 			label = "green:user";
 			gpios = <&gpio3 RK_PB7 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "mmc1";
 		};
 
 		work {
 			label = "red:work";
 			gpios = <&gpio0 RK_PA0 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "heartbeat";
+		};
+	};
+
+	hdmi0-con {
+		compatible = "hdmi-connector";
+		type = "a";
+
+		port {
+			hdmi0_con_in: endpoint {
+				remote-endpoint = <&hdmi0_out_con>;
+			};
+		};
+	};
+
+	hdmi1-con {
+		compatible = "hdmi-connector";
+		type = "a";
+
+		port {
+			hdmi1_con_in: endpoint {
+				remote-endpoint = <&hdmi1_out_con>;
+			};
 		};
 	};
 
@@ -271,7 +294,7 @@
 };
 
 
-&hdptxphy_hdmi0 {
+&hdptxphy0 {
 	status = "okay";
 };
 
@@ -279,6 +302,32 @@
 	hdmi0_in_vp0: endpoint {
 		remote-endpoint = <&vp0_out_hdmi0>;
 	};
+};
+
+&hdmi0_out {
+	hdmi0_out_con: endpoint {
+		remote-endpoint = <&hdmi0_con_in>;
+	};
+};
+
+&hdmi1 {
+	status = "okay";
+};
+
+&hdmi1_in {
+	hdmi1_in_vp1: endpoint {
+		remote-endpoint = <&vp1_out_hdmi1>;
+	};
+};
+
+&hdmi1_out {
+	hdmi1_out_con: endpoint {
+		remote-endpoint = <&hdmi1_con_in>;
+	};
+};
+
+&hdptxphy1 {
+	status = "okay";
 };
 
 &hdmi_receiver_cma {
@@ -350,7 +399,6 @@
 };
 
 &i2c7 {
-	pinctrl-0 = <&i2c7m0_xfer>;
 	status = "okay";
 
 	es8388: audio-codec@11 {
@@ -360,17 +408,10 @@
 		assigned-clock-rates = <12288000>;
 		AVDD-supply = <&vcc_3v3_s3>;
 		clocks = <&cru I2S0_8CH_MCLKOUT>;
-		clock-names = "mclk";
 		DVDD-supply = <&vcc_1v8_s3>;
 		HPVDD-supply = <&vcc_3v3_s3>;
 		PVDD-supply = <&vcc_1v8_s3>;
 		#sound-dai-cells = <0>;
-
-		port {
-			es8388_p0_0: endpoint {
-				remote-endpoint = <&i2s0_8ch_p0_0>;
-			};
-		};
 	};
 };
 
@@ -382,14 +423,6 @@
 		     &i2s0_sdi0
 		     &i2s0_sdo0>;
 	status = "okay";
-
-	i2s0_8ch_p0: port {
-		i2s0_8ch_p0_0: endpoint {
-			dai-format = "i2s";
-			mclk-fs = <256>;
-			remote-endpoint = <&es8388_p0_0>;
-		};
-	};
 };
 
 &mdio0 {
@@ -862,6 +895,15 @@
 	status = "okay";
 };
 
+&uart3 {
+	status = "okay";
+};
+
+&uart4 {
+	pinctrl-0 = <&uart4m0_xfer>;
+	status = "okay";
+};
+
 &u2phy1 {
 	status = "okay";
 };
@@ -931,5 +973,12 @@
 	vp0_out_hdmi0: endpoint@ROCKCHIP_VOP2_EP_HDMI0 {
 		reg = <ROCKCHIP_VOP2_EP_HDMI0>;
 		remote-endpoint = <&hdmi0_in_vp0>;
+	};
+};
+
+&vp1 {
+	vp1_out_hdmi1: endpoint@ROCKCHIP_VOP2_EP_HDMI1 {
+		reg = <ROCKCHIP_VOP2_EP_HDMI1>;
+		remote-endpoint = <&hdmi1_in_vp1>;
 	};
 };

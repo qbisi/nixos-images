@@ -4,27 +4,26 @@
   pkgs,
   ...
 }:
-with lib;
 let
-  cfg = config.disko.profile;
+  cfg = config.disko.bootImage;
 in
 {
   options = {
-    disko.profile.uboot = {
-      enable = mkEnableOption "uboot part in disk";
+    disko.bootImage.uboot = {
+      enable = lib.mkEnableOption "uboot part in disk";
 
-      package = mkOption {
-        type = types.nullOr types.package;
+      package = lib.mkOption {
+        type = lib.types.nullOr lib.types.package;
         default = null;
       };
     };
   };
 
-  config = mkIf (cfg.use != "" && cfg.uboot.enable) {
+  config = lib.mkIf (cfg.fileSystem != null && cfg.uboot.enable) {
     assertions = [
       {
         assertion = cfg.uboot.package != null;
-        message = "disko.profile.uboot.pacakges should not be null";
+        message = "disko.bootImage.uboot.pacakges should not be null";
       }
     ];
 
@@ -33,7 +32,7 @@ in
         diskoCfg = config.disko;
         imageName = "${diskoCfg.devices.disk.main.imageName}.${diskoCfg.imageBuilder.imageFormat}";
       in
-      mkBefore ''
+      lib.mkBefore ''
         ${pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.package}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
       '';
   };

@@ -12,13 +12,11 @@
         ];
 
         imports = [
-          ./disko/uboot.nix
-          ./disko/profile.nix
-          ./disko/btrfs.nix
-          ./disko/ext4.nix
+          ./disko/disk-image.nix
+          ./hardware/serial.nix
+          ./system/grow-partition.nix
           ./overlay/system/boot/loader/grub.nix
           ./overlay/hardware/device-tree.nix
-          ./hardware/serial.nix
           inputs.disko.nixosModules.default
         ];
       };
@@ -33,9 +31,8 @@
           imports = [
             "${modulesPath}/profiles/all-hardware.nix"
             ./config/networking.nix
-            ./system/grow-partition.nix
             ./config/passless.nix
-            ./services/rsync-nixosconfig.nix
+            ./config/rsync-nixosconfig.nix
           ];
 
           boot.initrd.availableKernelModules = [
