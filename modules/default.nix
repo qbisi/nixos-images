@@ -14,7 +14,6 @@
         imports = [
           ./disko/disk-image.nix
           ./hardware/serial.nix
-          ./system/grow-partition.nix
           ./overlay/system/boot/loader/grub.nix
           ./overlay/hardware/device-tree.nix
           inputs.disko.nixosModules.default
@@ -33,6 +32,7 @@
             ./config/networking.nix
             ./config/passless.nix
             ./config/rsync-nixosconfig.nix
+            ./system/grow-partition.nix
           ];
 
           boot.initrd.availableKernelModules = [
