@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  inputs,
   self,
   ...
 }:
@@ -9,7 +10,7 @@
   nixpkgs = {
     system = "x86_64-linux";
     overlays = [
-      self.overlays.default
+      inputs.nixos-images.overlays.default
     ];
   };
 

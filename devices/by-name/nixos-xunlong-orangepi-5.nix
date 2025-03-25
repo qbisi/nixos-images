@@ -10,7 +10,7 @@
   nixpkgs = {
     system = "aarch64-linux";
     overlays = [
-      self.overlays.default
+      inputs.nixos-images.overlays.default
     ];
   };
 
