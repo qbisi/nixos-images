@@ -16,7 +16,7 @@
 
   disko = {
     enableConfig = true;
-    profile.fileSystem = "btrfs";
+    bootImage.fileSystem = "btrfs";
   };
 
   hardware = {
