@@ -28,4 +28,5 @@ buildLinux {
   extraConfig = "";
   ignoreConfigErrors = true;
   autoModules = false;
+  extraMakeFlags = [ "KCFLAGS=-march=armv8-a+crypto" ];
 }
