@@ -6,9 +6,6 @@
   self,
   ...
 }:
-let
-  system = "aarch64-linux";
-in
 {
   nixpkgs = {
     system = "aarch64-linux";

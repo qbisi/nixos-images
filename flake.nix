@@ -21,7 +21,6 @@
       { lib, self, ... }:
       {
         systems = [
-          "x86_64-linux"
           "aarch64-linux"
         ];
         imports = [
@@ -31,15 +30,29 @@
           ./modules
         ];
 
+        flake.hydraJobs = {
+          inherit (self) images packages;
+        };
+
         perSystem =
           {
             config,
             pkgs,
             lib,
             system,
+            self',
             ...
           }:
           {
+            _module.args = {
+              pkgs = import inputs.nixpkgs {
+                inherit system;
+                config = {
+                  allowUnfree = true;
+                };
+              };
+            };
+
             formatter = pkgs.nixfmt-rfc-style;
 
             overlayAttrs = config.legacyPackages;
@@ -52,6 +65,11 @@
               })
               // (import ./overlays.nix self pkgs)
             );
+
+            packages = lib.packagesFromDirectoryRecursive {
+              inherit (self'.legacyPackages) callPackage;
+              directory = ./pkgs;
+            };
           };
       }
     );
