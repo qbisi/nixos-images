@@ -22,6 +22,5 @@ buildUBoot {
     "u-boot.itb"
     "idbloader.img"
     "u-boot-rockchip.bin"
-    "u-boot-rockchip-spi.bin"
   ];
 }
