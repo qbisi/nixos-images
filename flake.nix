@@ -68,7 +68,7 @@
             legacyPackages = lib.makeScope pkgs.newScope (
               self:
               (lib.packagesFromDirectoryRecursive {
-                inherit (self) callPackage makePatch;
+                inherit (self) callPackage;
                 directory = ./pkgs;
               })
               // (import ./overlays.nix self pkgs)
