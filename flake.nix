@@ -18,20 +18,29 @@
   outputs =
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-      { lib, self, ... }:
+      {
+        lib,
+        self,
+        withSystem,
+        ...
+      }:
       {
         systems = [
           "aarch64-linux"
         ];
         imports = [
-          inputs.flake-parts.flakeModules.easyOverlay
           ./devices
           ./hosts
           ./modules
         ];
 
-        flake.hydraJobs = {
-          inherit (self) images packages;
+        flake = {
+          overlays.default =
+            final: prev: withSystem prev.stdenv.hostPlatform.system ({ config, ... }: config.packages);
+
+          hydraJobs = {
+            inherit (self) images packages;
+          };
         };
 
         perSystem =
@@ -54,8 +63,6 @@
             };
 
             formatter = pkgs.nixfmt-rfc-style;
-
-            overlayAttrs = config.legacyPackages;
 
             legacyPackages = lib.makeScope pkgs.newScope (
               self:
