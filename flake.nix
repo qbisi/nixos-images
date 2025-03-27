@@ -1,7 +1,6 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixos-images.url = "github:qbisi/nixos-images";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -22,6 +21,7 @@
         lib,
         self,
         withSystem,
+        getSystemIgnoreWarning,
         ...
       }:
       {
@@ -36,7 +36,8 @@
 
         flake = {
           overlays.default =
-            final: prev: withSystem prev.stdenv.hostPlatform.system ({ config, ... }: config.packages);
+            final: prev:
+            lib.optionalAttrs (prev.stdenv.hostPlatform.system == "aarch64-linux") self.packages.aarch64-linux;
 
           hydraJobs = {
             inherit (self) images packages;

@@ -10,7 +10,7 @@
   nixpkgs = {
     system = "aarch64-linux";
     overlays = [
-      inputs.nixos-images.overlays.default
+      (self.overlays.default or (final: prev: { }))
     ];
     config = {
       allowUnfreePredicate =
