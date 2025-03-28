@@ -9,9 +9,6 @@
 {
   nixpkgs = {
     system = "x86_64-linux";
-    overlays = [
-      (self.overlays.default or (final: prev: { }))
-    ];
   };
 
   disko = {

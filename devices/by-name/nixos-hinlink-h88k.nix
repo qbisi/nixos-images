@@ -9,9 +9,6 @@
 {
   nixpkgs = {
     system = "aarch64-linux";
-    overlays = [
-      (self.overlays.default or (final: prev: { }))
-    ];
   };
 
   networking.hostName = lib.mkDefault "h88k";

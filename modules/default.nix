@@ -12,6 +12,7 @@
         ];
 
         imports = [
+          ./config/nixpkgs.nix
           ./disko/disk-image.nix
           ./hardware/serial.nix
           ./overlay/system/boot/loader/grub.nix
