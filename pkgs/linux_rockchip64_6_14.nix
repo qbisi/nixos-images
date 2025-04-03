@@ -33,6 +33,9 @@ let
     # USB
     TYPEC = yes;
     PHY_ROCKCHIP_USBDP = yes;
+    # MPTCP
+    MPTCP = yes;
+    INET_MPTCP_DIAG = module;
   };
 in
 buildLinux {

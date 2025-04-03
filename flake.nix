@@ -40,7 +40,7 @@
             lib.optionalAttrs (prev.stdenv.hostPlatform.system == "aarch64-linux") self.packages.aarch64-linux;
 
           hydraJobs = {
-            inherit (self) images packages;
+            inherit (self) packages;
           };
         };
 
