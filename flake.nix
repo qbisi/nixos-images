@@ -1,9 +1,9 @@
 {
   nixConfig = {
-    substituters = [
+    extra-substituters = [
       "https://cache.qbisi.cc"
     ];
-    trusted-public-keys = [
+    extra-trusted-public-keys = [
       "cache.qbisi.cc:agX2YjzMlHUdRAbrzSBh8P42b9J00VYs/FndKjWmnfI="
     ];
   };
