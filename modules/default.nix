@@ -36,6 +36,8 @@
             ./system/grow-partition.nix
           ];
 
+          boot.loader.grub.btrfsPackage = config.disko.imageBuilder.pkgs.btrfs-progs;
+
           boot.initrd.availableKernelModules = [
             "mpt3sas"
             "hv_storvsc"

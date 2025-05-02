@@ -701,6 +701,16 @@ in
         '';
       };
 
+      btrfsPackage = mkOption {
+        type = types.package;
+        internal = true;
+        default = pkgs.btrfs;
+        defaultText = literalExpression "pkgs.btrfs";
+        description = ''
+          Which btrfs package to use.
+        '';
+      };
+
       efiSupport = mkOption {
         default = false;
         type = types.bool;
@@ -817,7 +827,7 @@ in
           install-grub-pl = pkgs.substituteAll {
             src = ./install-grub.pl;
             utillinux = pkgs.util-linux;
-            btrfsprogs = pkgs.btrfs-progs;
+            btrfsprogs = cfg.btrfsPackage;
             inherit (config.system.nixos) distroName;
           };
           perl = pkgs.perl.withPackages (

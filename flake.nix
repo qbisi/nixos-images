@@ -36,6 +36,8 @@
       }:
       {
         systems = [
+          "i686-linux"
+          "x86_64-linux"
           "aarch64-linux"
         ];
         imports = [
@@ -45,9 +47,7 @@
         ];
 
         flake = {
-          overlays.default =
-            final: prev:
-            lib.optionalAttrs (prev.stdenv.hostPlatform.system == "aarch64-linux") self.packages.aarch64-linux;
+          overlays.default = final: prev: self.packages."${prev.stdenv.hostPlatform.system}";
 
           hydraJobs = {
             inherit (self) packages;
