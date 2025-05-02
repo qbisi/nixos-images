@@ -4,7 +4,7 @@
       "https://cache.qbisi.cc"
     ];
     extra-trusted-public-keys = [
-      "cache.qbisi.cc:agX2YjzMlHUdRAbrzSBh8P42b9J00VYs/FndKjWmnfI="
+      "cache.qbisi.cc-1:xEChzP5k8fj+7wajY+e9IDORRTGMhViP5NaqMShGGjQ="
     ];
   };
 
