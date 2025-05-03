@@ -1,0 +1,31 @@
+name: "Build"
+on:
+  repository_dispatch:
+  workflow_dispatch:
+
+jobs:
+  images:
+    strategy:
+      fail-fast: false
+      matrix:
+        device:
+          - hinlink-h88k
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+    - uses: cachix/install-nix-action@v31
+      with:
+        enable_kvm: true
+        extra_nix_config: |
+          extra-platforms = aarch64-linux i686-linux
+          experimental-features = nix-command flakes
+          system-features = nixos-test benchmark big-parallel kvm
+          trusted-public-keys = cache.qbisi.cc-1:xEChzP5k8fj+7wajY+e9IDORRTGMhViP5NaqMShGGjQ= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+          substituters = https://cache.qbisi.cc https://cache.nixos.org/
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 32
+    - name: Build image
+      run: nix build .#images.nixos-${{ matrix.device }}
