@@ -1,0 +1,62 @@
+name: "Build"
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "release"
+        required: true
+        type: string
+
+env:
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create new release
+        run: |
+          if ! gh release view ${{ inputs.release }}; then
+            gh release create ${{ inputs.release }} --title ${{ inputs.release }}
+          fi
+
+  images:
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        device:
+          - x86_64-generic
+          - x86_64-uefi
+          - aarch64-uefi
+          - friendly-nanopc-t6
+          - radxa-rock-5a
+          - radxa-rock-5b
+          - xunlong-orangepi-5-plus
+          - xunlong-orangepi-5
+          - hinlink-h88k
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+    - uses: cachix/install-nix-action@v31
+      with:
+        enable_kvm: true
+        extra_nix_config: |
+          extra-platforms = aarch64-linux i686-linux
+          experimental-features = nix-command flakes
+          system-features = nixos-test benchmark big-parallel kvm
+          trusted-public-keys = cache.qbisi.cc-1:xEChzP5k8fj+7wajY+e9IDORRTGMhViP5NaqMShGGjQ= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+          substituters = https://cache.qbisi.cc https://cache.nixos.org/
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 32
+    - name: Build image
+      run: nix build .#images.nixos-${{ matrix.device }}
+    - name: Upload
+      run: gh release upload ${{ inputs.release }} result/*
