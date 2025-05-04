@@ -39,8 +39,10 @@ bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinst
 ```
 
 ## Custom your own configuration
-
-See [Hosts readme](./hosts/readme.md).
+This project provide a init template that accept this repo as a flake inputs.
+```
+nix flake new -t github:qbisi/nixos-images my-nixos-config
+```
 
 ### Remote deploy
 You can use the Colmena tool to deploy your settings. Typical examples are provided in the repository: [github:/qbisi/nixos-config](https://github.com/qbisi/nixos-config).
@@ -59,7 +61,7 @@ Ensure you have the following installed:
   ```ini
   experimental-features = nix-command flakes
   ```
-  
+
 ### Build Process
 
 Use the following command to build your desired NixOS image. Replace ${device} with the appropriate values (e.g., nixos-x86_64-generic-btrfs for device type):
@@ -73,3 +75,9 @@ Once the build is complete, the resulting image will be located in the result di
 ls result/
 ```
 You should see the generated NixOS image file.
+
+### Note
+All disko-images are built on x86_64 hosts, to build aarch64-images, you should enable binfmt by add this line to your nixos configuration.
+```
+boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+```

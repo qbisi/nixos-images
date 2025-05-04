@@ -52,6 +52,13 @@
           hydraJobs = {
             inherit (self) packages;
           };
+
+          templates = {
+            default = {
+              path = ./templates;
+              description = "init template";
+            };
+          };
         };
 
         perSystem =
