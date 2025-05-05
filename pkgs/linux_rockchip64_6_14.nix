@@ -4,14 +4,10 @@
   fetchFromGitHub,
   fetchurl,
   armbianBuild,
+  linux_6_14,
   ...
 }:
 let
-  version = "6.14";
-  src = fetchurl {
-    url = "https://git.kernel.org/torvalds/t/linux-${version}.tar.gz";
-    hash = "sha256-fXlg1s4nd0Ppbb2NlPzpPxN5mmm9mj6YQe6//eSr5sI=";
-  };
   defconfigFile = "${armbianBuild}/config/kernel/linux-rockchip64-edge.config";
   patchDir = "${armbianBuild}/patch/kernel/archive/rockchip64-6.14";
   kernelPatches = (
@@ -39,9 +35,11 @@ let
   };
 in
 buildLinux {
-  inherit
+  inherit (linux_6_14)
     version
     src
+    ;
+  inherit
     defconfigFile
     kernelPatches
     structuredExtraConfig

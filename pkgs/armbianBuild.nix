@@ -2,11 +2,11 @@
 fetchFromGitHub {
   owner = "armbian";
   repo = "build";
-  rev = "95b8c4cc8c252d4f9dbcbc17611e835550b3fa70";
+  tag = "v25.5.0-trunk.505";
   nonConeMode = true;
   sparseCheckout = [
     "config/kernel/*.config"
     "patch/kernel/**/*.patch"
   ];
-  hash = "sha256-wMJpDgvJHTp4HhteYTuTblMmTdYxLqVFu8hpoiUuoYM=";
+  hash = "sha256-PNcTOqGCUo7E9xNZZvmF+g91lFNzMlLnjQM8xguajzs=";
 }
