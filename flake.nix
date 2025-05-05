@@ -49,10 +49,6 @@
         flake = {
           overlays.default = final: prev: self.packages."${prev.stdenv.hostPlatform.system}";
 
-          hydraJobs = {
-            inherit (self) packages;
-          };
-
           templates = {
             default = {
               path = ./templates;
@@ -95,7 +91,13 @@
               inherit (self'.legacyPackages) callPackage;
               directory = ./pkgs;
             };
+
+            hydraJobs = {
+              packages = lib.optionalAttrs (system == "aarch64-linux") config.packages;
+            };
           };
+
+        transposition.hydraJobs.adHoc = true;
       }
     );
 }
