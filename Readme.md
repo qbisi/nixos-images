@@ -44,9 +44,6 @@ This project provide a init template that accept this repo as a flake inputs.
 nix flake new -t github:qbisi/nixos-images my-nixos-config
 ```
 
-### Remote deploy
-You can use the Colmena tool to deploy your settings. Typical examples are provided in the repository: [github:/qbisi/nixos-config](https://github.com/qbisi/nixos-config).
-
 ## Building the Image Yourself
 
 For advanced users looking to build a custom NixOS image from this Nix-based flake source, follow the steps below:
@@ -64,10 +61,12 @@ Ensure you have the following installed:
 
 ### Build Process
 
-Use the following command to build your desired NixOS image. Replace ${device} with the appropriate values (e.g., nixos-x86_64-generic-btrfs for device type):
+Use the following command to build your desired NixOS image.
+Replace ${device} with the appropriate device type (e.g., nixos-x86_64-generic).
+Replace ${partlabel} with the appropriate media type (e.g., nvme, mmc, hdd).
 
 ```bash
-nix build github:qbisi/nixos-images#images.${device}
+PARTLABEL=${partlabel} nix build github:qbisi/nixos-images#images.${device}
 ```
 
 Once the build is complete, the resulting image will be located in the result directory:
