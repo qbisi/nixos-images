@@ -5,8 +5,8 @@
   ...
 }:
 let
-  version = "6.6.2-phytium";
-  modDirVersion = "6.6.2";
+  version = "6.6.0-phytium";
+  modDirVersion = "6.6.0";
   src = fetchFromGitHub {
     githubBase = "gitee.com";
     owner = "phytium_opensource";
