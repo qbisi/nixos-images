@@ -704,8 +704,8 @@ in
       btrfsPackage = mkOption {
         type = types.package;
         internal = true;
-        default = pkgs.btrfs;
-        defaultText = literalExpression "pkgs.btrfs";
+        default = pkgs.btrfs-progs;
+        defaultText = literalExpression "pkgs.btrfs-progs";
         description = ''
           Which btrfs package to use.
         '';
