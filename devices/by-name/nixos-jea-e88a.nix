@@ -19,8 +19,8 @@
       imageSize = "2G";
       fileSystem = "btrfs";
       espStart = "16M";
-      # uboot.enable = true;
-      # uboot.package = pkgs.ubootHinlinkH88k;
+      uboot.enable = true;
+      uboot.package = pkgs.ubootJwipcE88a;
     };
   };
 

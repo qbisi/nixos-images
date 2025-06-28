@@ -10,7 +10,7 @@ buildUBoot {
     owner = "qbisi";
     repo = "u-boot";
     rev = "drm-dirty";
-    sha256 = "sha256-c9Pq9gWGNQWibaDqXTFenD8Q3/G0DnYnUCvyNZNyKmw=";
+    sha256 = "sha256-9lvve60HSWORzTUpQDpcVkNfgfDhle2Z6lAmDpqsFEg=";
   };
   version = "2024.07";
   defconfig = "rock5a-rk3588s_defconfig";

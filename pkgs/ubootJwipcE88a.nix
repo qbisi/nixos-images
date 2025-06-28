@@ -13,7 +13,7 @@ buildUBoot {
     sha256 = "sha256-9lvve60HSWORzTUpQDpcVkNfgfDhle2Z6lAmDpqsFEg=";
   };
   version = "2024.07";
-  defconfig = "nanopc-t6-rk3588_defconfig";
+  defconfig = "jwipc-jea-e88a-rk3588_defconfig";
   stdenv = gcc12Stdenv;
   extraMeta.platforms = [ "aarch64-linux" ];
   BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
@@ -22,6 +22,5 @@ buildUBoot {
     "u-boot.itb"
     "idbloader.img"
     "u-boot-rockchip.bin"
-    "u-boot-rockchip-spi.bin"
   ];
 }
