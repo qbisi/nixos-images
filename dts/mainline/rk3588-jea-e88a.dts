@@ -12,10 +12,8 @@
 	compatible = "jwipc,jea-e88a", "rockchip,rk3588";
 
 	aliases {
-		ethernet0 = &gmac0;
 		mmc0 = &sdhci;
 		mmc1 = &sdmmc;
-		serial2 = &uart2;
 	};
 
 	chosen {
@@ -115,6 +113,20 @@
 		vin-supply = <&vcc12v_dcin>;
 	};
 
+	vcc3v3_switch: vcc3v3-switch {
+		compatible = "regulator-fixed";
+		regulator-name = "switch";
+		regulator-always-on;
+		regulator-boot-on;
+		enable-active-low;
+		gpio = <&gpio3 RK_PA3 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&rtl8367_rst>;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&vcc3v3_sys>;
+	};
+
 	vcc3v3_pcie: vcc3v3-pcie {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc3v3_pcie";
@@ -187,12 +199,12 @@
 
 &mdio0 {
 	rgmii_phy: ethernet-phy@1 {
-		compatible = "ethernet-phy-ieee802.3-c22";
-		reg = <0x01>;
+		compatible = "ethernet-phy-id001c.c916";
+		reg = <0x1>;
 		pinctrl-0 = <&rtl8211f_rst>;
 		reset-assert-us = <20000>;
 		reset-deassert-us = <100000>;
-		reset-gpios = <&gpio4 RK_PC0 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpio4 RK_PC6 GPIO_ACTIVE_LOW>;
 	};
 };
 

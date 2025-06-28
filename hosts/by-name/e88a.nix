@@ -8,10 +8,9 @@
 }:
 {
   deployment = {
-    targetHost = config.networking.hostName;
+    # targetHost = config.networking.hostName;
+    targetHost = "192.168.100.188";
     buildOnTarget = false;
-    tags = [ "rk3588" ];
-    sshOptions = [ "-o ConnectionAttempts=2" ];
   };
 
   imports = [
