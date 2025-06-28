@@ -36,9 +36,9 @@
       })
     ];
     deviceTree = {
-      name = "rockchip/rk3588-jea-e88a.dtb";
+      name = "rockchip/rk3588-jwipc-e88a.dtb";
       platform = "rockchip";
-      dtsFile = ../../dts/mainline/rk3588-jea-e88a.dts;
+      dtsFile = ../../dts/mainline/rk3588-jwipc-e88a.dts;
     };
     serial = {
       enable = true;

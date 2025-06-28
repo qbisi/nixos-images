@@ -39,6 +39,7 @@ jobs:
           - xunlong-orangepi-5-plus
           - xunlong-orangepi-5
           - hinlink-h88k
+          - jwipc-e88a
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
