@@ -33,7 +33,7 @@ in
         imageName = "${diskoCfg.devices.disk.main.imageName}.${diskoCfg.imageBuilder.imageFormat}";
       in
       lib.mkBefore ''
-        ${pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.package}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
+        ${config.disko.imageBuilder.pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.package}/u-boot-rockchip.bin bs=4K seek=8 conv=notrunc
       '';
   };
 }
