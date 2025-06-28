@@ -51,16 +51,16 @@
     usbutils
     pciutils
     minicom
+    libgpiod
   ];
 
   boot = {
     kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_15;
     initrd.availableKernelModules = lib.mkForce [ ];
     kernelParams = [
-      "console=ttyS2,1500000n8"
+      "console=tty1"
       "earlycon"
       "net.ifnames=0"
-      "initcall_debug"
     ];
     consoleLogLevel = 6;
     loader.grub.enable = true;
