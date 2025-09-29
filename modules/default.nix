@@ -38,6 +38,8 @@
 
           boot.loader.grub.btrfsPackage = config.disko.imageBuilder.pkgs.btrfs-progs;
 
+          boot.growPartition.enable = true;
+
           boot.initrd.availableKernelModules = [
             "mpt3sas"
             "hv_storvsc"
