@@ -4,12 +4,12 @@
   fetchFromGitHub,
   fetchurl,
   armbianBuild,
-  linux_6_15,
+  linux_6_18,
   ...
 }:
 let
   defconfigFile = "${armbianBuild}/config/kernel/linux-rockchip64-edge.config";
-  patchDir = "${armbianBuild}/patch/kernel/archive/rockchip64-6.15";
+  patchDir = "${armbianBuild}/patch/kernel/archive/rockchip64-6.18";
   kernelPatches = (
     map (p: {
       name = baseNameOf p;
@@ -35,7 +35,7 @@ let
   };
 in
 buildLinux {
-  inherit (linux_6_15)
+  inherit (linux_6_18)
     version
     src
     ;

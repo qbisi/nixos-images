@@ -29,8 +29,7 @@
 
   users.users.root = {
     password = "root";
-    openssh.authorizedKeys.keys = [
-    ];
+    openssh.authorizedKeys.keys = [ ];
   };
 
   services.openssh = {
@@ -53,5 +52,5 @@
     trusted-users = [ "@wheel" ];
   };
 
-  system.stateVersion = "24.11";
+  system.stateVersion = "26.05";
 }
