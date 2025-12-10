@@ -91,7 +91,7 @@ let
         extraPreprocessorFlags = cfg.dtbBuildExtraPreprocessorFlags;
       in
       pkgs.deviceTree.compileDTS {
-        name = "${cfg.name}.dtb";
+        name = "${cfg.name}";
         inherit (cfg) dtsFile;
         inherit includePaths extraPreprocessorFlags;
       }
