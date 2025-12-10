@@ -92,7 +92,7 @@ let
       in
       pkgs.deviceTree.compileDTS {
         name = "${cfg.name}";
-        inherit (cfg) dtsFile;
+        dtsFile = pkgs.writeText "dts" (builtins.readFile cfg.dtsFile);
         inherit includePaths extraPreprocessorFlags;
       }
     else
