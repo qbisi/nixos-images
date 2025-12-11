@@ -73,7 +73,7 @@
   ];
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_15;
+    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18;
     initrd.availableKernelModules = lib.mkForce [ ];
     kernelModules = [ "ledtrig-netdev" ];
     kernelParams = [

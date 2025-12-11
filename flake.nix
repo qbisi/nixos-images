@@ -15,7 +15,7 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     disko = {
-      url = "github:nix-community/disko";
+      url = "github:nix-community/disko?rev=dfa4d1b9c39c0342ef133795127a3af14598017a";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     colmena = {
