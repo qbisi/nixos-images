@@ -57,16 +57,18 @@ Ensure you have the following installed:
 
   ```ini
   experimental-features = nix-command flakes
+  # required for build aarch64 images on x86_64-linux platform
+  extra-platforms = aarch64-linux
   ```
 
 ### Build Process
 
 Use the following command to build your desired NixOS image.
-Replace ${device} with the appropriate device type (e.g., nixos-x86_64-generic).
+Replace ${device} with the appropriate device type (e.g., x86_64-generic).
 Replace ${partlabel} with the appropriate media type (e.g., nvme, mmc, hdd).
 
 ```bash
-PARTLABEL=${partlabel} nix build github:qbisi/nixos-images#images.${device}
+PARTLABEL=${partlabel} nix build github:qbisi/nixos-images#nixos-${device} --impure
 ```
 
 Once the build is complete, the resulting image will be located in the result directory:
@@ -74,9 +76,3 @@ Once the build is complete, the resulting image will be located in the result di
 ls result/
 ```
 You should see the generated NixOS image file.
-
-### Note
-All disko-images are built on x86_64 hosts, to build aarch64-images, you should enable binfmt by add this line to your nixos configuration.
-```
-boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
-```

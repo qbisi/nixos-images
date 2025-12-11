@@ -1,29 +1,32 @@
+{ self, inputs, ... }:
 {
-  lib,
-  self,
-  inputs,
-  ...
-}:
-{
-  flake = rec {
-    nixosConfigurations = lib.packagesFromDirectoryRecursive {
-      callPackage =
-        path: _:
-        lib.nixosSystem {
-          specialArgs = {
-            inherit inputs self;
-          };
-          modules = [
-            {
-              disko.bootImage.imageName = lib.removeSuffix ".nix" (baseNameOf path);
-            }
-            path
-            self.nixosModules.default
-            self.nixosModules.bootstrap
-          ];
-        };
-      directory = ./by-name;
+  perSystem =
+    {
+      config,
+      pkgs,
+      lib,
+      system,
+      ...
+    }:
+    {
+      packages = lib.packagesFromDirectoryRecursive {
+        callPackage =
+          path: _:
+          (lib.nixosSystem {
+            specialArgs = {
+              inherit inputs self;
+            };
+            modules = [
+              {
+                disko.bootImage.imageName = lib.removeSuffix ".nix" (baseNameOf path);
+                disko.imageBuilder.pkgs = pkgs;
+              }
+              path
+              self.nixosModules.default
+              self.nixosModules.bootstrap
+            ];
+          }).config.system.build.diskoImages;
+        directory = ./by-name;
+      };
     };
-    images = lib.mapAttrs (n: v: v.config.system.build.diskoImages) nixosConfigurations;
-  };
 }

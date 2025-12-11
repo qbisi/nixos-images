@@ -27,12 +27,7 @@ jobs:
           - xunlong-orangepi-5
           - hinlink-h88k
           - jwipc-e88a
-        include:
-          - device: x86_64-generic
-            runner: ubuntu-latest
-          - device: x86_64-uefi
-            runner: ubuntu-latest
-    runs-on: ${{ matrix.runner || 'ubuntu-24.04-arm' }}
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: docker/setup-qemu-action@v3
@@ -40,7 +35,7 @@ jobs:
       with:
         enable_kvm: true
         extra_nix_config: |
-          extra-platforms = aarch64-linux i686-linux
+          extra-platforms = aarch64-linux
           experimental-features = nix-command flakes
           system-features = nixos-test benchmark big-parallel kvm
     - name: Set Swap Space
@@ -48,7 +43,7 @@ jobs:
       with:
         swap-size-gb: 32
     - name: Build image
-      run: nix build .#images.nixos-${{ matrix.device }} --accept-flake-config
+      run: nix build .#nixos-${{ matrix.device }} --accept-flake-config
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:

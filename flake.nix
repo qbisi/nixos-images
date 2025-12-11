@@ -15,7 +15,7 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     disko = {
-      url = "github:nix-community/disko";
+      url = "github:qbisi/disko/imageBuilder";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     colmena = {
