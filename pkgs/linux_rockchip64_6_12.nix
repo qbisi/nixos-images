@@ -8,7 +8,7 @@
   ...
 }:
 let
-  defconfigFile = "${armbianBuild}/config/kernel/linux-rockchip64-edge.config";
+  defconfigFile = "${armbianBuild}/config/kernel/linux-rockchip64-current.config";
   patchDir = "${armbianBuild}/patch/kernel/archive/rockchip64-6.12";
   kernelPatches = (
     map (p: {

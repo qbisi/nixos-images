@@ -1,7 +1,6 @@
 {
   buildUBoot,
   fetchFromGitHub,
-  gcc12Stdenv,
   armTrustedFirmwareRK3588,
   rkbin,
 }:
@@ -14,7 +13,6 @@ buildUBoot {
   };
   version = "2024.07";
   defconfig = "hinlink-h88k-rk3588_defconfig";
-  stdenv = gcc12Stdenv;
   extraMeta.platforms = [ "aarch64-linux" ];
   BL31 = "${armTrustedFirmwareRK3588}/bl31.elf";
   ROCKCHIP_TPL = rkbin.TPL_RK3588;
@@ -23,4 +21,7 @@ buildUBoot {
     "idbloader.img"
     "u-boot-rockchip.bin"
   ];
+  extraConfig = ''
+    CONFIG_PREBOOT="usb start;"
+  '';
 }
