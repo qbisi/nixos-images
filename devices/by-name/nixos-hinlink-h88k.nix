@@ -16,7 +16,6 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      imageSize = "2G";
       fileSystem = "btrfs";
       espStart = "16M";
       uboot.enable = true;
