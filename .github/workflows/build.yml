@@ -40,7 +40,12 @@ jobs:
           - xunlong-orangepi-5
           - hinlink-h88k
           - jwipc-e88a
-    runs-on: ubuntu-latest
+        include:
+          - device: x86_64-generic
+            runner: ubuntu-latest
+          - device: x86_64-uefi
+            runner: ubuntu-latest
+    runs-on: ${{ matrix.runner || 'ubuntu-24.04-arm' }}
     steps:
     - uses: actions/checkout@v4
     - uses: docker/setup-qemu-action@v3

@@ -95,10 +95,9 @@ in
     disko = {
       memSize = lib.mkDefault 4096;
 
-      imageBuilder = rec {
+      imageBuilder = {
         enableBinfmt = true;
-        pkgs = inputs.nixpkgs.legacyPackages.x86_64-linux;
-        kernelPackages = inputs.nixpkgs.legacyPackages.x86_64-linux.linuxPackages;
+        kernelPackages = pkgs.linuxPackages;
         extraPostVM = lib.mkAfter ''
           ${pkgs.xz}/bin/xz -z $out/*${config.disko.imageBuilder.imageFormat}
         '';
