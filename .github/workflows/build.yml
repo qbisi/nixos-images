@@ -12,20 +12,7 @@ env:
   GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
 jobs:
-  release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v4
-      - name: Create new release
-        run: |
-          if ! gh release view ${{ inputs.release }}; then
-            gh release create ${{ inputs.release }} --title ${{ inputs.release }}
-          fi
-
   images:
-    needs: release
     strategy:
       fail-fast: false
       matrix:
@@ -62,5 +49,30 @@ jobs:
         swap-size-gb: 32
     - name: Build image
       run: nix build .#images.nixos-${{ matrix.device }} --accept-flake-config
-    - name: Upload
-      run: gh release upload ${{ inputs.release }} result/*
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: image-${{ matrix.device }}
+        path: result/*
+
+  release:
+    needs: images   # ← create release ONLY after all succeed
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release if not exists
+        run: |
+          if ! gh release view ${{ inputs.release }}; then
+            gh release create ${{ inputs.release }} --title ${{ inputs.release }}
+          fi
+
+      - name: Upload images to release
+        run: |
+          gh release upload ${{ inputs.release }} artifacts/**/*
