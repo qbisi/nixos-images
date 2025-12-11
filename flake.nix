@@ -15,7 +15,6 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
     disko = {
-      # url = "github:nix-community/disko?rev=dfa4d1b9c39c0342ef133795127a3af14598017a";
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -37,10 +36,10 @@
       }:
       {
         systems = [
-          "i686-linux"
           "x86_64-linux"
           "aarch64-linux"
         ];
+
         imports = [
           ./devices
           ./hosts
@@ -64,7 +63,6 @@
             pkgs,
             lib,
             system,
-            self',
             ...
           }:
           {
@@ -89,7 +87,7 @@
             );
 
             packages = lib.packagesFromDirectoryRecursive {
-              inherit (self'.legacyPackages) callPackage;
+              inherit (config.legacyPackages) callPackage;
               directory = ./pkgs;
             };
 
