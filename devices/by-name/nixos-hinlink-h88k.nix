@@ -49,17 +49,6 @@
 
   services.udev.packages = [
     (pkgs.writeTextFile {
-      name = "naming-audios-udev-rules";
-      destination = "/etc/udev/rules.d/90-naming-audios.rules";
-      text = ''
-        SUBSYSTEM=="sound", ENV{ID_PATH}=="platform-hdmi0-sound", ENV{SOUND_DESCRIPTION}="HDMI0 Audio"
-        SUBSYSTEM=="sound", ENV{ID_PATH}=="platform-hdmi1-sound", ENV{SOUND_DESCRIPTION}="HDMI1 Audio"
-        SUBSYSTEM=="sound", ENV{ID_PATH}=="platform-hdmiin-sound", ENV{SOUND_DESCRIPTION}="HDMI-In Audio"
-        SUBSYSTEM=="sound", ENV{ID_PATH}=="platform-dp0-sound", ENV{SOUND_DESCRIPTION}="DP0 Audio"
-        SUBSYSTEM=="sound", ENV{ID_PATH}=="platform-es8388-sound", ENV{SOUND_DESCRIPTION}="ES8388 Audio"
-      '';
-    })
-    (pkgs.writeTextFile {
       name = "setting-led-udev-rules";
       destination = "/etc/udev/rules.d/90-setting-led.rules";
       text = ''
