@@ -27,7 +27,6 @@
   };
 
   environment.systemPackages = with pkgs; [
-    vim
     grub2_efi
   ];
 
