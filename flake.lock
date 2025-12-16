@@ -31,16 +31,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1765463553,
-        "narHash": "sha256-T+07HsuPEt+PO1ZfS8CRSn4Fdn+Q4dRJJSi8u6fuv14=",
-        "owner": "qbisi",
+        "lastModified": 1765794845,
+        "narHash": "sha256-YD5QWlGnusNbZCqR3pxG8tRxx9yUXayLZfAJRWspq2s=",
+        "owner": "nix-community",
         "repo": "disko",
-        "rev": "ebac6b640ee4ef7e69546a1913c81a16e250f2ee",
+        "rev": "7194cfe5b7a3660726b0fe7296070eaef601cae9",
         "type": "github"
       },
       "original": {
-        "owner": "qbisi",
-        "ref": "imageBuilder",
+        "owner": "nix-community",
         "repo": "disko",
         "type": "github"
       }
