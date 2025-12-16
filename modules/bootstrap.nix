@@ -1,12 +1,11 @@
 {
   config,
+  lib,
   pkgs,
-  modulesPath,
   ...
 }:
 {
   imports = [
-    "${modulesPath}/profiles/all-hardware.nix"
     ./config/passless.nix
     ./config/rsync-nixosconfig.nix
     ./system/grow-partition.nix
@@ -20,6 +19,8 @@
       "hv_storvsc"
     ];
   };
+
+  hardware.enableAllHardware = lib.mkDefault true;
 
   networking = {
     firewall.enable = false;
