@@ -62,7 +62,9 @@
 
   boot = {
     kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18;
-    initrd.availableKernelModules = lib.mkForce [ ];
+    initrd.availableKernelModules = lib.mkIf (
+      !config.boot.kernelPackages.kernel.configfile.autoModules
+    ) (lib.mkForce [ ]);
     kernelModules = [ "ledtrig-netdev" ];
     kernelParams = [
       "console=tty1"
