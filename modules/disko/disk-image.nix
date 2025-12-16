@@ -36,7 +36,7 @@ in
           size of the image when disko images are created
           is used as an argument to "qemu-img create ..."
         '';
-        default = "2G";
+        default = "2300M";
       };
 
       imageName = lib.mkOption {
