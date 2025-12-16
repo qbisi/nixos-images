@@ -2,10 +2,12 @@
   config,
   lib,
   pkgs,
+  modulesPath,
   ...
 }:
 {
   imports = [
+    "${modulesPath}/profiles/minimal.nix"
     ./config/passless.nix
     ./config/rsync-nixosconfig.nix
     ./system/grow-partition.nix
@@ -26,12 +28,6 @@
     firewall.enable = false;
     useNetworkd = true;
   };
-
-  environment.systemPackages = with pkgs; [
-    grub2_efi
-  ];
-
-  documentation.enable = false;
 
   nix.settings = {
     experimental-features = [
