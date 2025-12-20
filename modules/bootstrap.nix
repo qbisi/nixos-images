@@ -29,9 +29,10 @@
 
   hardware.enableAllHardware = lib.mkDefault config.boot.kernelPackages.kernel.configfile.autoModules;
 
-  networking.firewall.enable = false;
-
-  services.resolved.enable = true;
+  networking = {
+    firewall.enable = false;
+    useNetworkd = true;
+  };
 
   nix.settings = {
     experimental-features = [
