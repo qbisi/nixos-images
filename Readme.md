@@ -41,7 +41,7 @@ bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinst
 ## Custom your own configuration
 This project provide a init template that accept this repo as a flake inputs.
 ```
-nix flake new -t github:qbisi/nixos-images my-nixos-config
+nix flake new -t github:qbisi/nixos-images nixos-config
 ```
 
 ## Building the Image Yourself
