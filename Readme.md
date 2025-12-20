@@ -33,9 +33,9 @@ For cloud servers, you can use the [bin456789/reinstall](https://github.com/bin4
 
 ```bash
 ## x86_64-linux
-bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --password 123@@@ --img=https://github.com/qbisi/nixos-images/releases/download/2025.12.2/nixos-x86_64-generic.raw.xz && reboot
+bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --password 123@@@ --img=https://github.com/qbisi/nixos-images/releases/download/2025.12.3/nixos-x86_64-generic.raw.xz && reboot
 ## aarch64
-bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --password 123@@@ --img=https://github.com/qbisi/nixos-images/releases/download/2025.12.2/nixos-aarch64-uefi.raw.xz && reboot
+bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --password 123@@@ --img=https://github.com/qbisi/nixos-images/releases/download/2025.12.3/nixos-aarch64-uefi.raw.xz && reboot
 ```
 
 ## Custom your own configuration
