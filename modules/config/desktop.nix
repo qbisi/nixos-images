@@ -18,9 +18,6 @@
     AllowHybridSleep=no
     AllowSuspendThenHibernate=no
   '';
-  services.logind.extraConfig = ''
-    HibernateKeyIgnoreInhibited=no
-  '';
 
   fonts.packages = with pkgs; [
     noto-fonts
