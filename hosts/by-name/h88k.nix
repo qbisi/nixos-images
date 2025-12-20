@@ -15,7 +15,7 @@
 
   imports = [
     "${self}/devices/by-name/nixos-hinlink-h88k.nix"
-    "${self}/modules/config/desktop.nix"
+    # "${self}/modules/config/desktop.nix"
   ];
 
   users.users.nixos = {
