@@ -22,7 +22,7 @@
     ];
   };
 
-  hardware.enableAllHardware = lib.mkDefault true;
+  hardware.enableAllHardware = lib.mkDefault config.boot.kernelPackages.kernel.configfile.autoModules;
 
   networking = {
     firewall.enable = false;

@@ -55,9 +55,7 @@
 
   boot = {
     kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18;
-    initrd.availableKernelModules = lib.mkIf (
-      !config.boot.kernelPackages.kernel.configfile.autoModules
-    ) (lib.mkForce [ ]);
+    initrd.allowMissingModules = !config.boot.kernelPackages.kernel.configfile.autoModules;
     kernelParams = [
       "console=tty1"
       "earlycon"
