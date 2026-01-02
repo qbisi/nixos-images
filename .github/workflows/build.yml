@@ -27,6 +27,7 @@ jobs:
           - xunlong-orangepi-5
           - hinlink-h88k
           - jwipc-e88a
+          - friendlyelec-cm3588-nas
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
