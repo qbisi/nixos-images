@@ -9,7 +9,7 @@ on:
         type: string
 
 env:
-  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   images:
@@ -27,6 +27,7 @@ jobs:
           - xunlong-orangepi-5
           - hinlink-h88k
           - jwipc-e88a
+          - friendlyelec-cm3588-nas
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

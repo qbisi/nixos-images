@@ -1,0 +1,48 @@
+name: "Build ARM Images"
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "release"
+        required: true
+        type: string
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  arm-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        device:
+          - aarch64-uefi
+          - friendly-nanopc-t6
+          - radxa-rock-5a
+          - radxa-rock-5b
+          - xunlong-orangepi-5-plus
+          - xunlong-orangepi-5
+          - hinlink-h88k
+          - jwipc-e88a
+          - friendlyelec-cm3588-nas
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v31
+        with:
+          enable_kvm: true
+          extra_nix_config: |
+            extra-platforms = aarch64-linux
+            experimental-features = nix-command flakes
+            system-features = nixos-test benchmark big-parallel kvm
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 32
+      - name: Build image
+        run: nix build .#nixos-${{ matrix.device }} --accept-flake-config
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.device }}
+          path: result/*

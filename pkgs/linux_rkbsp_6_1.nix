@@ -7,13 +7,13 @@
   ...
 }:
 let
-  version = "6.1.75-armbian";
-  modDirVersion = "6.1.75";
+  version = "6.1.118-armbian";
+  modDirVersion = "6.1.118";
   src = fetchFromGitHub {
     owner = "armbian";
     repo = "linux-rockchip";
-    rev = "v24.11.1";
-    hash = "sha256-ZqEKQyFeE0UXN+tY8uAGrKgi9mXEp6s5WGyjVuxmuyM=";
+    rev = "b67dc5c9ade9dc354b790eb64aa6a665d0a54ecd";
+    hash = "sha256-xSZ63aUR78V92eD9X+rEYl0+1jRG1lBwhGhE2xjIn2U=";
   };
   defconfigFile = "${armbianBuild}/config/kernel/linux-rk35xx-vendor.config";
 in

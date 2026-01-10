@@ -1,0 +1,43 @@
+name: "Build x86 Images"
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "release"
+        required: true
+        type: string
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  x86-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        device:
+          - x86_64-generic
+          - x86_64-uefi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: cachix/install-nix-action@v31
+        with:
+          enable_kvm: true
+          extra_nix_config: |
+            extra-platforms = x86_64-linux
+            experimental-features = nix-command flakes
+            system-features = nixos-test benchmark big-parallel kvm
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 32
+      - name: Build image
+        run: nix build .#nixos-${{ matrix.device }} --accept-flake-config
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.device }}
+          path: result/*
+
