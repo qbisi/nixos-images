@@ -21,7 +21,4 @@ buildUBoot {
     "idbloader.img"
     "u-boot-rockchip.bin"
   ];
-  extraConfig = ''
-    CONFIG_PREBOOT="usb start;"
-  '';
 }
