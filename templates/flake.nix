@@ -16,58 +16,19 @@
   outputs =
     { self, nixpkgs, ... }@inputs:
     {
-      nixosConfigurations = {
-        azure-b1s = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            inherit inputs self;
+      nixosConfigurations = nixpkgs.lib.packagesFromDirectoryRecursive {
+        callPackage =
+          path: _:
+          nixpkgs.lib.nixosSystem {
+            specialArgs = {
+              inherit inputs self;
+            };
+            modules = [
+              path
+              inputs.nixos-images.nixosModules.default
+            ];
           };
-          modules = [
-            inputs.nixos-images.nixosModules.default
-            "${inputs.nixos-images}/devices/by-name/nixos-x86_64-uefi.nix"
-            # hardware configuration
-            {
-              boot.initrd.availableKernelModules = [ "sd_mod" ];
-              virtualisation.hypervGuest.enable = true;
-            }
-            # ./path-to-your-custom-config
-          ];
-        };
-
-        opi5-plus = nixpkgs.lib.nixosSystem {
-          specialArgs = {
-            inherit inputs self;
-          };
-          modules = [
-            inputs.nixos-images.nixosModules.default
-            "${inputs.nixos-images}/devices/by-name/nixos-xunlong-orangepi-5-plus.nix"
-            # ./path-to-your-custom-config
-          ];
-        };
-      };
-
-      colmena = {
-        meta = {
-          nixpkgs = import inputs.nixpkgs { system = "x86_64-linux"; };
-          specialArgs = {
-            inherit inputs self;
-          };
-        };
-
-        azure-b1s = {
-          imports = [
-            inputs.nixos-images.nixosModules.default
-            "${inputs.nixos-images}/devices/by-name/nixos-x86_64-uefi.nix"
-            # ./path-to-your-custom-config
-          ];
-        };
-
-        opi5-plus = {
-          imports = [
-            inputs.nixos-images.nixosModules.default
-            "${inputs.nixos-images}/devices/by-name/nixos-xunlong-orangepi-5-plus.nix"
-            # ./path-to-your-custom-config
-          ];
-        };
+        directory = ./hosts;
       };
     };
 }
