@@ -29,6 +29,8 @@
 
     deviceTree = {
       name = "rockchip/rk3588-friendlyelec-cm3588-nas.dtb";
+      platform = "rockchip";
+      dtsFile = ../../dts/vendor/rk3588-friendlyelec-cm3588-nas.dts;
     };
 
     serial = {
