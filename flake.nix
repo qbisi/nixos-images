@@ -42,7 +42,6 @@
 
         imports = [
           ./devices
-          ./hosts
           ./modules
         ];
 
