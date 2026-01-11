@@ -9,7 +9,7 @@
       ...
     }:
     {
-      packages = lib.packagesFromDirectoryRecursive {
+      legacyPackages = lib.packagesFromDirectoryRecursive {
         callPackage =
           path: _:
           (lib.nixosSystem {
