@@ -54,7 +54,7 @@
   ];
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18;
+    kernelPackages = lib.mkDefault (lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18));
     initrd.allowMissingModules = !config.boot.kernelPackages.kernel.configfile.autoModules;
     kernelParams = [
       "console=tty1"

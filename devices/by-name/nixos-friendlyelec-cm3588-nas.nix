@@ -29,8 +29,6 @@
 
     deviceTree = {
       name = "rockchip/rk3588-friendlyelec-cm3588-nas.dtb";
-      platform = "rockchip";
-      dtsFile = ../../dts/vendor/rk3588-friendlyelec-cm3588-nas.dts;
     };
 
     serial = {
@@ -41,7 +39,7 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rkbsp_6_1;
+    kernelPackages = lib.mkDefault (lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18));
 
     initrd.allowMissingModules = !config.boot.kernelPackages.kernel.configfile.autoModules;
 
