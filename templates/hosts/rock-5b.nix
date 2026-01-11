@@ -12,6 +12,12 @@
     ../config/desktop.nix
   ];
 
+  boot = {
+    # you can override the kernel packages set in bootstrap image
+    # kernelPackages = lib.mkForce (pkgs.linuxPackagesFor pkgs.linux_rkbsp_6_1);
+    kernelPackages = lib.mkForce linuxPackages_latest;
+  };
+
   users.users = {
     nixos = {
       password = "nixos";
