@@ -11,10 +11,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-images.url = "github:qbisi/nixos-images";
-    colmena = {
-      url = "github:zhaofengli/colmena";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs =
@@ -27,8 +23,12 @@
           };
           modules = [
             inputs.nixos-images.nixosModules.default
-            inputs.colmena.nixosModules.deploymentOptions
             "${inputs.nixos-images}/devices/by-name/nixos-x86_64-uefi.nix"
+            # hardware configuration
+            {
+              boot.initrd.availableKernelModules = [ "sd_mod" ];
+              virtualisation.hypervGuest.enable = true;
+            }
             # ./path-to-your-custom-config
           ];
         };
@@ -39,7 +39,6 @@
           };
           modules = [
             inputs.nixos-images.nixosModules.default
-            inputs.colmena.nixosModules.deploymentOptions
             "${inputs.nixos-images}/devices/by-name/nixos-xunlong-orangepi-5-plus.nix"
             # ./path-to-your-custom-config
           ];
