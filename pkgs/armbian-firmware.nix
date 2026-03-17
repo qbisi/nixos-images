@@ -11,13 +11,13 @@ let
 in
 stdenvNoCC.mkDerivation rec {
   pname = "armbian-firmware";
-  version = "unstable-2025-01-31";
+  version = "unstable-2026-03-01";
 
   src = fetchFromGitHub {
     owner = "armbian";
     repo = "firmware";
-    rev = "e75d7b6e36696a7877111c02bd3497cbd2d5cb34";
-    hash = "sha256-VhcrMBFpq2TM/XeiG22K+ZrN97Lv7m36J9Y/0W4lHrM=";
+    rev = "0b876d66db3933a192afbba17eb0f84cb62b4018";
+    hash = "sha256-/JxCWvpRtGW4hwqqtDJ7OutyyQXMdkJ1h6vzDsrmCkc=";
   };
 
   installPhase =
