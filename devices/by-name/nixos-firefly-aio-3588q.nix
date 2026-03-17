@@ -30,6 +30,9 @@
           "arm/mali/*"
           "rtl_nic/*"
           "mediatek/*"
+          "ap6275p/*"
+          "brcm/*"
+          "updates/*"
           "regulatory.db"
         ];
       })
