@@ -18,10 +18,7 @@ let
   ) ++ [
     {
       name = "add-typec-husb311";
-      patch = fetchurl {
-        url = "https://raw.githubusercontent.com/armbian/build/f9901450914e58b198bf67210f14d98df8ec6f90/patch/kernel/archive/sunxi-7.0/patches.megous/husb311-7.0/0001-usb-typec-husb311-Add-HUSB311-TCPI-driver.patch";
-        hash = "sha256-ua7mQvOmTAVOq36pkzS/sPXXXrgRiRZO++KKwo1QF40=";
-      };
+      patch = ../patches/kernel/add-husb311.patch;
     }
   ];
   structuredExtraConfig = with lib.kernel; {
