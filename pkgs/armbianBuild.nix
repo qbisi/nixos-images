@@ -2,11 +2,11 @@
 fetchFromGitHub {
   owner = "armbian";
   repo = "build";
-  rev = "ed1e2f2248b35ed52af042b4c14e4cc37098e03c";
+  rev = "5964e230a1c5d0a4424e84db9ba29dda1f89913e";
   nonConeMode = true;
   sparseCheckout = [
     "config/kernel/*.config"
     "patch/kernel/**/*.patch"
   ];
-  hash = "sha256-Boqqk605IPfIsQY1kmOPr5uhEF09wj7uESmRdaPp/oA=";
+  hash = "sha256-Qi73Co6WiEOvBL83M9qFgebUIvy9/546zAgCoh0ngoQ=";
 }

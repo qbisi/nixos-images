@@ -15,7 +15,15 @@ let
       name = baseNameOf p;
       patch = p;
     }) (lib.filesystem.listFilesRecursive patchDir)
-  );
+  ) ++ [
+    {
+      name = "add-typec-husb311";
+      patch = fetchurl {
+        url = "https://raw.githubusercontent.com/armbian/build/f9901450914e58b198bf67210f14d98df8ec6f90/patch/kernel/archive/sunxi-7.0/patches.megous/husb311-7.0/0001-usb-typec-husb311-Add-HUSB311-TCPI-driver.patch";
+        hash = "sha256-ua7mQvOmTAVOq36pkzS/sPXXXrgRiRZO++KKwo1QF40=";
+      };
+    }
+  ];
   structuredExtraConfig = with lib.kernel; {
     # FW_LOADER
     FW_LOADER_COMPRESS = yes;
@@ -32,6 +40,8 @@ let
     # MPTCP
     MPTCP = yes;
     INET_MPTCP_DIAG = module;
+    # TYPEC_HUSB311
+    TYPEC_HUSB311 = yes;
   };
 in
 buildLinux {
