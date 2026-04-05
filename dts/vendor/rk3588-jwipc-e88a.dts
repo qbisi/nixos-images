@@ -121,3 +121,7 @@
 	mem-supply = <&vdd_npu_s0>;
 	status = "okay";
 };
+
+&tsadc {
+	status = "okay";
+};

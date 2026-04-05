@@ -83,6 +83,13 @@ def has_single_rk806_scheme(content: str) -> bool:
     return all(f'regulator-name = "{name}";' in content for name in SINGLE_RK806_REQUIRED_NAMES)
 
 
+def is_enabled_node(content: str, node_name: str) -> bool:
+    block = extract_block(content, node_name)
+    if not block:
+        return False
+    return property_value(block, "status") == '"okay"'
+
+
 def render_fixed_regulators() -> str:
     return (
         "\tvcc5v0_sys: vcc5v0-sys {\n"
@@ -206,6 +213,9 @@ def build_rk806_rk860x_output(content: str, soc_family: str) -> str:
                 "&rknpu {\n\trknpu-supply = <&vdd_npu_s0>;\n\tmem-supply = <&vdd_npu_s0>;\n\tstatus = \"okay\";\n};\n",
             ]
         )
+
+    if is_enabled_node(content, "tsadc@fec00000"):
+        sections.append("&tsadc {\n\tstatus = \"okay\";\n};\n")
 
     return (
         "// SPDX-License-Identifier: (GPL-2.0+ OR MIT)\n\n"
