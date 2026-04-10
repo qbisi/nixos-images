@@ -22,6 +22,7 @@
 
         nixpkgs.overlays = [
           self.overlays.default
+          (import ../overlays.nix)
         ];
       };
       bootstrap = import ./bootstrap.nix;

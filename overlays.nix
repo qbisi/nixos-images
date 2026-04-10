@@ -20,8 +20,23 @@ self: pkgs: {
     '';
 
   buildUBoot =
-    { defconfig, ... }@args:
-    (pkgs.buildUBoot args).overrideAttrs {
+    {
+      defconfig,
+      dtsFile ? null,
+      ...
+    }@args:
+    (pkgs.buildUBoot args).overrideAttrs (prev: {
+      prePatch = pkgs.lib.optionalString (dtsFile != null) ''
+        cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
+      '';
+
+      extraConfig =
+        prev.extraConfig
+        + pkgs.lib.optionalString (dtsFile != null) ''
+          CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
+          CONFIG_OF_UPSTREAM=n
+        '';
+
       configurePhase = ''
         runHook preConfigure
 
@@ -31,7 +46,51 @@ self: pkgs: {
 
         runHook postConfigure
       '';
-    };
+    });
+
+  buildUBootRk3399 =
+    {
+      dtsFile,
+      extraConfig ? "",
+      ...
+    }@args:
+    self.buildUBoot (
+      {
+        defconfig = "generic-rk3399_defconfig";
+        BL31 = "${pkgs.armTrustedFirmwareRK3399}/bl31.elf";
+        ROCKCHIP_TPL = "${pkgs.rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
+        filesToInstall = [
+          "u-boot.itb"
+          "idbloader.img"
+          "u-boot-rockchip.bin"
+        ];
+        extraConfig = ''
+          CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
+          CONFIG_VIDEO=y
+          CONFIG_DISPLAY=y
+          CONFIG_VIDEO_ROCKCHIP=y
+          CONFIG_DISPLAY_ROCKCHIP_HDMI=y
+          CONFIG_USE_PREBOOT=y
+          CONFIG_PREBOOT="usb start;"
+          CONFIG_PHY_ROCKCHIP_INNO_USB2=y
+          CONFIG_PHY_ROCKCHIP_TYPEC=y
+          CONFIG_USB=y
+          CONFIG_USB_XHCI_HCD=y
+          CONFIG_USB_EHCI_HCD=y
+          CONFIG_USB_EHCI_GENERIC=y
+          CONFIG_USB_OHCI_HCD=y
+          CONFIG_USB_OHCI_GENERIC=y
+          CONFIG_USB_DWC3=y
+          CONFIG_USB_DWC3_GENERIC=y
+          CONFIG_USB_KEYBOARD=y
+          CONFIG_SYS_USB_EVENT_POLL_VIA_CONTROL_EP=y
+        ''
+        + extraConfig;
+      }
+      // removeAttrs args [
+        "extraConfig"
+      ]
+    );
 
   buildLinux =
     let
