@@ -99,7 +99,7 @@ in
         enableBinfmt = true;
         kernelPackages = config.disko.imageBuilder.pkgs.linuxPackages;
         extraPostVM = lib.mkAfter ''
-          ${config.disko.imageBuilder.pkgs.xz}/bin/xz -z $out/*${config.disko.imageBuilder.imageFormat}
+          ${config.disko.imageBuilder.pkgs.xz}/bin/xz -zk $out/*${config.disko.imageBuilder.imageFormat}
         '';
       };
 

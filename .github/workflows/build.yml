@@ -49,7 +49,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: image-${{ matrix.device }}
-        path: result/*
+        path: result/*.xz
 
   release:
     needs: images   # ← create release ONLY after all succeed
