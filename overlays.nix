@@ -126,6 +126,8 @@ self: pkgs: {
           CONFIG_PCIE_DW_ROCKCHIP=y
         ''
         + pkgs.lib.optionalString withUsb ''
+          CONFIG_PHY_ROCKCHIP_NANENG_COMBOPHY=y
+          CONFIG_PHY_ROCKCHIP_USBDP=y
           CONFIG_USB=y
           CONFIG_USB_XHCI_HCD=y
           CONFIG_USB_EHCI_HCD=y
