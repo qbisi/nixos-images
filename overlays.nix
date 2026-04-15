@@ -22,21 +22,9 @@ self: pkgs: {
   buildUBoot =
     {
       defconfig,
-      dtsFile ? null,
       ...
     }@args:
     (pkgs.buildUBoot args).overrideAttrs (prev: {
-      prePatch = pkgs.lib.optionalString (dtsFile != null) ''
-        cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
-      '';
-
-      extraConfig =
-        prev.extraConfig
-        + pkgs.lib.optionalString (dtsFile != null) ''
-          CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
-          CONFIG_OF_UPSTREAM=n
-        '';
-
       configurePhase = ''
         runHook preConfigure
 
@@ -64,7 +52,12 @@ self: pkgs: {
           "idbloader.img"
           "u-boot-rockchip.bin"
         ];
+        prePatch = ''
+          cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
+        '';
         extraConfig = ''
+          CONFIG_OF_UPSTREAM=n
+          CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
           CONFIG_VIDEO=y
           CONFIG_DISPLAY=y
@@ -89,6 +82,67 @@ self: pkgs: {
       }
       // removeAttrs args [
         "extraConfig"
+      ]
+    );
+
+  buildUBootRk3588 =
+    {
+      dtsFile,
+      extraConfig ? "",
+      withUsb ? true,
+      withNvme ? false,
+      ...
+    }@args:
+    self.buildUBoot (
+      {
+        defconfig = "generic-rk3588_defconfig";
+        BL31 = "${pkgs.armTrustedFirmwareRK3588}/bl31.elf";
+        ROCKCHIP_TPL = pkgs.rkbin.TPL_RK3588;
+        filesToInstall = [
+          "u-boot.itb"
+          "idbloader.img"
+          "u-boot-rockchip.bin"
+        ];
+        prePatch = ''
+          cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
+        '';
+        extraConfig = ''
+          # disable smbios such that sound card can find profile in alsa-ucm-conf
+          # see https://github.com/alsa-project/alsa-ucm-conf/pull/374
+          CONFIG_SMBIOS=n
+          CONFIG_OF_UPSTREAM=n
+          CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
+          CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
+
+        ''
+        + pkgs.lib.optionalString (withUsb || withNvme) ''
+          CONFIG_USE_PREBOOT=y
+          CONFIG_PREBOOT="${pkgs.lib.optionalString withUsb "usb start;"}${pkgs.lib.optionalString withUsb "pci enum; nvme scan;"}"
+        ''
+        + pkgs.lib.optionalString withNvme ''
+          CONFIG_PCI=y
+          CONFIG_CMD_PCI=y
+          CONFIG_NVME_PCI=y
+          CONFIG_PCIE_DW_ROCKCHIP=y
+        ''
+        + pkgs.lib.optionalString withUsb ''
+          CONFIG_USB=y
+          CONFIG_USB_XHCI_HCD=y
+          CONFIG_USB_EHCI_HCD=y
+          CONFIG_USB_EHCI_GENERIC=y
+          CONFIG_USB_OHCI_HCD=y
+          CONFIG_USB_OHCI_GENERIC=y
+          CONFIG_USB_DWC3=y
+          CONFIG_USB_DWC3_GENERIC=y
+          CONFIG_USB_KEYBOARD=y
+          CONFIG_SYS_USB_EVENT_POLL_VIA_CONTROL_EP=y
+        ''
+        + extraConfig;
+      }
+      // removeAttrs args [
+        "extraConfig"
+        "withUsb"
+        "withNvme"
       ]
     );
 

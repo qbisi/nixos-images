@@ -19,7 +19,9 @@
       fileSystem = "btrfs";
       espStart = "16M";
       uboot.enable = true;
-      uboot.package = pkgs.ubootCM3588NAS;
+      uboot.package = pkgs.buildUBootRk3588 {
+        dtsFile = ../../dts/mainline/rk3588-firefly-aio-3588q.dts;
+      };
     };
   };
 
