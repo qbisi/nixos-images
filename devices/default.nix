@@ -36,20 +36,27 @@
       legacyPackages = lib.packagesFromDirectoryRecursive {
         callPackage =
           path: _:
-          (lib.nixosSystem {
-            specialArgs = {
-              inherit inputs self;
+          let
+            nixosSystem = lib.nixosSystem {
+              specialArgs = {
+                inherit inputs self;
+              };
+              modules = [
+                {
+                  disko.bootImage.imageName = lib.removeSuffix ".nix" (baseNameOf path);
+                  disko.imageBuilder.pkgs = pkgs;
+                }
+                path
+                self.nixosModules.default
+                self.nixosModules.bootstrap
+              ];
             };
-            modules = [
-              {
-                disko.bootImage.imageName = lib.removeSuffix ".nix" (baseNameOf path);
-                disko.imageBuilder.pkgs = pkgs;
-              }
-              path
-              self.nixosModules.default
-              self.nixosModules.bootstrap
-            ];
-          }).config.system.build.diskoImages;
+          in
+          nixosSystem.config.system.build.diskoImages
+          // lib.optionalAttrs (nixosSystem.config.hardware.deviceTree.dtsFile != null) {
+            dtb = nixosSystem.config.hardware.deviceTree.package;
+            uboot = nixosSystem.config.disko.bootImage.uboot.package;
+          };
         directory = ./by-name;
       };
     };
