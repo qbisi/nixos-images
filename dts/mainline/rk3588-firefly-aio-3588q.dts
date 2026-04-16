@@ -99,6 +99,20 @@
 		pwms = <&pwm15 0 50000 0>;
 	};
 
+	adc-keys-0 {
+		compatible = "adc-keys";
+		io-channels = <&saradc 1>;
+		io-channel-names = "buttons";
+		keyup-threshold-microvolt = <550000>;
+		poll-interval = <100>;
+
+		button-recovery {
+			label = "Recovery";
+			linux,code = <KEY_VENDOR>;
+			press-threshold-microvolt = <2000>;
+		};
+	};
+
 	analog-sound {
 		compatible = "simple-audio-card";
 		pinctrl-names = "default";
