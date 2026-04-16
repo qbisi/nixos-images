@@ -39,6 +39,7 @@ self: pkgs: {
   buildUBootRk3399 =
     {
       dtsFile,
+      patches ? [ ],
       extraConfig ? "",
       ...
     }@args:
@@ -55,10 +56,12 @@ self: pkgs: {
         prePatch = ''
           cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
         '';
+        patches = [ ./patches/u-boot/spl-prefer-sdmmc.patch ] ++ patches;
         extraConfig = ''
           CONFIG_OF_UPSTREAM=n
           CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
+          CONFIG_ADC=y
           CONFIG_VIDEO=y
           CONFIG_DISPLAY=y
           CONFIG_VIDEO_ROCKCHIP=y
@@ -82,12 +85,14 @@ self: pkgs: {
       }
       // removeAttrs args [
         "extraConfig"
+        "patches"
       ]
     );
 
   buildUBootRk3588 =
     {
       dtsFile,
+      patches ? [ ],
       extraConfig ? "",
       withUsb ? true,
       withNvme ? false,
@@ -106,6 +111,7 @@ self: pkgs: {
         prePatch = ''
           cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
         '';
+        patches = [ ./patches/u-boot/spl-prefer-sdmmc.patch ] ++ patches;
         extraConfig = ''
           # disable smbios such that sound card can find profile in alsa-ucm-conf
           # see https://github.com/alsa-project/alsa-ucm-conf/pull/374
@@ -113,11 +119,11 @@ self: pkgs: {
           CONFIG_OF_UPSTREAM=n
           CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
-
+          CONFIG_ADC=y
         ''
         + pkgs.lib.optionalString (withUsb || withNvme) ''
           CONFIG_USE_PREBOOT=y
-          CONFIG_PREBOOT="${pkgs.lib.optionalString withUsb "usb start;"}${pkgs.lib.optionalString withUsb "pci enum; nvme scan;"}"
+          CONFIG_PREBOOT="${pkgs.lib.optionalString withUsb "usb start;"}${pkgs.lib.optionalString withNvme "pci enum; nvme scan;"}"
         ''
         + pkgs.lib.optionalString withNvme ''
           CONFIG_PCI=y
@@ -128,6 +134,9 @@ self: pkgs: {
         + pkgs.lib.optionalString withUsb ''
           CONFIG_PHY_ROCKCHIP_NANENG_COMBOPHY=y
           CONFIG_PHY_ROCKCHIP_USBDP=y
+          CONFIG_TYPEC_TCPM=y
+          CONFIG_TYPEC_FUSB302=y
+          CONFIG_CMD_USB=y
           CONFIG_USB=y
           CONFIG_USB_XHCI_HCD=y
           CONFIG_USB_EHCI_HCD=y
@@ -145,6 +154,7 @@ self: pkgs: {
         "extraConfig"
         "withUsb"
         "withNvme"
+        "patches"
       ]
     );
 
