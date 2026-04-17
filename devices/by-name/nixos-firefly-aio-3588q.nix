@@ -20,7 +20,7 @@
       espStart = "16M";
       uboot.enable = true;
       uboot.package = pkgs.buildUBootRk3588 {
-        withNvme = true;
+        withRecovery = true;
         dtsFile = ../../dts/mainline/rk3588-firefly-aio-3588q.dts;
       };
     };

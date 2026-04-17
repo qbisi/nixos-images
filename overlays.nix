@@ -61,7 +61,6 @@ self: pkgs: {
           CONFIG_OF_UPSTREAM=n
           CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
-          CONFIG_ADC=y
           CONFIG_VIDEO=y
           CONFIG_DISPLAY=y
           CONFIG_VIDEO_ROCKCHIP=y
@@ -96,6 +95,7 @@ self: pkgs: {
       extraConfig ? "",
       withUsb ? true,
       withNvme ? false,
+      withRecovery ? false,
       ...
     }@args:
     self.buildUBoot (
@@ -111,7 +111,11 @@ self: pkgs: {
         prePatch = ''
           cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
         '';
-        patches = [ ./patches/u-boot/spl-prefer-sdmmc.patch ] ++ patches;
+        patches = [
+          ./patches/u-boot/spl-prefer-sdmmc.patch
+          ./patches/u-boot/rk3588-adc-recovery.patch
+        ]
+        ++ patches;
         extraConfig = ''
           # disable smbios such that sound card can find profile in alsa-ucm-conf
           # see https://github.com/alsa-project/alsa-ucm-conf/pull/374
@@ -124,6 +128,13 @@ self: pkgs: {
         + pkgs.lib.optionalString (withUsb || withNvme) ''
           CONFIG_USE_PREBOOT=y
           CONFIG_PREBOOT="${pkgs.lib.optionalString withUsb "usb start;"}${pkgs.lib.optionalString withNvme "pci enum; nvme scan;"}"
+        ''
+        + pkgs.lib.optionalString withRecovery ''
+          CONFIG_ADC=y
+          CONFIG_ROCKCHIP_SPI=y
+          CONFIG_DM_PMIC=y
+          CONFIG_PMIC_RK8XX=y
+          CONFIG_REGULATOR_RK8XX=y
         ''
         + pkgs.lib.optionalString withNvme ''
           CONFIG_PCI=y
@@ -154,6 +165,7 @@ self: pkgs: {
         "extraConfig"
         "withUsb"
         "withNvme"
+        "withRecovery"
         "patches"
       ]
     );
