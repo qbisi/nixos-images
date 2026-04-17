@@ -11,7 +11,7 @@
     system = "aarch64-linux";
   };
 
-  networking.hostName = lib.mkDefault "3588q";
+  networking.hostName = lib.mkDefault "f88q";
 
   disko = {
     enableConfig = true;
@@ -45,6 +45,13 @@
       name = "rockchip/rk3588-firefly-aio-3588q.dtb";
       platform = "rockchip";
       dtsFile = ../../dts/mainline/rk3588-firefly-aio-3588q.dts;
+      overlays = [
+        {
+          name = "mipi-yx4005";
+          dtsFile = ../../dts/mainline/overlays/rk3588-mipi-yx4005.dtso;
+        }
+      ];
+      dtboBuildExtraIncludePaths = lib.mkAfter [ ../../dts/mainline ];
     };
     serial = {
       enable = true;
@@ -69,7 +76,7 @@
       "net.ifnames=0"
     ];
     consoleLogLevel = 6;
-    loader.timeout=0;
+    loader.timeout = 0;
     loader.grub.enable = false;
     loader.generic-extlinux-compatible.enable = true;
   };
