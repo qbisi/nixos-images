@@ -93,7 +93,7 @@ self: pkgs: {
       dtsFile,
       patches ? [ ],
       extraConfig ? "",
-      withUsb ? true,
+      withUsb ? false,
       withNvme ? false,
       withRecovery ? false,
       ...
