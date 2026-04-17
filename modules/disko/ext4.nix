@@ -7,7 +7,7 @@ in
     disko.bootImage._extraPartition = {
       nix = {
         size = "100%";
-        start = lib.mkIf (cfg.primaryStart != null) cfg.primaryStart;
+        start = lib.mkIf (cfg.primaryStart != null && !cfg.enableESP) cfg.primaryStart;
         content = {
           type = "filesystem";
           format = "ext4";
