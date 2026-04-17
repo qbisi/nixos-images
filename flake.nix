@@ -43,6 +43,7 @@
         imports = [
           ./devices
           ./modules
+          ./hosts
         ];
 
         flake = {
