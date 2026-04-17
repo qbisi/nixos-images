@@ -13,7 +13,7 @@
     enableConfig = true;
     bootImage = {
       fileSystem = "btrfs";
-      espStart = "16M";
+      primaryStart = "16M";
 
       uboot = {
         enable = true;

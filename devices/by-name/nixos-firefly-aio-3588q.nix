@@ -16,8 +16,9 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      fileSystem = "btrfs";
-      espStart = "16M";
+      enableESP = false;
+      fileSystem = "ext4";
+      primaryStart = "16M";
       uboot.enable = true;
       uboot.package = pkgs.buildUBootRk3588 {
         withRecovery = true;
@@ -68,7 +69,9 @@
       "net.ifnames=0"
     ];
     consoleLogLevel = 6;
-    loader.grub.enable = true;
+    loader.timeout=0;
+    loader.grub.enable = false;
+    loader.generic-extlinux-compatible.enable = true;
   };
 
 }

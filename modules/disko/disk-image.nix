@@ -30,6 +30,10 @@ in
 
       enableBiosBoot = lib.mkEnableOption "biosboot partition in gpt disk";
 
+      enableESP = lib.mkEnableOption "efi partition in gpt disk" // {
+        default = true;
+      };
+
       imageSize = lib.mkOption {
         type = lib.types.strMatching "[0-9]+[KMGTP]?";
         description = ''
@@ -63,7 +67,7 @@ in
         '';
       };
 
-      espStart = lib.mkOption {
+      primaryStart = lib.mkOption {
         type = lib.types.nullOr (lib.types.strMatching "[0-9]+[KMGTP]?");
         default = null;
         example = "16M";
@@ -90,7 +94,20 @@ in
         assertion = cfg.enableBiosBoot -> cfg.type == "gpt";
         message = "biosboot partition requires gpt disk type.";
       }
+      {
+        assertion = cfg.enableESP -> cfg.type == "gpt";
+        message = "efi partition requires gpt disk type.";
+      }
     ];
+
+    boot.loader = lib.mkIf cfg.enableESP {
+      efi.efiSysMountPoint = "/boot/efi";
+      grub = {
+        device = "nodev";
+        efiSupport = true;
+        efiInstallAsRemovable = true;
+      };
+    };
 
     disko = {
       memSize = lib.mkDefault 4096;
@@ -129,10 +146,10 @@ in
                 };
               })
 
-              (lib.mkIf (cfg.type == "gpt") {
+              (lib.mkIf cfg.enableESP {
                 ESP = {
-                  start = lib.mkIf (cfg.espStart != null) cfg.espStart;
-                  size = cfg.espSize;
+                  size = "100%";
+                  start = "-${cfg.espSize}";
                   type = "EF00";
                   priority = 1;
                   content = {

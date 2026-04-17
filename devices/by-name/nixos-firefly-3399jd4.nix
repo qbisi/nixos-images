@@ -24,7 +24,7 @@
     enableConfig = true;
     bootImage = {
       fileSystem = "ext4";
-      espStart = "16M";
+      primaryStart = "16M";
       uboot.enable = true;
       uboot.package = pkgs.buildUBootRk3399 {
         dtsFile = ../../dts/mainline/rk3399-firefly-core-3399-jd4.dts;
