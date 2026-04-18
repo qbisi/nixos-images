@@ -191,7 +191,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
         soc=soc_family,
         model=find_model(content, "Unknown RK3588 Board"),
         compatibles=find_compatible_list(content) or [f"unknown,{soc_family}-board", f"rockchip,{soc_family}"],
-        includes=[f'"{soc_family}.dtsi"'],
+        includes=default_dump_cleanup_includes(soc_family),
     )
     chosen = extract_chosen_stdout(content)
     if chosen:
@@ -221,6 +221,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     model.overlays.extend(build_imported_node_overlays(content, phandle_labels))
     model.overlays.extend(build_helper_node_overlays(content, phandle_labels))
     model.overlays.extend(build_common_dump_overlays(content, phandle_labels))
+    model.overlays.extend(build_rockchip_suspend_overlay(content))
 
     if not model.overlays:
         model.unresolved.append(UnresolvedFact(kind="coverage", detail="No dump-specific overlays were recognized"))
@@ -916,6 +917,55 @@ def build_common_dump_overlays(content: str, phandle_labels: dict[str, str]) -> 
             )
         )
     return overlays
+
+
+def build_rockchip_suspend_overlay(content: str) -> list[OverlayFact]:
+    if 'compatible = "rockchip,pm-rk3588";' not in content:
+        return []
+    return [
+        OverlayFact(
+            target="rockchip_suspend",
+            category="recovered-overlay",
+            block=(
+                "&rockchip_suspend {\n"
+                '\tcompatible = "rockchip,pm-rk3588";\n'
+                '\tstatus = "okay";\n'
+                "\trockchip,sleep-debug-en = <1>;\n"
+                "\trockchip,sleep-mode-config = <\n"
+                "\t\t(0\n"
+                "\t\t| RKPM_SLP_ARMOFF_DDRPD\n"
+                "\t\t)\n"
+                "\t>;\n"
+                "\trockchip,wakeup-config = <\n"
+                "\t\t(0\n"
+                "\t\t| RKPM_GPIO_WKUP_EN\n"
+                "\t\t| RKPM_USB_WKUP_EN\n"
+                "\t\t)\n"
+                "\t>;\n"
+                "};\n"
+            ),
+            enabled=True,
+        )
+    ]
+
+
+def default_dump_cleanup_includes(soc_family: str) -> list[str]:
+    includes = [f'"{soc_family}.dtsi"']
+    if soc_family != "rk3588":
+        return includes
+    return [
+        "<dt-bindings/gpio/gpio.h>",
+        "<dt-bindings/leds/common.h>",
+        "<dt-bindings/pwm/pwm.h>",
+        "<dt-bindings/pinctrl/rockchip.h>",
+        "<dt-bindings/input/rk-input.h>",
+        "<dt-bindings/display/drm_mipi_dsi.h>",
+        "<dt-bindings/display/rockchip_vop.h>",
+        "<dt-bindings/sensor-dev.h>",
+        '"dt-bindings/usb/pd.h"',
+        '"rk3588.dtsi"',
+        '"rk3588-linux.dtsi"',
+    ]
 
 
 def build_imported_port_overlays(content: str, phandle_labels: dict[str, str]) -> list[OverlayFact]:
