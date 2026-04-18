@@ -77,6 +77,8 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
     compiled_dtb = case_root / f"{stem}.compiled.dtb"
     dumped_dts = case_root / f"{stem}.dumped.dts"
     restored_dts = case_root / f"{stem}.restored.dts"
+    restored_compiled_dtb = case_root / f"{stem}.restored.compiled.dtb"
+    restored_compiled_dumped_dts = case_root / f"{stem}.restored.compiled.dumped.dts"
 
     compile_result = compile_dts_to_dtb(
         repo_root=REPO_ROOT,
@@ -109,6 +111,22 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
     restored_dts.write_text(restored_content, encoding="utf-8")
 
     restored_validation = validate_with_dtc(REPO_ROOT, restored_dts, include_kind)
+    restored_compile = compile_dts_to_dtb(
+        repo_root=REPO_ROOT,
+        input_path=restored_dts,
+        include_kind=include_kind,
+        output_path=restored_compiled_dtb,
+    )
+    restored_decompile: dict[str, object] | None = None
+    effective_score: dict[str, object] | None = None
+    effective_sequence_score: dict[str, object] | None = None
+    if restored_compile["status"] == "ok":
+        restored_decompile = decompile_dtb_to_dts(restored_compiled_dtb, restored_compiled_dumped_dts)
+        if restored_decompile["status"] == "ok":
+            reference_compiled_form = dumped_dts.read_text(encoding="utf-8", errors="ignore")
+            restored_compiled_form = restored_compiled_dumped_dts.read_text(encoding="utf-8", errors="ignore")
+            effective_score = score_dts_sources(restored_compiled_form, reference_compiled_form)
+            effective_sequence_score = score_text_similarity(restored_compiled_form, reference_compiled_form)
 
     return {
         "input": display_path(input_path),
@@ -117,12 +135,18 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
             "compiled_dtb": str(compiled_dtb),
             "dumped_dts": str(dumped_dts),
             "restored_dts": str(restored_dts),
+            "restored_compiled_dtb": str(restored_compiled_dtb),
+            "restored_compiled_dumped_dts": str(restored_compiled_dumped_dts),
         },
         "compile": compile_result,
         "decompile": decompile_result,
         "restored_validation": restored_validation,
+        "restored_compile": restored_compile,
+        "restored_decompile": restored_decompile,
         "source_score": score_dts_sources(restored_content, source_content),
         "sequence_score": score_text_similarity(restored_content, source_content),
+        "effective_score": effective_score,
+        "effective_sequence_score": effective_sequence_score,
         "unresolved": [{"kind": item.kind, "detail": item.detail} for item in restored_model.unresolved],
     }
 
@@ -137,6 +161,12 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
 
     source_sorted = sorted(successful, key=lambda item: (metric_value(item, "source_score"), item["input"]))
     sequence_sorted = sorted(successful, key=lambda item: (metric_value(item, "sequence_score"), item["input"]))
+    effective_successful = [item for item in successful if item.get("effective_score")]
+    effective_sorted = (
+        sorted(effective_successful, key=lambda item: (metric_value(item, "effective_score"), item["input"]))
+        if effective_successful
+        else []
+    )
 
     failed_compile = [item["input"] for item in results if item.get("compile", {}).get("status") != "ok"]
     failed_decompile = [
@@ -149,13 +179,26 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
         for item in successful
         if item.get("restored_validation", {}).get("status") != "ok"
     ]
+    failed_restored_compile = [
+        item["input"]
+        for item in successful
+        if item.get("restored_compile", {}).get("status") != "ok"
+    ]
+    failed_restored_decompile = [
+        item["input"]
+        for item in successful
+        if item.get("restored_compile", {}).get("status") == "ok"
+        and item.get("restored_decompile", {}).get("status") != "ok"
+    ]
 
-    return {
+    summary = {
         "cases": len(results),
         "successful_cases": len(successful),
         "failed_compile_cases": len(failed_compile),
         "failed_decompile_cases": len(failed_decompile),
         "failed_restore_validation_cases": len(failed_restore_validation),
+        "failed_restored_compile_cases": len(failed_restored_compile),
+        "failed_restored_decompile_cases": len(failed_restored_decompile),
         "avg_source_score": round(
             sum(metric_value(item, "source_score") for item in successful) / len(successful), 2
         ),
@@ -182,6 +225,27 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
         "failed_decompile_inputs": failed_decompile,
         "failed_restore_validation_inputs": failed_restore_validation,
     }
+    if effective_successful:
+        summary.update(
+            {
+                "avg_effective_score": round(
+                    sum(metric_value(item, "effective_score") for item in effective_successful)
+                    / len(effective_successful),
+                    2,
+                ),
+                "best_effective": {
+                    "input": effective_sorted[-1]["input"],
+                    "score": metric_value(effective_sorted[-1], "effective_score"),
+                },
+                "min_effective": {
+                    "input": effective_sorted[0]["input"],
+                    "score": metric_value(effective_sorted[0], "effective_score"),
+                },
+                "failed_restored_compile_inputs": failed_restored_compile,
+                "failed_restored_decompile_inputs": failed_restored_decompile,
+            }
+        )
+    return summary
 
 
 def format_output(results: list[dict[str, object]], aggregate: dict[str, object] | None) -> dict[str, object]:
@@ -194,6 +258,8 @@ def format_output(results: list[dict[str, object]], aggregate: dict[str, object]
             "failed_compile_cases": aggregate["failed_compile_cases"],
             "failed_decompile_cases": aggregate["failed_decompile_cases"],
             "failed_restore_validation_cases": aggregate["failed_restore_validation_cases"],
+            "failed_restored_compile_cases": aggregate["failed_restored_compile_cases"],
+            "failed_restored_decompile_cases": aggregate["failed_restored_decompile_cases"],
         }
         return {"results": results, "aggregate": single_aggregate}
     return {"results": results, "aggregate": aggregate}
