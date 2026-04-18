@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from difflib import SequenceMatcher
 
 from .board_model import BoardModel
@@ -115,7 +116,7 @@ def block_header(block: str) -> str:
     brace_index = block.find("{")
     if brace_index == -1:
         return block.strip()
-    return block[:brace_index].strip()
+    return strip_comments(block[:brace_index]).strip()
 
 
 def direct_property_statements(block: str) -> list[str]:
@@ -135,7 +136,7 @@ def direct_property_statements(block: str) -> list[str]:
             else:
                 current.append(char)
                 if char == ";":
-                    statement = normalize_inline_whitespace("".join(current).strip())
+                    statement = normalize_statement("".join(current))
                     if statement:
                         statements.append(statement)
                     current.clear()
@@ -150,3 +151,28 @@ def direct_property_statements(block: str) -> list[str]:
 
 def normalize_inline_whitespace(text: str) -> str:
     return " ".join(text.split())
+
+
+def normalize_statement(text: str) -> str:
+    statement = normalize_inline_whitespace(strip_comments(text).strip())
+    statement = normalize_numeric_literals(statement)
+    if not statement or statement == ";":
+        return ""
+    return statement
+
+
+def strip_comments(text: str) -> str:
+    return re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
+
+
+def normalize_numeric_literals(text: str) -> str:
+    def replace(match: re.Match[str]) -> str:
+        token = match.group(0)
+        if token.lower().startswith("0x"):
+            try:
+                return str(int(token, 16))
+            except ValueError:
+                return token
+        return token
+
+    return re.sub(r"\b0x[0-9a-fA-F]+\b", replace, text)

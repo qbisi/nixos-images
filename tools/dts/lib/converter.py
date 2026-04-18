@@ -8,6 +8,7 @@ from .classify import classify_block
 from .parse import (
     detect_soc_family,
     extract_block,
+    extract_block_from_index,
     find_compatible_list,
     find_includes,
     find_model,
@@ -158,6 +159,7 @@ ALIASES_PATH_RE = re.compile(r'^\s*([\w\-]+)\s*=\s*"([^"]+)";', re.MULTILINE)
 ALIAS_TARGET_RENAMES = {
     "hdptxhdmi0": "hdptxphy_hdmi0",
     "hdptxhdmi1": "hdptxphy_hdmi1",
+    "hdmirx0": "hdmirx_ctrler",
     "mmc0": "sdhci",
     "mmc1": "sdmmc",
     "mmc2": "sdio",
@@ -502,17 +504,69 @@ def infer_root_block_label(block: str) -> str | None:
 
 def build_phandle_label_map(content: str) -> dict[str, str]:
     phandle_labels: dict[str, str] = {}
-    for node_name, label in KNOWN_PHANDLE_LABELS.items():
-        block = extract_block(content, node_name)
-        if not block:
-            continue
+    alias_targets = build_dump_alias_target_map(content)
+    for block in iter_all_blocks(content):
         phandle = property_value(block, "phandle")
         if not phandle:
             continue
         key = phandle.strip("<>").strip().lower()
-        if key.startswith("0x"):
+        if not key.startswith("0x"):
+            continue
+        label = infer_node_label(block, alias_targets)
+        if label:
             phandle_labels[key] = label
+    pinctrl_block = extract_block(content, "pinctrl")
+    if pinctrl_block:
+        for block in iter_all_blocks(pinctrl_block):
+            phandle = property_value(block, "phandle")
+            if not phandle:
+                continue
+            if direct_child_blocks(block):
+                continue
+            key = phandle.strip("<>").strip().lower()
+            if not key.startswith("0x"):
+                continue
+            label = normalize_label_name(_node_name(block))
+            if label and key not in phandle_labels:
+                phandle_labels[key] = label
     return phandle_labels
+
+
+def iter_all_blocks(content: str) -> list[str]:
+    blocks: list[str] = []
+    pattern = re.compile(r"^[ \t]*(?:[\w,\-]+:\s+)*[/\w,\-@]+(?:\s*:\s*[\w,\-@]+)?\s*\{", re.MULTILINE)
+    for match in pattern.finditer(content):
+        block = extract_block_from_index(content, match.start())
+        if block:
+            blocks.append(block)
+    return blocks
+
+
+def infer_node_label(block: str, alias_targets: dict[str, str]) -> str | None:
+    node_name = _node_name(block)
+    if node_name in KNOWN_PHANDLE_LABELS:
+        return KNOWN_PHANDLE_LABELS[node_name]
+    if node_name in ROOT_NODE_LABELS:
+        return ROOT_NODE_LABELS[node_name]
+    if node_name in alias_targets:
+        return alias_targets[node_name]
+    regulator_name = property_value(block, "regulator-name")
+    if regulator_name:
+        return regulator_name.strip().strip('"')
+    return None
+
+
+def normalize_label_name(node_name: str) -> str | None:
+    stripped = node_name.split("@", 1)[0].strip()
+    if not stripped:
+        return None
+    normalized = stripped.replace("-", "_").replace(",", "_")
+    normalized = re.sub(r"[^0-9A-Za-z_]+", "_", normalized).strip("_")
+    if not normalized:
+        return None
+    if normalized[0].isdigit():
+        return None
+    return normalized
 
 
 def append_unique_root_nodes(model: BoardModel, nodes: list[NodeFact]) -> None:
@@ -1051,6 +1105,8 @@ def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> 
     for parent_name, node_name, label in (
         ("usb", "vcc5v0-host-en", "vcc5v0_host_en"),
         ("headphone", "hp-det", "hp_det"),
+        ("hdmirx", "hdmirx-det", "hdmirx_det"),
+        ("hym8563", "rtc-int", "rtc_int"),
         ("sdio-pwrseq", "wifi-enable-h", "wifi_enable_h"),
         ("wireless-wlan", "wifi-host-wake-irq", "wifi_host_wake_irq"),
     ):
@@ -1304,27 +1360,16 @@ def convert_dumped_block_to_overlay(
 
 
 def filtered_overlay_body_lines(block: str, target: str, alias_targets: dict[str, str]) -> list[str]:
-    lines = block.strip().splitlines()
-    if len(lines) < 2:
-        return []
+    property_lines = direct_property_lines(block)
     if target in STATUS_ONLY_TARGETS:
         status = property_value(block, "status")
         return [f'\tstatus = {status};'] if status else []
 
     allowed = MINIMAL_OVERLAY_PROPERTIES.get(target)
     if allowed is None:
-        body_lines = lines[1:-1]
-        return [line for line in body_lines if "phandle =" not in line]
+        return [line for line in property_lines if "phandle =" not in line]
 
-    selected: list[str] = []
-    inner_blocks = direct_child_blocks(block)
-    for line in lines[1:-1]:
-        stripped = line.strip()
-        if not stripped or "phandle =" in stripped:
-            continue
-        property_name = property_name_from_line(stripped)
-        if property_name and property_name in allowed:
-            selected.append(line)
+    selected = render_allowed_properties(block, allowed)
     return selected
 
 
@@ -1367,3 +1412,31 @@ def direct_child_blocks(block: str) -> list[str]:
                 start = None
         index += 1
     return blocks
+
+
+def direct_property_lines(block: str) -> list[str]:
+    lines = block.splitlines()
+    collected: list[str] = []
+    depth = 0
+    for line in lines[1:]:
+        stripped = line.strip()
+        open_count = line.count("{")
+        close_count = line.count("}")
+        if depth == 0 and stripped and stripped != "};" and "{" not in stripped and "}" not in stripped:
+            collected.append(line)
+        depth += open_count - close_count
+        if depth < 0:
+            depth = 0
+    return collected
+
+
+def render_allowed_properties(block: str, allowed: set[str]) -> list[str]:
+    rendered: list[str] = []
+    for name in allowed:
+        value = property_value(block, name)
+        if value is not None:
+            rendered.append(f"\t{name} = {value};")
+            continue
+        if has_property(block, name):
+            rendered.append(f"\t{name};")
+    return rendered
