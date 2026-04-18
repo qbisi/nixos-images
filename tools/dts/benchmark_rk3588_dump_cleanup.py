@@ -7,8 +7,8 @@ import json
 from pathlib import Path
 
 from lib.converter import detect_soc_family, render_conversion
-from lib.score import score_dts_sources, score_text_similarity
-from lib.validate import compile_dts_to_dtb, decompile_dtb_to_dts, validate_with_dtc
+from lib.score import score_dts_sources
+from lib.validate import compile_dts_to_dtb, decompile_dtb_to_dts
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -67,7 +67,13 @@ def discover_vendor_rk3588_dts() -> list[Path]:
     return discovered
 
 
-def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[str, object]:
+def benchmark_one(
+    input_path: Path,
+    work_root: Path,
+    include_kind: str,
+    *,
+    include_score_details: bool = False,
+) -> dict[str, object]:
     source_content = input_path.read_text(encoding="utf-8", errors="ignore")
     soc_family = detect_soc_family(source_content)
     stem = input_path.stem
@@ -110,23 +116,28 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
     )
     restored_dts.write_text(restored_content, encoding="utf-8")
 
-    restored_validation = validate_with_dtc(REPO_ROOT, restored_dts, include_kind)
     restored_compile = compile_dts_to_dtb(
         repo_root=REPO_ROOT,
         input_path=restored_dts,
         include_kind=include_kind,
         output_path=restored_compiled_dtb,
     )
+    restored_validation = {
+        **restored_compile,
+        "reused_from": "restored_compile",
+    }
     restored_decompile: dict[str, object] | None = None
     effective_score: dict[str, object] | None = None
-    effective_sequence_score: dict[str, object] | None = None
     if restored_compile["status"] == "ok":
         restored_decompile = decompile_dtb_to_dts(restored_compiled_dtb, restored_compiled_dumped_dts)
         if restored_decompile["status"] == "ok":
             reference_compiled_form = dumped_dts.read_text(encoding="utf-8", errors="ignore")
             restored_compiled_form = restored_compiled_dumped_dts.read_text(encoding="utf-8", errors="ignore")
-            effective_score = score_dts_sources(restored_compiled_form, reference_compiled_form)
-            effective_sequence_score = score_text_similarity(restored_compiled_form, reference_compiled_form)
+            effective_score = score_dts_sources(
+                restored_compiled_form,
+                reference_compiled_form,
+                include_details=include_score_details,
+            )
 
     return {
         "input": display_path(input_path),
@@ -143,10 +154,12 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
         "restored_validation": restored_validation,
         "restored_compile": restored_compile,
         "restored_decompile": restored_decompile,
-        "source_score": score_dts_sources(restored_content, source_content),
-        "sequence_score": score_text_similarity(restored_content, source_content),
+        "source_score": score_dts_sources(
+            restored_content,
+            source_content,
+            include_details=include_score_details,
+        ),
         "effective_score": effective_score,
-        "effective_sequence_score": effective_sequence_score,
         "unresolved": [{"kind": item.kind, "detail": item.detail} for item in restored_model.unresolved],
     }
 
@@ -160,7 +173,6 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
         return float(item[metric]["score"])  # type: ignore[index]
 
     source_sorted = sorted(successful, key=lambda item: (metric_value(item, "source_score"), item["input"]))
-    sequence_sorted = sorted(successful, key=lambda item: (metric_value(item, "sequence_score"), item["input"]))
     effective_successful = [item for item in successful if item.get("effective_score")]
     effective_sorted = (
         sorted(effective_successful, key=lambda item: (metric_value(item, "effective_score"), item["input"]))
@@ -202,9 +214,6 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
         "avg_source_score": round(
             sum(metric_value(item, "source_score") for item in successful) / len(successful), 2
         ),
-        "avg_sequence_score": round(
-            sum(metric_value(item, "sequence_score") for item in successful) / len(successful), 2
-        ),
         "best_source": {
             "input": source_sorted[-1]["input"],
             "score": metric_value(source_sorted[-1], "source_score"),
@@ -212,14 +221,6 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
         "min_source": {
             "input": source_sorted[0]["input"],
             "score": metric_value(source_sorted[0], "source_score"),
-        },
-        "best_sequence": {
-            "input": sequence_sorted[-1]["input"],
-            "score": metric_value(sequence_sorted[-1], "sequence_score"),
-        },
-        "min_sequence": {
-            "input": sequence_sorted[0]["input"],
-            "score": metric_value(sequence_sorted[0], "sequence_score"),
         },
         "failed_compile_inputs": failed_compile,
         "failed_decompile_inputs": failed_decompile,
@@ -292,6 +293,11 @@ def main() -> int:
         action="store_true",
         help="Benchmark all RK3588/RK3588S DTS files under dts/vendor/rockchip.",
     )
+    parser.add_argument(
+        "--score-details",
+        action="store_true",
+        help="Include per-score missing/extra node details in the JSON output.",
+    )
     args = parser.parse_args()
 
     try:
@@ -306,7 +312,14 @@ def main() -> int:
 
     results = []
     for input_path in inputs:
-        results.append(benchmark_one(input_path, args.work_root.resolve(), args.include_kind))
+        results.append(
+            benchmark_one(
+                input_path,
+                args.work_root.resolve(),
+                args.include_kind,
+                include_score_details=args.score_details,
+            )
+        )
 
     aggregate = summarize_results(results)
 

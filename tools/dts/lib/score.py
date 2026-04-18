@@ -3,6 +3,7 @@ from __future__ import annotations
 from difflib import SequenceMatcher
 
 from .board_model import BoardModel
+from .parse import iter_overlay_blocks, iter_root_blocks
 
 
 def score_models(produced: BoardModel, reference: BoardModel) -> dict[str, object]:
@@ -46,29 +47,42 @@ def score_text_similarity(produced_text: str, reference_text: str) -> dict[str, 
     }
 
 
-def score_dts_sources(produced_text: str, reference_text: str) -> dict[str, object]:
-    produced_lines = normalize_dts_lines(produced_text)
-    reference_lines = normalize_dts_lines(reference_text)
-    produced_set = set(produced_lines)
-    reference_set = set(reference_lines)
-    matched = produced_set & reference_set
-    missing = reference_set - produced_set
-    extra = produced_set - reference_set
-    denominator = len(reference_set) + len(extra)
+def score_dts_sources(
+    produced_text: str,
+    reference_text: str,
+    *,
+    include_details: bool = False,
+) -> dict[str, object]:
+    produced_nodes = extract_shallow_nodes(produced_text)
+    reference_nodes = extract_shallow_nodes(reference_text)
+    matched = sorted(set(produced_nodes) & set(reference_nodes))
+    missing = sorted(set(reference_nodes) - set(produced_nodes))
+    extra = sorted(set(produced_nodes) - set(reference_nodes))
+    denominator = len(reference_nodes) + len(extra)
     score = 0.0
     if denominator > 0:
         score = round((len(matched) / denominator) * 100, 2)
-    exact_match = produced_lines == reference_lines
-    return {
+    exact_match = produced_nodes == reference_nodes
+    result = {
+        "unit": "node",
+        "matched_node_count": len(matched),
+        "missing_node_count": len(missing),
+        "extra_node_count": len(extra),
+        "reference_node_count": len(reference_nodes),
         "matched_line_count": len(matched),
-        "missing_lines": sorted(missing),
-        "extra_lines": sorted(extra),
         "missing_line_count": len(missing),
         "extra_line_count": len(extra),
-        "reference_line_count": len(reference_set),
+        "reference_line_count": len(reference_nodes),
         "exact_match": exact_match,
         "score": 100.0 if exact_match else score,
     }
+    if include_details:
+        result["matched_nodes"] = matched
+        result["missing_nodes"] = missing
+        result["extra_nodes"] = extra
+        result["missing_lines"] = missing
+        result["extra_lines"] = extra
+    return result
 
 
 def normalize_dts_lines(text: str) -> list[str]:
@@ -79,3 +93,60 @@ def normalize_dts_lines(text: str) -> list[str]:
             continue
         normalized.append(" ".join(line.split()))
     return normalized
+
+
+def extract_shallow_nodes(text: str) -> list[str]:
+    nodes: list[str] = []
+    for block in iter_root_blocks(text):
+        nodes.append(f"root:{shallow_block_signature(block)}")
+    for target, block in iter_overlay_blocks(text):
+        nodes.append(f"overlay:{target}:{shallow_block_signature(block)}")
+    return nodes
+
+
+def shallow_block_signature(block: str) -> str:
+    header = normalize_inline_whitespace(block_header(block))
+    statements = sorted(statement for statement in direct_property_statements(block) if statement)
+    body = "|".join(statements)
+    return f"{header}|{body}"
+
+
+def block_header(block: str) -> str:
+    brace_index = block.find("{")
+    if brace_index == -1:
+        return block.strip()
+    return block[:brace_index].strip()
+
+
+def direct_property_statements(block: str) -> list[str]:
+    brace_index = block.find("{")
+    end_index = block.rfind("}")
+    if brace_index == -1 or end_index == -1 or end_index <= brace_index:
+        return []
+    inner = block[brace_index + 1 : end_index]
+    statements: list[str] = []
+    current: list[str] = []
+    depth = 1
+
+    for char in inner:
+        if depth == 1:
+            if char == "{":
+                current.clear()
+            else:
+                current.append(char)
+                if char == ";":
+                    statement = normalize_inline_whitespace("".join(current).strip())
+                    if statement:
+                        statements.append(statement)
+                    current.clear()
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 1:
+                current.clear()
+    return statements
+
+
+def normalize_inline_whitespace(text: str) -> str:
+    return " ".join(text.split())
