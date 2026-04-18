@@ -35,6 +35,7 @@ LABEL_REF_RE = re.compile(r"<&([\w]+)")
 ANGLE_VALUE_RE = re.compile(r"<([^>]+)>")
 WHOLE_LIST_PHANDLE_PROPERTIES = {"pinctrl-0", "pinctrl-1", "pinctrl-2"}
 FIRST_TOKEN_PHANDLE_PROPERTIES = {
+    "WIFI,host_wake_irq",
     "clocks",
     "enable-gpios",
     "gpio",
@@ -173,8 +174,17 @@ ROOT_NODE_TARGETS = {
     "rkvenc-ccu@fdbf0000": "rkvenc_ccu",
     "rkvdec-ccu@fdc30000": "rkvdec_ccu",
     "spdif-tx@fddb0000": "spdif_tx2",
+    "i2s@fddf0000": "i2s5_8ch",
+    "i2s@fddf4000": "i2s6_8ch",
+    "i2s@fddf8000": "i2s7_8ch",
     "dfi@fe060000": "dfi",
     "dmc": "dmc",
+    "vop@fdd90000": "vop",
+    "iommu@fdd97e00": "vop_mmu",
+    "serial@feb90000": "uart6",
+    "phy@fee00000": "combphy0_ps",
+    "phy@fee10000": "combphy1_ps",
+    "phy@fee20000": "combphy2_psu",
     "av1d@fdc70000": "av1d",
     "av1d-mmu@fdc68000": "av1d_mmu",
     "jpegd@fdb90000": "jpegd",
@@ -315,6 +325,14 @@ MINIMAL_OVERLAY_PROPERTIES = {
     "usbdp_phy0": {"status", "orientation-switch", "svid", "sbu1-dc-gpios", "sbu2-dc-gpios"},
     "usbdp_phy1": {"status"},
 }
+EMPTY_OVERLAY_TARGETS = {
+    "avcc_1v8_s0",
+    "avdd_0v75_s0",
+    "vcc_1v8_s0",
+    "vcc_3v3_s0",
+    "vdd_ddr_pll_s0",
+    "vdd_log_s0",
+}
 ALLOWED_DUMP_OVERLAY_TARGETS = STATUS_ONLY_TARGETS | set(MINIMAL_OVERLAY_PROPERTIES) | {
     "cpu_b0",
     "cpu_b2",
@@ -323,7 +341,7 @@ ALLOWED_DUMP_OVERLAY_TARGETS = STATUS_ONLY_TARGETS | set(MINIMAL_OVERLAY_PROPERT
     "rknpu",
     "rknpu_mmu",
     "hdmirx_ctrler",
-}
+} | EMPTY_OVERLAY_TARGETS
 
 
 def default_output_path(input_path: Path, mode: str) -> Path:
@@ -476,10 +494,60 @@ def rewrite_phandle_line(line: str, phandle_labels: dict[str, str]) -> str:
         if not label:
             return line
         rewritten_tokens[0] = f"&{label}"
+        rewritten_tokens = rewrite_gpio_tokens(property_name, rewritten_tokens)
     else:
         return line
 
     return name + "=" + remainder[: match.start()] + "<" + " ".join(rewritten_tokens) + ">" + remainder[match.end() :]
+
+
+def rewrite_gpio_tokens(property_name: str, tokens: list[str]) -> list[str]:
+    if property_name not in {
+        "WIFI,host_wake_irq",
+        "enable-gpios",
+        "gpio",
+        "gpios",
+        "hdmirx-det-gpios",
+        "host-wakeup-gpios",
+        "hp-det-gpio",
+        "int-n-gpios",
+        "reset-gpios",
+        "shutdown-gpios",
+    }:
+        return tokens
+    if len(tokens) < 3:
+        return tokens
+    pin_macro = gpio_pin_macro(tokens[1])
+    active_macro = gpio_active_macro(tokens[2])
+    rewritten = tokens[:]
+    if pin_macro:
+        rewritten[1] = pin_macro
+    if active_macro:
+        rewritten[2] = active_macro
+    return rewritten
+
+
+def gpio_pin_macro(token: str) -> str | None:
+    try:
+        index = int(token, 0)
+    except ValueError:
+        return None
+    if index < 0 or index > 31:
+        return None
+    bank = "ABCD"[index // 8]
+    return f"RK_P{bank}{index % 8}"
+
+
+def gpio_active_macro(token: str) -> str | None:
+    try:
+        value = int(token, 0)
+    except ValueError:
+        return None
+    if value == 0:
+        return "GPIO_ACTIVE_HIGH"
+    if value == 1:
+        return "GPIO_ACTIVE_LOW"
+    return None
 
 
 def ensure_root_block_label(block: str) -> str:
@@ -1343,6 +1411,10 @@ def infer_dump_overlay_target(block: str, alias_targets: dict[str, str]) -> str 
         for candidate, target in COMPATIBLE_TARGETS.items():
             if candidate in compatible:
                 return target if target in ALLOWED_DUMP_OVERLAY_TARGETS else None
+    regulator_name = property_value(block, "regulator-name")
+    if regulator_name:
+        target = regulator_name.strip().strip('"')
+        return target if target in EMPTY_OVERLAY_TARGETS else None
     return None
 
 
@@ -1364,6 +1436,8 @@ def filtered_overlay_body_lines(block: str, target: str, alias_targets: dict[str
     if target in STATUS_ONLY_TARGETS:
         status = property_value(block, "status")
         return [f'\tstatus = {status};'] if status else []
+    if target in EMPTY_OVERLAY_TARGETS:
+        return []
 
     allowed = MINIMAL_OVERLAY_PROPERTIES.get(target)
     if allowed is None:
