@@ -31,6 +31,56 @@ SINGLE_RK806_REQUIRED_NAMES = (
     "vdd_0v85_s0",
 )
 LABEL_REF_RE = re.compile(r"<&([\w]+)")
+IMPORTED_NODE_TARGETS = {
+    "hdmi@fde80000": "hdmi0",
+    "hdmi@fdea0000": "hdmi1",
+    "mmc@fe2c0000": "sdmmc",
+    "mmc@fe2d0000": "sdio",
+    "mmc@fe2e0000": "sdhci",
+    "pcie@fe150000": "pcie3x4",
+    "pcie@fe160000": "pcie3x2",
+    "pcie@fe170000": "pcie2x1l0",
+    "pcie@fe180000": "pcie2x1l1",
+    "pcie@fe190000": "pcie2x1l2",
+    "phy@fee80000": "pcie30phy",
+    "usb@fc800000": "usb_host0_ehci",
+    "usb@fc840000": "usb_host0_ohci",
+    "usb@fc880000": "usb_host1_ehci",
+    "usb@fc8c0000": "usb_host1_ohci",
+    "usb@fc000000": "usbdrd_dwc3_0",
+    "usb@fc400000": "usbdrd_dwc3_1",
+    "usb@fcd00000": "usbhost_dwc3_0",
+    "usbdrd3_0": "usbdrd3_0",
+    "usbdrd3_1": "usbdrd3_1",
+    "usbhost3_0": "usbhost3_0",
+    "phy@fed80000": "usbdp_phy0",
+    "phy@fed90000": "usbdp_phy1",
+}
+IMPORTED_NODE_ORDER = (
+    "hdmi@fde80000",
+    "hdmi@fdea0000",
+    "mmc@fe2c0000",
+    "mmc@fe2d0000",
+    "mmc@fe2e0000",
+    "pcie@fe150000",
+    "pcie@fe160000",
+    "pcie@fe170000",
+    "pcie@fe180000",
+    "pcie@fe190000",
+    "phy@fee80000",
+    "usb@fc800000",
+    "usb@fc840000",
+    "usb@fc880000",
+    "usb@fc8c0000",
+    "usbdrd3_0",
+    "usb@fc000000",
+    "usbdrd3_1",
+    "usb@fc400000",
+    "usbhost3_0",
+    "usb@fcd00000",
+    "phy@fed80000",
+    "phy@fed90000",
+)
 
 
 def default_output_path(input_path: Path, mode: str) -> Path:
@@ -87,6 +137,8 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
             model.overlays.append(
                 OverlayFact(target=target, block=f'&{target} {{\n\tstatus = "okay";\n}};\n', category="enabled-node", enabled=True)
             )
+
+    model.overlays.extend(build_imported_node_overlays(content))
 
     if not model.overlays:
         model.unresolved.append(UnresolvedFact(kind="coverage", detail="No dump-specific overlays were recognized"))
@@ -512,6 +564,56 @@ def build_supply_overlays(content: str) -> list[OverlayFact]:
     return overlays
 
 
+def build_imported_node_overlays(content: str) -> list[OverlayFact]:
+    overlays: list[OverlayFact] = []
+    for dumped_name in IMPORTED_NODE_ORDER:
+        block = extract_block(content, dumped_name)
+        if not block:
+            continue
+        target = IMPORTED_NODE_TARGETS[dumped_name]
+        normalized = convert_dumped_block_to_overlay(block, target)
+        status = property_value(block, "status")
+        overlays.append(
+            OverlayFact(
+                target=target,
+                block=normalized,
+                category=classify_block(normalized),
+                enabled=status == '"okay"',
+            )
+        )
+
+    overlays.extend(build_imported_port_overlays(content))
+    return overlays
+
+
+def build_imported_port_overlays(content: str) -> list[OverlayFact]:
+    overlays: list[OverlayFact] = []
+    for dumped_name, dp_target, u3_target in (
+        ("phy@fed80000", "usbdp_phy0_dp", "usbdp_phy0_u3"),
+        ("phy@fed90000", "usbdp_phy1_dp", "usbdp_phy1_u3"),
+    ):
+        block = extract_block(content, dumped_name)
+        if not block:
+            continue
+        dp_block = extract_block(block, "dp-port")
+        u3_block = extract_block(block, "u3-port")
+        for child_block, target in ((dp_block, dp_target), (u3_block, u3_target)):
+            if not child_block:
+                continue
+            status = property_value(child_block, "status")
+            if not status:
+                continue
+            overlays.append(
+                OverlayFact(
+                    target=target,
+                    block=f"&{target} {{\n\tstatus = {status};\n}};\n",
+                    category="enabled-node",
+                    enabled=status == '"okay"',
+                )
+            )
+    return overlays
+
+
 def render_rk860x_node(block: str, label: str, node_name: str, compatible_fallback: str) -> str:
     compatible = property_value(block, "compatible") or f'"{compatible_fallback}"'
     reg = property_value(block, "reg") or "<0x0>"
@@ -568,3 +670,15 @@ def normalize_block_header(block: str) -> str:
         left = f"{parts[-2]}: {parts[-1]} "
         lines[0] = left + "{" + right
     return "\n".join(lines)
+
+
+def convert_dumped_block_to_overlay(block: str, target: str) -> str:
+    lines = block.strip().splitlines()
+    if not lines:
+        return f"&{target} {{\n}};\n"
+    body_lines = lines[1:-1]
+    body_lines = [line for line in body_lines if "phandle =" not in line]
+    body = "\n".join(body_lines).rstrip()
+    if body:
+        return f"&{target} {{\n{body}\n}};\n"
+    return f"&{target} {{\n}};\n"
