@@ -6,8 +6,8 @@ import argparse
 import json
 from pathlib import Path
 
-from lib.converter import detect_soc_family, extract_structural_model, render_conversion
-from lib.score import score_models, score_text_similarity
+from lib.converter import detect_soc_family, render_conversion
+from lib.score import score_dts_sources, score_text_similarity
 from lib.validate import compile_dts_to_dtb, decompile_dtb_to_dts, validate_with_dtc
 
 
@@ -109,8 +109,6 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
     restored_dts.write_text(restored_content, encoding="utf-8")
 
     restored_validation = validate_with_dtc(REPO_ROOT, restored_dts, include_kind)
-    reference_model = extract_structural_model(source_content, soc_family)
-    produced_model = extract_structural_model(restored_content, soc_family)
 
     return {
         "input": display_path(input_path),
@@ -123,22 +121,22 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
         "compile": compile_result,
         "decompile": decompile_result,
         "restored_validation": restored_validation,
-        "structural_score": score_models(produced_model, reference_model),
-        "text_score": score_text_similarity(restored_content, source_content),
+        "source_score": score_dts_sources(restored_content, source_content),
+        "sequence_score": score_text_similarity(restored_content, source_content),
         "unresolved": [{"kind": item.kind, "detail": item.detail} for item in restored_model.unresolved],
     }
 
 
 def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | None:
-    successful = [item for item in results if item.get("structural_score")]
+    successful = [item for item in results if item.get("source_score")]
     if not successful:
         return None
 
     def metric_value(item: dict[str, object], metric: str) -> float:
         return float(item[metric]["score"])  # type: ignore[index]
 
-    structural_sorted = sorted(successful, key=lambda item: (metric_value(item, "structural_score"), item["input"]))
-    text_sorted = sorted(successful, key=lambda item: (metric_value(item, "text_score"), item["input"]))
+    source_sorted = sorted(successful, key=lambda item: (metric_value(item, "source_score"), item["input"]))
+    sequence_sorted = sorted(successful, key=lambda item: (metric_value(item, "sequence_score"), item["input"]))
 
     failed_compile = [item["input"] for item in results if item.get("compile", {}).get("status") != "ok"]
     failed_decompile = [
@@ -158,27 +156,27 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
         "failed_compile_cases": len(failed_compile),
         "failed_decompile_cases": len(failed_decompile),
         "failed_restore_validation_cases": len(failed_restore_validation),
-        "avg_structural_score": round(
-            sum(metric_value(item, "structural_score") for item in successful) / len(successful), 2
+        "avg_source_score": round(
+            sum(metric_value(item, "source_score") for item in successful) / len(successful), 2
         ),
-        "avg_text_score": round(
-            sum(metric_value(item, "text_score") for item in successful) / len(successful), 2
+        "avg_sequence_score": round(
+            sum(metric_value(item, "sequence_score") for item in successful) / len(successful), 2
         ),
-        "best_structural": {
-            "input": structural_sorted[-1]["input"],
-            "score": metric_value(structural_sorted[-1], "structural_score"),
+        "best_source": {
+            "input": source_sorted[-1]["input"],
+            "score": metric_value(source_sorted[-1], "source_score"),
         },
-        "min_structural": {
-            "input": structural_sorted[0]["input"],
-            "score": metric_value(structural_sorted[0], "structural_score"),
+        "min_source": {
+            "input": source_sorted[0]["input"],
+            "score": metric_value(source_sorted[0], "source_score"),
         },
-        "best_text": {
-            "input": text_sorted[-1]["input"],
-            "score": metric_value(text_sorted[-1], "text_score"),
+        "best_sequence": {
+            "input": sequence_sorted[-1]["input"],
+            "score": metric_value(sequence_sorted[-1], "sequence_score"),
         },
-        "min_text": {
-            "input": text_sorted[0]["input"],
-            "score": metric_value(text_sorted[0], "text_score"),
+        "min_sequence": {
+            "input": sequence_sorted[0]["input"],
+            "score": metric_value(sequence_sorted[0], "sequence_score"),
         },
         "failed_compile_inputs": failed_compile,
         "failed_decompile_inputs": failed_decompile,

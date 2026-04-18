@@ -44,3 +44,38 @@ def score_text_similarity(produced_text: str, reference_text: str) -> dict[str, 
         "extra_line_count": len(extra),
         "score": round(ratio * 100, 2),
     }
+
+
+def score_dts_sources(produced_text: str, reference_text: str) -> dict[str, object]:
+    produced_lines = normalize_dts_lines(produced_text)
+    reference_lines = normalize_dts_lines(reference_text)
+    produced_set = set(produced_lines)
+    reference_set = set(reference_lines)
+    matched = produced_set & reference_set
+    missing = reference_set - produced_set
+    extra = produced_set - reference_set
+    denominator = len(reference_set) + len(extra)
+    score = 0.0
+    if denominator > 0:
+        score = round((len(matched) / denominator) * 100, 2)
+    exact_match = produced_lines == reference_lines
+    return {
+        "matched_line_count": len(matched),
+        "missing_lines": sorted(missing),
+        "extra_lines": sorted(extra),
+        "missing_line_count": len(missing),
+        "extra_line_count": len(extra),
+        "reference_line_count": len(reference_set),
+        "exact_match": exact_match,
+        "score": 100.0 if exact_match else score,
+    }
+
+
+def normalize_dts_lines(text: str) -> list[str]:
+    normalized: list[str] = []
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        normalized.append(" ".join(line.split()))
+    return normalized
