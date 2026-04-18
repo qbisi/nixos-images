@@ -25,6 +25,17 @@ def default_work_root() -> Path:
     return Path("/tmp") / "rk3588-dump-cleanup-bench"
 
 
+def discover_vendor_rk3588_dts() -> list[Path]:
+    base = REPO_ROOT / "dts" / "vendor" / "rockchip"
+    discovered: list[Path] = []
+    for path in sorted(base.glob("*.dts")):
+        content = path.read_text(encoding="utf-8", errors="ignore")
+        soc_family = detect_soc_family(content)
+        if soc_family in {"rk3588", "rk3588s"} and "rockchip,rk3588" in content.lower():
+            discovered.append(path)
+    return discovered
+
+
 def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[str, object]:
     source_content = input_path.read_text(encoding="utf-8", errors="ignore")
     soc_family = detect_soc_family(source_content)
@@ -87,15 +98,72 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
     }
 
 
+def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | None:
+    successful = [item for item in results if item.get("structural_score")]
+    if not successful:
+        return None
+
+    def metric_value(item: dict[str, object], metric: str) -> float:
+        return float(item[metric]["score"])  # type: ignore[index]
+
+    structural_sorted = sorted(successful, key=lambda item: (metric_value(item, "structural_score"), item["input"]))
+    text_sorted = sorted(successful, key=lambda item: (metric_value(item, "text_score"), item["input"]))
+
+    failed_compile = [item["input"] for item in results if item.get("compile", {}).get("status") != "ok"]
+    failed_decompile = [
+        item["input"]
+        for item in results
+        if item.get("compile", {}).get("status") == "ok" and item.get("decompile", {}).get("status") != "ok"
+    ]
+    failed_restore_validation = [
+        item["input"]
+        for item in successful
+        if item.get("restored_validation", {}).get("status") != "ok"
+    ]
+
+    return {
+        "cases": len(results),
+        "successful_cases": len(successful),
+        "failed_compile_cases": len(failed_compile),
+        "failed_decompile_cases": len(failed_decompile),
+        "failed_restore_validation_cases": len(failed_restore_validation),
+        "avg_structural_score": round(
+            sum(metric_value(item, "structural_score") for item in successful) / len(successful), 2
+        ),
+        "avg_text_score": round(
+            sum(metric_value(item, "text_score") for item in successful) / len(successful), 2
+        ),
+        "best_structural": {
+            "input": structural_sorted[-1]["input"],
+            "score": metric_value(structural_sorted[-1], "structural_score"),
+        },
+        "min_structural": {
+            "input": structural_sorted[0]["input"],
+            "score": metric_value(structural_sorted[0], "structural_score"),
+        },
+        "best_text": {
+            "input": text_sorted[-1]["input"],
+            "score": metric_value(text_sorted[-1], "text_score"),
+        },
+        "min_text": {
+            "input": text_sorted[0]["input"],
+            "score": metric_value(text_sorted[0], "text_score"),
+        },
+        "failed_compile_inputs": failed_compile,
+        "failed_decompile_inputs": failed_decompile,
+        "failed_restore_validation_inputs": failed_restore_validation,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Benchmark RK3588 dump-cleanup by round-tripping cleaned DTS through DTB and fdtdump form."
     )
     parser.add_argument(
         "inputs",
-        nargs="+",
+        nargs="*",
         type=Path,
-        help="Cleaned DTS inputs, typically from dts/vendor/",
+        help="Cleaned DTS inputs. If omitted with --vendor-rockchip-all, the script discovers all RK3588/RK3588S DTS files under dts/vendor/rockchip.",
     )
     parser.add_argument(
         "--include-kind",
@@ -109,24 +177,24 @@ def main() -> int:
         default=default_work_root(),
         help="Directory for generated DTB, dumped DTS, and restored DTS artifacts.",
     )
+    parser.add_argument(
+        "--vendor-rockchip-all",
+        action="store_true",
+        help="Benchmark all RK3588/RK3588S DTS files under dts/vendor/rockchip.",
+    )
     args = parser.parse_args()
 
-    results = []
-    for input_path in args.inputs:
-        results.append(benchmark_one(input_path.resolve(), args.work_root.resolve(), args.include_kind))
+    inputs = [path.resolve() for path in args.inputs]
+    if args.vendor_rockchip_all:
+        inputs = discover_vendor_rk3588_dts()
+    if not inputs:
+        parser.error("Provide one or more input DTS files, or use --vendor-rockchip-all.")
 
-    successful = [item for item in results if item.get("structural_score")]
-    aggregate = None
-    if successful:
-        aggregate = {
-            "cases": len(successful),
-            "avg_structural_score": round(
-                sum(item["structural_score"]["score"] for item in successful) / len(successful), 2
-            ),
-            "avg_text_score": round(
-                sum(item["text_score"]["score"] for item in successful) / len(successful), 2
-            ),
-        }
+    results = []
+    for input_path in inputs:
+        results.append(benchmark_one(input_path, args.work_root.resolve(), args.include_kind))
+
+    aggregate = summarize_results(results)
 
     print(json.dumps({"results": results, "aggregate": aggregate}, indent=2))
     return 0
