@@ -82,6 +82,7 @@ KNOWN_PHANDLE_LABELS = {
     "es8316@11": "es8316",
     "gpio@fd8a0000": "gpio0",
     "gpio@fec20000": "gpio1",
+    "gpio@fec30000": "gpio2",
     "gpio@fec40000": "gpio3",
     "gpio@fec50000": "gpio4",
     "hdmi@fde80000": "hdmi0",
@@ -219,6 +220,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
 
     model.overlays.extend(build_imported_node_overlays(content, phandle_labels))
     model.overlays.extend(build_helper_node_overlays(content, phandle_labels))
+    model.overlays.extend(build_common_dump_overlays(content, phandle_labels))
 
     if not model.overlays:
         model.unresolved.append(UnresolvedFact(kind="coverage", detail="No dump-specific overlays were recognized"))
@@ -887,6 +889,32 @@ def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> 
             )
         )
 
+    return overlays
+
+
+def build_common_dump_overlays(content: str, phandle_labels: dict[str, str]) -> list[OverlayFact]:
+    overlays: list[OverlayFact] = []
+    for dumped_name, target in (
+        ("pwm@fd8b0010", "pwm1"),
+        ("i2s@fe470000", "i2s0_8ch"),
+        ("i2c@feac0000", "i2c4"),
+        ("gpio@fd8a0000", "gpio0"),
+        ("gpio@fec20000", "gpio1"),
+        ("gpio@fec30000", "gpio2"),
+        ("gpio@fec40000", "gpio3"),
+        ("gpio@fec50000", "gpio4"),
+    ):
+        block = extract_block(content, dumped_name)
+        if not block:
+            continue
+        overlays.append(
+            OverlayFact(
+                target=target,
+                category="recovered-overlay",
+                block=convert_dumped_block_to_overlay(block, target, phandle_labels),
+                enabled=property_value(block, "status") == '"okay"',
+            )
+        )
     return overlays
 
 
