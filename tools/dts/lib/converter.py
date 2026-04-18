@@ -123,10 +123,16 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     if chosen:
         model.root_nodes.append(NodeFact(name="chosen", block=chosen, category="core"))
 
+    recovered_root_nodes = recover_dump_root_nodes(content)
+    append_unique_root_nodes(model, recovered_root_nodes)
+
     if soc_family == "rk3588" and has_single_rk806_scheme(content):
         model.includes.append('"rk3588-rk806-single.dtsi"')
         for block in build_fixed_regulator_blocks():
-            model.root_nodes.append(NodeFact(name=_node_name(block), block=block, category="regulator"))
+            append_unique_root_nodes(
+                model,
+                [NodeFact(name=_node_name(block), block=block, category="regulator")],
+            )
         overlays = build_rk860x_overlays(content)
         model.overlays.extend(overlays)
         model.overlays.extend(build_supply_overlays(content))
@@ -143,6 +149,63 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     if not model.overlays:
         model.unresolved.append(UnresolvedFact(kind="coverage", detail="No dump-specific overlays were recognized"))
     return model
+
+
+def recover_dump_root_nodes(content: str) -> list[NodeFact]:
+    recovered: list[NodeFact] = []
+    for block in iter_root_blocks(content):
+        name = _node_name(block)
+        category = classify_block(block)
+        if not should_restore_dump_root_node(name, category, block):
+            continue
+        normalized = normalize_dump_root_block(block)
+        recovered.append(
+            NodeFact(
+                name=_node_name(normalized),
+                block=normalized,
+                category=category,
+            )
+        )
+    return recovered
+
+
+def should_restore_dump_root_node(name: str, category: str, block: str) -> bool:
+    if name in {"chosen", "aliases", "clocks"}:
+        return False
+    if name == "reserved-memory":
+        return True
+    if category in {"audio", "fan", "mmc-pwrseq", "leds", "wireless"}:
+        return True
+    if category == "regulator":
+        return True
+    if "rockchip,multicodecs-card" in (property_value(block, "compatible") or ""):
+        return True
+    return False
+
+
+def normalize_dump_root_block(block: str) -> str:
+    block = block.replace("\t", "    ").strip()
+    block = strip_phandle_properties(block)
+    block = replace_numeric_phandles(block)
+    return normalize_block_header(block) + "\n"
+
+
+def strip_phandle_properties(block: str) -> str:
+    lines = [line for line in block.splitlines() if "phandle =" not in line]
+    return "\n".join(lines)
+
+
+def replace_numeric_phandles(block: str) -> str:
+    return block
+
+
+def append_unique_root_nodes(model: BoardModel, nodes: list[NodeFact]) -> None:
+    existing = {node.name for node in model.root_nodes}
+    for node in nodes:
+        if node.name in existing:
+            continue
+        model.root_nodes.append(node)
+        existing.add(node.name)
 
 
 def build_vendor_to_mainline_model(
