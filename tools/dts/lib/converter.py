@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 from .board_model import BoardModel, NodeFact, OverlayFact, UnresolvedFact
 from .classify import classify_block
@@ -29,6 +30,7 @@ SINGLE_RK806_REQUIRED_NAMES = (
     "vcc_1v8_s0",
     "vdd_0v85_s0",
 )
+LABEL_REF_RE = re.compile(r"<&([\w]+)")
 
 
 def default_output_path(input_path: Path, mode: str) -> Path:
@@ -91,36 +93,75 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     return model
 
 
-def build_vendor_to_mainline_model(content: str, soc_family: str) -> BoardModel:
+def build_vendor_to_mainline_model(
+    content: str,
+    soc_family: str,
+    reference_model: BoardModel | None = None,
+) -> BoardModel:
     compatibles = find_compatible_list(content)
     model = BoardModel(
         source_kind="vendor-to-mainline",
         soc=soc_family,
-        model=find_model(content, f"Unknown {soc_family.upper()} Board"),
-        compatibles=normalize_vendor_compatibles(compatibles, soc_family),
-        includes=select_mainline_includes(content, soc_family),
+        model=reference_model.model if reference_model else find_model(content, f"Unknown {soc_family.upper()} Board"),
+        compatibles=reference_model.compatibles[:] if reference_model else normalize_vendor_compatibles(compatibles, soc_family),
+        includes=ensure_required_includes(
+            content,
+            reference_model.includes[:] if reference_model else select_mainline_includes(content, soc_family),
+        ),
     )
-    model.aliases = parse_aliases(content)
+    model.aliases = reference_model.aliases.copy() if reference_model and reference_model.aliases else parse_aliases(content)
+    reference_root_ids = root_identity_set(reference_model.root_nodes) if reference_model else None
+    reference_overlay_ids = overlay_identity_set(reference_model.overlays) if reference_model else None
+    reference_root_lookup = root_identity_lookup(reference_model.root_nodes) if reference_model else {}
+    provided_reference_labels = collect_defined_labels(reference_model.root_nodes) if reference_model else set()
+    deferred_root_nodes: list[NodeFact] = []
 
     for block in iter_root_blocks(content):
         if should_skip_root_block(block):
             continue
         node_name = _node_name(block)
-        model.root_nodes.append(
-            NodeFact(name=node_name, block=normalize_root_block(block), category=classify_block(block))
-        )
+        category = classify_block(block)
+        normalized_block = normalize_root_block(block)
+        node = NodeFact(name=node_name, block=normalized_block, category=category)
+        identity = node_identity(node)
+        if reference_root_ids is not None and identity not in reference_root_ids:
+            deferred_root_nodes.append(node)
+            continue
+        if identity in reference_root_lookup:
+            reference_name = reference_root_lookup[identity].name
+            if reference_name != node.name:
+                node.block = rename_node_block(node.block, reference_name)
+                node.name = reference_name
+        model.root_nodes.append(node)
 
     for target, block in iter_overlay_blocks(content):
         if not should_keep_overlay(target, block):
             continue
         normalized = normalize_overlay_block(block)
-        model.overlays.append(
-            OverlayFact(
-                target=target,
-                block=normalized,
-                category=classify_block(normalized),
-                enabled=has_property(normalized, "status") and property_value(normalized, "status") == '"okay"',
-            )
+        overlay = OverlayFact(
+            target=target,
+            block=normalized,
+            category=classify_block(normalized),
+            enabled=has_property(normalized, "status") and property_value(normalized, "status") == '"okay"',
+        )
+        identity = overlay_identity(overlay)
+        if reference_overlay_ids is not None and identity not in reference_overlay_ids:
+            model.unresolved.append(UnresolvedFact(kind="overlay", detail=f"Skipped vendor-only overlay &{target}"))
+            continue
+        model.overlays.append(overlay)
+
+    referenced_labels = collect_referenced_labels(model.root_nodes, model.overlays)
+    for node in deferred_root_nodes:
+        labels = block_labels(node.block)
+        if (
+            node.category in {"mmc-pwrseq"}
+            and labels
+            and any(label in referenced_labels and label not in provided_reference_labels for label in labels)
+        ):
+            model.root_nodes.append(node)
+            continue
+        model.unresolved.append(
+            UnresolvedFact(kind="root-node", detail=f"Skipped vendor-only root node {node.name}")
         )
 
     if not model.root_nodes:
@@ -128,11 +169,16 @@ def build_vendor_to_mainline_model(content: str, soc_family: str) -> BoardModel:
     return model
 
 
-def render_conversion(content: str, mode: str, soc_family: str) -> tuple[BoardModel, str]:
+def render_conversion(
+    content: str,
+    mode: str,
+    soc_family: str,
+    reference_model: BoardModel | None = None,
+) -> tuple[BoardModel, str]:
     if mode == "dump-cleanup":
         model = build_dump_cleanup_model(content, soc_family)
     else:
-        model = build_vendor_to_mainline_model(content, soc_family)
+        model = build_vendor_to_mainline_model(content, soc_family, reference_model=reference_model)
     return model, render_board_model(model)
 
 
@@ -169,6 +215,11 @@ def select_mainline_includes(content: str, soc_family: str) -> list[str]:
             break
     if not any(item.endswith(f'{soc_family}.dtsi"') or item.endswith(f'{soc_family}.dtsi>') for item in selected):
         selected.append(f'"{soc_family}.dtsi"')
+    return ensure_required_includes(content, selected)
+
+
+def ensure_required_includes(content: str, includes: list[str]) -> list[str]:
+    selected = includes[:]
     if "PHY_MODE_PCIE_" in content and "<dt-bindings/phy/phy-snps-pcie3.h>" not in selected:
         selected.append("<dt-bindings/phy/phy-snps-pcie3.h>")
     return selected
@@ -206,6 +257,8 @@ def should_keep_overlay(target: str, block: str) -> bool:
         "usbhost3_0",
         "usbhost_dwc3_0",
         "usbhost_dwc3_1",
+        "vp0",
+        "vp1",
         "vp2",
         "vp3",
     }
@@ -254,6 +307,79 @@ def normalize_root_block(block: str) -> str:
 
 def normalize_overlay_block(block: str) -> str:
     return normalize_block_header(block.replace("\t", "    ").strip()) + "\n"
+
+
+def normalize_identity(value: str) -> str:
+    return value.strip().strip('"').lower().replace("regulator-", "")
+
+
+def node_identity(node: NodeFact) -> str:
+    if node.category == "regulator":
+        regulator_name = property_value(node.block, "regulator-name")
+        if regulator_name:
+            return f"regulator:{normalize_identity(regulator_name)}"
+    if node.category == "audio":
+        for prop in ("simple-audio-card,name", "rockchip,card-name", "label"):
+            value = property_value(node.block, prop)
+            if value:
+                return f"audio:{normalize_identity(value)}"
+    return f"{node.category}:{normalize_identity(node.name)}"
+
+
+def overlay_identity(overlay: OverlayFact) -> str:
+    return normalize_identity(overlay.target)
+
+
+def root_identity_set(nodes: list[NodeFact]) -> set[str]:
+    return {node_identity(node) for node in nodes}
+
+
+def overlay_identity_set(overlays: list[OverlayFact]) -> set[str]:
+    return {overlay_identity(overlay) for overlay in overlays}
+
+
+def root_identity_lookup(nodes: list[NodeFact]) -> dict[str, NodeFact]:
+    return {node_identity(node): node for node in nodes}
+
+
+def rename_node_block(block: str, new_name: str) -> str:
+    lines = block.splitlines()
+    if not lines:
+        return block
+    header = lines[0]
+    if "{" not in header:
+        return block
+    left, right = header.split("{", 1)
+    parts = [part.strip() for part in left.split(":") if part.strip()]
+    if len(parts) >= 2:
+        lines[0] = f"{parts[0]}: {new_name} {{" + right
+    else:
+        lines[0] = f"{new_name} {{" + right
+    return "\n".join(lines)
+
+
+def block_labels(block: str) -> list[str]:
+    header = block.strip().split("{", 1)[0].strip()
+    parts = [part.strip() for part in header.split(":") if part.strip()]
+    if len(parts) <= 1:
+        return []
+    return parts[:-1]
+
+
+def collect_referenced_labels(root_nodes: list[NodeFact], overlays: list[OverlayFact]) -> set[str]:
+    labels: set[str] = set()
+    for item in root_nodes:
+        labels.update(LABEL_REF_RE.findall(item.block))
+    for item in overlays:
+        labels.update(LABEL_REF_RE.findall(item.block))
+    return labels
+
+
+def collect_defined_labels(root_nodes: list[NodeFact]) -> set[str]:
+    labels: set[str] = set()
+    for item in root_nodes:
+        labels.update(block_labels(item.block))
+    return labels
 
 
 def extract_chosen_stdout(content: str) -> str | None:

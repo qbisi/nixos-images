@@ -61,8 +61,18 @@ def main() -> int:
     mode = infer_mode(input_path, args.mode)
     soc_family = detect_soc_family(content)
     output_path = args.output.resolve() if args.output else default_output_path(input_path, mode).resolve()
+    reference_path = args.reference.resolve() if args.reference else default_reference_path(input_path, mode)
+    reference_model = None
+    if reference_path and reference_path.exists():
+        reference_content = reference_path.read_text(encoding="utf-8", errors="ignore")
+        reference_model = extract_reference_model(reference_content, "vendor-to-mainline", soc_family)
 
-    board_model, converted_content = render_conversion(content, mode, soc_family)
+    board_model, converted_content = render_conversion(
+        content,
+        mode,
+        soc_family,
+        reference_model=reference_model,
+    )
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(converted_content, encoding="utf-8")
@@ -70,11 +80,8 @@ def main() -> int:
     include_kind = "vendor" if mode == "dump-cleanup" else "mainline"
     validation = validate_with_dtc(REPO_ROOT, output_path, include_kind)
 
-    reference_path = args.reference.resolve() if args.reference else default_reference_path(input_path, mode)
     score = None
-    if reference_path and reference_path.exists():
-        reference_content = reference_path.read_text(encoding="utf-8", errors="ignore")
-        reference_model = extract_reference_model(reference_content, "vendor-to-mainline", soc_family)
+    if reference_path and reference_path.exists() and reference_model is not None:
         score = {
             "reference": str(reference_path.relative_to(REPO_ROOT)),
             "result": score_models(board_model, reference_model),
