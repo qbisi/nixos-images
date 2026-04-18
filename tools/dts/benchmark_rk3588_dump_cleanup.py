@@ -25,6 +25,37 @@ def default_work_root() -> Path:
     return Path("/tmp") / "rk3588-dump-cleanup-bench"
 
 
+def resolve_input_path(path: Path) -> Path:
+    if path.exists():
+        return path.resolve()
+
+    raw = str(path)
+    candidates: list[Path] = []
+    vendor_root = REPO_ROOT / "dts" / "vendor"
+
+    if raw.endswith(".dts"):
+        patterns = [f"**/{Path(raw).name}"]
+    else:
+        patterns = [f"**/{raw}.dts", f"**/{Path(raw).name}.dts"]
+
+    seen: set[Path] = set()
+    for pattern in patterns:
+        for candidate in vendor_root.glob(pattern):
+            resolved = candidate.resolve()
+            if resolved not in seen:
+                seen.add(resolved)
+                candidates.append(resolved)
+
+    if len(candidates) == 1:
+        return candidates[0]
+    if len(candidates) > 1:
+        joined = ", ".join(str(candidate.relative_to(REPO_ROOT)) for candidate in candidates[:8])
+        raise FileNotFoundError(
+            f"Ambiguous input '{path}'. Matching vendor DTS files: {joined}"
+        )
+    raise FileNotFoundError(f"Input '{path}' does not exist and no matching DTS was found under dts/vendor/")
+
+
 def discover_vendor_rk3588_dts() -> list[Path]:
     base = REPO_ROOT / "dts" / "vendor" / "rockchip"
     discovered: list[Path] = []
@@ -155,6 +186,21 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
     }
 
 
+def format_output(results: list[dict[str, object]], aggregate: dict[str, object] | None) -> dict[str, object]:
+    if len(results) == 1:
+        if aggregate is None:
+            return {"results": results, "aggregate": None}
+        single_aggregate = {
+            "cases": aggregate["cases"],
+            "successful_cases": aggregate["successful_cases"],
+            "failed_compile_cases": aggregate["failed_compile_cases"],
+            "failed_decompile_cases": aggregate["failed_decompile_cases"],
+            "failed_restore_validation_cases": aggregate["failed_restore_validation_cases"],
+        }
+        return {"results": results, "aggregate": single_aggregate}
+    return {"results": results, "aggregate": aggregate}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Benchmark RK3588 dump-cleanup by round-tripping cleaned DTS through DTB and fdtdump form."
@@ -184,7 +230,11 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    inputs = [path.resolve() for path in args.inputs]
+    try:
+        inputs = [resolve_input_path(path) for path in args.inputs]
+    except FileNotFoundError as exc:
+        parser.error(str(exc))
+        return 2
     if args.vendor_rockchip_all:
         inputs = discover_vendor_rk3588_dts()
     if not inputs:
@@ -196,7 +246,7 @@ def main() -> int:
 
     aggregate = summarize_results(results)
 
-    print(json.dumps({"results": results, "aggregate": aggregate}, indent=2))
+    print(json.dumps(format_output(results, aggregate), indent=2))
     return 0
 
 
