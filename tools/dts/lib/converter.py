@@ -154,6 +154,174 @@ IMPORTED_NODE_ORDER = (
     "phy@fed80000",
     "phy@fed90000",
 )
+ALIASES_PATH_RE = re.compile(r'^\s*([\w\-]+)\s*=\s*"([^"]+)";', re.MULTILINE)
+ALIAS_TARGET_RENAMES = {
+    "hdptxhdmi0": "hdptxphy_hdmi0",
+    "hdptxhdmi1": "hdptxphy_hdmi1",
+    "mmc0": "sdhci",
+    "mmc1": "sdmmc",
+    "mmc2": "sdio",
+    "usbdp0": "usbdp_phy0",
+    "usbdp1": "usbdp_phy1",
+}
+ROOT_NODE_TARGETS = {
+    "display-subsystem": "display_subsystem",
+    "jpege-ccu": "jpege_ccu",
+    "mpp-srv": "mpp_srv",
+    "rkvenc-ccu@fdbf0000": "rkvenc_ccu",
+    "rkvdec-ccu@fdc30000": "rkvdec_ccu",
+    "spdif-tx@fddb0000": "spdif_tx2",
+    "dfi@fe060000": "dfi",
+    "dmc": "dmc",
+    "av1d@fdc70000": "av1d",
+    "av1d-mmu@fdc68000": "av1d_mmu",
+    "jpegd@fdb90000": "jpegd",
+    "iommu@fdb90480": "jpegd_mmu",
+    "iep@fdbb0000": "iep",
+    "iommu@fdbb0480": "iep_mmu",
+    "vdpu@fdb50400": "vdpu",
+    "iommu@fdb50000": "vdpu_mmu",
+    "iommu@fdbd0480": "rkvenc0_mmu",
+    "iommu@fdbe0480": "rkvenc1_mmu",
+    "iommu@fdc38700": "rkvdec0_mmu",
+    "iommu@fdc48700": "rkvdec1_mmu",
+    "rga2@fdb80000": "rga2",
+    "rga3-core@fdac0000": "rga3_core0",
+    "iommu@fdac0480": "rga3_0_mmu",
+    "rga3-core@fdad0000": "rga3_core1",
+    "iommu@fdad0480": "rga3_1_mmu",
+}
+COMPATIBLE_TARGETS = {
+    "rockchip,vpu-jpege-ccu": "jpege_ccu",
+    "rockchip,mpp-service": "mpp_srv",
+    "rockchip,rkvenc-ccu": "rkvenc_ccu",
+    "rockchip,rkvdec-ccu": "rkvdec_ccu",
+    "rockchip,av1-decoder": "av1d",
+    "rockchip,iommu-av1d": "av1d_mmu",
+    "rockchip,iep-v2": "iep",
+    "rockchip,vpu-jpeg-decoder": "jpegd",
+    "rockchip,vpu-encoder": "vdpu",
+    "rockchip,rga3_core0": "rga3_core0",
+    "rockchip,rga3_core1": "rga3_core1",
+}
+STATUS_ONLY_TARGETS = {
+    "av1d",
+    "av1d_mmu",
+    "combphy0_ps",
+    "combphy1_ps",
+    "combphy2_psu",
+    "dfi",
+    "dp0",
+    "dp0_in_vp2",
+    "hdmi0_in_vp0",
+    "hdmi0_in_vp1",
+    "hdmi0_in_vp2",
+    "hdmi0_sound",
+    "hdmi1_in_vp0",
+    "hdmi1_in_vp1",
+    "hdmi1_in_vp2",
+    "hdmi1_sound",
+    "hdptxphy_hdmi0",
+    "hdptxphy_hdmi1",
+    "i2s5_8ch",
+    "i2s6_8ch",
+    "i2s7_8ch",
+    "iep",
+    "iep_mmu",
+    "jpegd",
+    "jpegd_mmu",
+    "jpege_ccu",
+    "jpege0",
+    "jpege0_mmu",
+    "jpege1",
+    "jpege1_mmu",
+    "jpege2",
+    "jpege2_mmu",
+    "jpege3",
+    "jpege3_mmu",
+    "mpp_srv",
+    "pcie30phy",
+    "rga2",
+    "rga3_0_mmu",
+    "rga3_1_mmu",
+    "rga3_core0",
+    "rga3_core1",
+    "rknpu_mmu",
+    "rkvdec0",
+    "rkvdec0_mmu",
+    "rkvdec1",
+    "rkvdec1_mmu",
+    "rkvdec_ccu",
+    "rkvenc0",
+    "rkvenc0_mmu",
+    "rkvenc1",
+    "rkvenc1_mmu",
+    "rkvenc_ccu",
+    "spdif_tx2",
+    "tsadc",
+    "u2phy0",
+    "u2phy1",
+    "u2phy2",
+    "u2phy2_host",
+    "u2phy3",
+    "u2phy3_host",
+    "usb_host0_ehci",
+    "usb_host0_ohci",
+    "usb_host1_ehci",
+    "usb_host1_ohci",
+    "usbdrd3_0",
+    "usbdrd3_1",
+    "usbdp_phy0_dp",
+    "usbdp_phy0_u3",
+    "usbdp_phy1_u3",
+    "usbhost3_0",
+    "usbhost_dwc3_0",
+    "vdpu",
+    "vdpu_mmu",
+}
+MINIMAL_OVERLAY_PROPERTIES = {
+    "cpu_b0": {"cpu-supply", "mem-supply"},
+    "cpu_b2": {"cpu-supply", "mem-supply"},
+    "cpu_l0": {"cpu-supply", "mem-supply"},
+    "dmc": {"center-supply", "mem-supply", "status"},
+    "display_subsystem": {"clocks", "clock-names"},
+    "gpio0": {"gpio-line-names"},
+    "gpio1": {"gpio-line-names"},
+    "gpio2": {"gpio-line-names"},
+    "gpio3": {"gpio-line-names"},
+    "gpio4": {"gpio-line-names"},
+    "hdmi0": {"status", "cec-enable", "enable-gpios"},
+    "hdmi1": {"status", "pinctrl-names", "pinctrl-0", "cec-enable", "enable-gpios"},
+    "hdmirx_ctrler": {"status", "hpd-trigger-level", "hdmirx-det-gpios", "pinctrl-0", "pinctrl-names", "#sound-dai-cells"},
+    "i2c0": {"status", "pinctrl-names", "pinctrl-0"},
+    "i2c1": {"status", "pinctrl-names", "pinctrl-0"},
+    "i2c4": {"status", "pinctrl-names", "pinctrl-0"},
+    "i2s0_8ch": {"status", "#sound-dai-cells", "pinctrl-0", "pinctrl-names", "rockchip,capture-channels", "rockchip,playback-channels"},
+    "pcie2x1l0": {"status", "reset-gpios", "vpcie3v3-supply"},
+    "pcie2x1l2": {"status", "reset-gpios", "vpcie3v3-supply"},
+    "pcie3x4": {"status", "reset-gpios", "vpcie3v3-supply"},
+    "pwm1": {"status", "pinctrl-0", "pinctrl-names"},
+    "route_dp0": {"status", "connect"},
+    "saradc": {"status", "vref-supply"},
+    "sdhci": {"bus-width", "no-sdio", "no-sd", "non-removable", "max-frequency", "mmc-hs400-1_8v", "mmc-hs400-enhanced-strobe", "mmc-hs200-1_8v", "status"},
+    "sdio": {"max-frequency", "supports-sdio", "bus-width", "disable-wp", "cap-sd-highspeed", "cap-sdio-irq", "keep-power-in-suspend", "mmc-pwrseq", "non-removable", "num-slots", "pinctrl-names", "pinctrl-0", "sd-uhs-sdr104", "status"},
+    "sdmmc": {"max-frequency", "no-sdio", "no-mmc", "bus-width", "cap-mmc-highspeed", "cap-sd-highspeed", "disable-wp", "sd-uhs-sdr104", "vmmc-supply", "vqmmc-supply", "pinctrl-names", "pinctrl-0", "status"},
+    "u2phy0_otg": {"rockchip,typec-vbus-det", "status"},
+    "u2phy1_otg": {"vbus-supply", "status"},
+    "usbdrd_dwc3_0": {"status", "dr_mode", "usb-role-switch"},
+    "usbdrd_dwc3_1": {"status"},
+    "usbdp_phy0": {"status", "orientation-switch", "svid", "sbu1-dc-gpios", "sbu2-dc-gpios"},
+    "usbdp_phy1": {"status"},
+}
+ALLOWED_DUMP_OVERLAY_TARGETS = STATUS_ONLY_TARGETS | set(MINIMAL_OVERLAY_PROPERTIES) | {
+    "cpu_b0",
+    "cpu_b2",
+    "cpu_l0",
+    "gpu",
+    "rknpu",
+    "rknpu_mmu",
+    "hdmirx_ctrler",
+}
 
 
 def default_output_path(input_path: Path, mode: str) -> Path:
@@ -788,9 +956,9 @@ def build_rk860x_overlays(content: str) -> list[OverlayFact]:
 def build_supply_overlays(content: str) -> list[OverlayFact]:
     overlays: list[OverlayFact] = []
     for target, block in (
-        ("cpu_l0", "&cpu_l0 {\n\tcpu-supply = <&vdd_cpu_lit_s0>;\n\tmem-supply = <&vdd_cpu_lit_s0>;\n};\n"),
-        ("cpu_b0", "&cpu_b0 {\n\tcpu-supply = <&vdd_cpu_big0_s0>;\n\tmem-supply = <&vdd_cpu_big0_s0>;\n};\n"),
-        ("cpu_b2", "&cpu_b2 {\n\tcpu-supply = <&vdd_cpu_big1_s0>;\n\tmem-supply = <&vdd_cpu_big1_s0>;\n};\n"),
+        ("cpu_l0", "&cpu_l0 {\n\tcpu-supply = <&vdd_cpu_lit_s0>;\n\tmem-supply = <&vdd_cpu_lit_mem_s0>;\n};\n"),
+        ("cpu_b0", "&cpu_b0 {\n\tcpu-supply = <&vdd_cpu_big0_s0>;\n\tmem-supply = <&vdd_cpu_big0_mem_s0>;\n};\n"),
+        ("cpu_b2", "&cpu_b2 {\n\tcpu-supply = <&vdd_cpu_big1_s0>;\n\tmem-supply = <&vdd_cpu_big1_mem_s0>;\n};\n"),
     ):
         overlays.append(OverlayFact(target=target, block=block, category="supply", enabled=True))
 
@@ -817,12 +985,13 @@ def build_supply_overlays(content: str) -> list[OverlayFact]:
 
 def build_imported_node_overlays(content: str, phandle_labels: dict[str, str]) -> list[OverlayFact]:
     overlays: list[OverlayFact] = []
+    alias_targets = build_dump_alias_target_map(content)
     for dumped_name in IMPORTED_NODE_ORDER:
         block = extract_block(content, dumped_name)
         if not block:
             continue
         target = IMPORTED_NODE_TARGETS[dumped_name]
-        normalized = convert_dumped_block_to_overlay(block, target, phandle_labels)
+        normalized = convert_dumped_block_to_overlay(block, target, phandle_labels, alias_targets)
         status = property_value(block, "status")
         overlays.append(
             OverlayFact(
@@ -832,6 +1001,23 @@ def build_imported_node_overlays(content: str, phandle_labels: dict[str, str]) -
                 enabled=status == '"okay"',
             )
         )
+
+    seen_targets = {overlay.target for overlay in overlays}
+    for block in iter_root_blocks(content):
+        target = infer_dump_overlay_target(block, alias_targets)
+        if not target or target in seen_targets:
+            continue
+        normalized = convert_dumped_block_to_overlay(block, target, phandle_labels, alias_targets)
+        status = property_value(block, "status")
+        overlays.append(
+            OverlayFact(
+                target=target,
+                block=normalized,
+                category=classify_block(normalized),
+                enabled=status == '"okay"',
+            )
+        )
+        seen_targets.add(target)
 
     overlays.extend(build_imported_port_overlays(content, phandle_labels))
     return overlays
@@ -1074,13 +1260,110 @@ def normalize_block_header(block: str) -> str:
     return "\n".join(lines)
 
 
-def convert_dumped_block_to_overlay(block: str, target: str, phandle_labels: dict[str, str]) -> str:
-    lines = block.strip().splitlines()
-    if not lines:
-        return f"&{target} {{\n}};\n"
-    body_lines = lines[1:-1]
-    body_lines = [line for line in body_lines if "phandle =" not in line]
+def build_dump_alias_target_map(content: str) -> dict[str, str]:
+    aliases_block = extract_block(content, "aliases")
+    if not aliases_block:
+        return {}
+    targets: dict[str, str] = {}
+    for alias, path in ALIASES_PATH_RE.findall(aliases_block):
+        target = ALIAS_TARGET_RENAMES.get(alias, alias)
+        if not path.startswith("/"):
+            continue
+        basename = path.rsplit("/", 1)[-1]
+        targets[basename] = target
+    return targets
+
+
+def infer_dump_overlay_target(block: str, alias_targets: dict[str, str]) -> str | None:
+    node_name = _node_name(block)
+    if node_name in ROOT_NODE_TARGETS:
+        target = ROOT_NODE_TARGETS[node_name]
+        return target if target in ALLOWED_DUMP_OVERLAY_TARGETS else None
+    if node_name in alias_targets:
+        target = alias_targets[node_name]
+        return target if target in ALLOWED_DUMP_OVERLAY_TARGETS else None
+    compatible = property_value(block, "compatible")
+    if compatible:
+        for candidate, target in COMPATIBLE_TARGETS.items():
+            if candidate in compatible:
+                return target if target in ALLOWED_DUMP_OVERLAY_TARGETS else None
+    return None
+
+
+def convert_dumped_block_to_overlay(
+    block: str,
+    target: str,
+    phandle_labels: dict[str, str],
+    alias_targets: dict[str, str] | None = None,
+) -> str:
+    body_lines = filtered_overlay_body_lines(block, target, alias_targets or {})
     body = "\n".join(body_lines).rstrip()
     if body:
         return replace_numeric_phandles(f"&{target} {{\n{body}\n}};\n", phandle_labels)
     return f"&{target} {{\n}};\n"
+
+
+def filtered_overlay_body_lines(block: str, target: str, alias_targets: dict[str, str]) -> list[str]:
+    lines = block.strip().splitlines()
+    if len(lines) < 2:
+        return []
+    if target in STATUS_ONLY_TARGETS:
+        status = property_value(block, "status")
+        return [f'\tstatus = {status};'] if status else []
+
+    allowed = MINIMAL_OVERLAY_PROPERTIES.get(target)
+    if allowed is None:
+        body_lines = lines[1:-1]
+        return [line for line in body_lines if "phandle =" not in line]
+
+    selected: list[str] = []
+    inner_blocks = direct_child_blocks(block)
+    for line in lines[1:-1]:
+        stripped = line.strip()
+        if not stripped or "phandle =" in stripped:
+            continue
+        property_name = property_name_from_line(stripped)
+        if property_name and property_name in allowed:
+            selected.append(line)
+    return selected
+
+
+def property_name_from_line(line: str) -> str | None:
+    if line.endswith("{") or line == "};":
+        return None
+    if "=" in line:
+        return line.split("=", 1)[0].strip()
+    if line.endswith(";"):
+        return line[:-1].strip()
+    return None
+
+
+def direct_child_blocks(block: str) -> list[str]:
+    brace_index = block.find("{")
+    end_index = block.rfind("}")
+    if brace_index == -1 or end_index == -1 or end_index <= brace_index:
+        return []
+    inner = block[brace_index + 1 : end_index]
+    blocks: list[str] = []
+    depth = 0
+    start: int | None = None
+    index = 0
+    while index < len(inner):
+        char = inner[index]
+        if char == "{":
+            if depth == 0:
+                line_start = inner.rfind("\n", 0, index) + 1
+                while line_start < index and inner[line_start] in " \t":
+                    line_start += 1
+                start = line_start
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0 and start is not None:
+                end = index + 1
+                if end < len(inner) and inner[end] == ";":
+                    end += 1
+                blocks.append(inner[start:end].strip() + "\n")
+                start = None
+        index += 1
+    return blocks
