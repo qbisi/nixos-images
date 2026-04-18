@@ -188,6 +188,38 @@ def extract_reference_model(content: str, source_kind: str, soc_family: str) -> 
     return build_vendor_to_mainline_model(content, soc_family)
 
 
+def extract_structural_model(content: str, soc_family: str) -> BoardModel:
+    model = BoardModel(
+        source_kind="structural-reference",
+        soc=soc_family,
+        model=find_model(content, f"Unknown {soc_family.upper()} Board"),
+        compatibles=find_compatible_list(content),
+        includes=find_includes(content),
+    )
+    model.aliases = parse_aliases(content)
+    for block in iter_root_blocks(content):
+        node_name = _node_name(block)
+        model.root_nodes.append(
+            NodeFact(
+                name=node_name,
+                block=normalize_root_block(block),
+                category=classify_block(block),
+            )
+        )
+    for target, block in iter_overlay_blocks(content):
+        normalized = normalize_overlay_block(block)
+        model.overlays.append(
+            OverlayFact(
+                target=target,
+                block=normalized,
+                category=classify_block(normalized),
+                enabled=has_property(normalized, "status") and property_value(normalized, "status") == '"okay"',
+            )
+        )
+    return model
+
+
+
 def normalize_vendor_compatibles(compatibles: list[str], soc_family: str) -> list[str]:
     if not compatibles:
         return [f"rockchip,{soc_family}"]
