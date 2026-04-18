@@ -31,6 +31,78 @@ SINGLE_RK806_REQUIRED_NAMES = (
     "vdd_0v85_s0",
 )
 LABEL_REF_RE = re.compile(r"<&([\w]+)")
+ANGLE_VALUE_RE = re.compile(r"<([^>]+)>")
+WHOLE_LIST_PHANDLE_PROPERTIES = {"pinctrl-0", "pinctrl-1", "pinctrl-2"}
+FIRST_TOKEN_PHANDLE_PROPERTIES = {
+    "clocks",
+    "enable-gpios",
+    "gpio",
+    "gpios",
+    "hdmirx-det-gpios",
+    "host-wakeup-gpios",
+    "hp-det-gpio",
+    "interrupt-parent",
+    "io-channels",
+    "mmc-pwrseq",
+    "pwms",
+    "remote-endpoint",
+    "reset-gpios",
+    "rockchip,bitclock-master",
+    "rockchip,codec",
+    "rockchip,cpu",
+    "rockchip,frame-master",
+    "vbat-supply",
+    "vbus-supply",
+    "vin-supply",
+    "vmmc-supply",
+    "vpcie3v3-supply",
+    "vqmmc-supply",
+    "vref-supply",
+}
+ROOT_NODE_LABELS = {
+    "bt-wake-gpio-regulator": "bt_wake",
+    "dp0-sound": "dp0_sound",
+    "es8316-sound": "es8316_sound",
+    "hdmi0-sound": "hdmi0_sound",
+    "hdmi1-sound": "hdmi1_sound",
+    "pwm-fan": "fan0",
+    "sdio-pwrseq": "sdio_pwrseq",
+    "vcc-1v1-nldo-s3": "vcc_1v1_nldo_s3",
+    "vcc12v-dcin": "vcc12v_dcin",
+    "vcc3v3-pcie2x1l0": "vcc3v3_pcie2x1l0",
+    "vcc3v3-pcie2x1l2": "vcc3v3_pcie2x1l2",
+    "vcc3v3-pcie30": "vcc3v3_pcie30",
+    "vcc5v0-host-regulator": "vcc5v0_host",
+    "vcc5v0-sys": "vcc5v0_sys",
+    "wifi-diable-gpio-regulator": "wifi_disable",
+    "wireless-wlan": "wireless_wlan",
+}
+KNOWN_PHANDLE_LABELS = {
+    "dp@fde50000": "dp0",
+    "es8316@11": "es8316",
+    "gpio@fd8a0000": "gpio0",
+    "gpio@fec20000": "gpio1",
+    "gpio@fec40000": "gpio3",
+    "gpio@fec50000": "gpio4",
+    "hdmi@fde80000": "hdmi0",
+    "hdmi@fdea0000": "hdmi1",
+    "hym8563@51": "hym8563",
+    "i2s@fddf0000": "i2s5_8ch",
+    "i2s@fddf4000": "i2s6_8ch",
+    "i2s@fe470000": "i2s0_8ch",
+    "pwm@fd8b0010": "pwm1",
+    "saradc@fec10000": "saradc",
+    "sdio-pwrseq": "sdio_pwrseq",
+    "spdif-tx@fddb0000": "spdif_tx2",
+    "vcc-1v1-nldo-s3": "vcc_1v1_nldo_s3",
+    "vcc12v-dcin": "vcc12v_dcin",
+    "vcc5v0-host-regulator": "vcc5v0_host",
+    "vcc5v0-sys": "vcc5v0_sys",
+    "wifi-enable-h": "wifi_enable_h",
+    "wifi-host-wake-irq": "wifi_host_wake_irq",
+    "hp-det": "hp_det",
+    "vcc5v0-host-en": "vcc5v0_host_en",
+}
 IMPORTED_NODE_TARGETS = {
     "hdmi@fde80000": "hdmi0",
     "hdmi@fdea0000": "hdmi1",
@@ -112,6 +184,7 @@ def has_single_rk806_scheme(content: str) -> bool:
 
 
 def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
+    phandle_labels = build_phandle_label_map(content)
     model = BoardModel(
         source_kind="dump-cleanup",
         soc=soc_family,
@@ -123,7 +196,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     if chosen:
         model.root_nodes.append(NodeFact(name="chosen", block=chosen, category="core"))
 
-    recovered_root_nodes = recover_dump_root_nodes(content)
+    recovered_root_nodes = recover_dump_root_nodes(content, phandle_labels)
     append_unique_root_nodes(model, recovered_root_nodes)
 
     if soc_family == "rk3588" and has_single_rk806_scheme(content):
@@ -144,21 +217,22 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
                 OverlayFact(target=target, block=f'&{target} {{\n\tstatus = "okay";\n}};\n', category="enabled-node", enabled=True)
             )
 
-    model.overlays.extend(build_imported_node_overlays(content))
+    model.overlays.extend(build_imported_node_overlays(content, phandle_labels))
+    model.overlays.extend(build_helper_node_overlays(content, phandle_labels))
 
     if not model.overlays:
         model.unresolved.append(UnresolvedFact(kind="coverage", detail="No dump-specific overlays were recognized"))
     return model
 
 
-def recover_dump_root_nodes(content: str) -> list[NodeFact]:
+def recover_dump_root_nodes(content: str, phandle_labels: dict[str, str]) -> list[NodeFact]:
     recovered: list[NodeFact] = []
     for block in iter_root_blocks(content):
         name = _node_name(block)
         category = classify_block(block)
         if not should_restore_dump_root_node(name, category, block):
             continue
-        normalized = normalize_dump_root_block(block)
+        normalized = normalize_dump_root_block(block, phandle_labels)
         recovered.append(
             NodeFact(
                 name=_node_name(normalized),
@@ -183,10 +257,11 @@ def should_restore_dump_root_node(name: str, category: str, block: str) -> bool:
     return False
 
 
-def normalize_dump_root_block(block: str) -> str:
+def normalize_dump_root_block(block: str, phandle_labels: dict[str, str]) -> str:
     block = block.replace("\t", "    ").strip()
+    block = ensure_root_block_label(block)
     block = strip_phandle_properties(block)
-    block = replace_numeric_phandles(block)
+    block = replace_numeric_phandles(block, phandle_labels)
     return normalize_block_header(block) + "\n"
 
 
@@ -195,8 +270,78 @@ def strip_phandle_properties(block: str) -> str:
     return "\n".join(lines)
 
 
-def replace_numeric_phandles(block: str) -> str:
-    return block
+def replace_numeric_phandles(block: str, phandle_labels: dict[str, str]) -> str:
+    rewritten_lines: list[str] = []
+    for line in block.splitlines():
+        rewritten_lines.append(rewrite_phandle_line(line, phandle_labels))
+    return "\n".join(rewritten_lines)
+
+
+def rewrite_phandle_line(line: str, phandle_labels: dict[str, str]) -> str:
+    if "=" not in line or "<" not in line or ">" not in line:
+        return line
+    name, remainder = line.split("=", 1)
+    property_name = name.strip()
+    match = ANGLE_VALUE_RE.search(remainder)
+    if not match:
+        return line
+    tokens = match.group(1).split()
+    rewritten_tokens = tokens[:]
+
+    if property_name in WHOLE_LIST_PHANDLE_PROPERTIES:
+        changed = False
+        for index, token in enumerate(tokens):
+            label = phandle_labels.get(token.lower())
+            if not label:
+                continue
+            rewritten_tokens[index] = f"&{label}"
+            changed = True
+        if not changed:
+            return line
+    elif property_name in FIRST_TOKEN_PHANDLE_PROPERTIES and tokens:
+        label = phandle_labels.get(tokens[0].lower())
+        if not label:
+            return line
+        rewritten_tokens[0] = f"&{label}"
+    else:
+        return line
+
+    return name + "=" + remainder[: match.start()] + "<" + " ".join(rewritten_tokens) + ">" + remainder[match.end() :]
+
+
+def ensure_root_block_label(block: str) -> str:
+    label = infer_root_block_label(block)
+    if not label:
+        return block
+    lines = block.splitlines()
+    if not lines:
+        return block
+    header = lines[0]
+    if ":" in header.split("{", 1)[0]:
+        return block
+    left, right = header.split("{", 1)
+    lines[0] = f"{label}: {left.strip()} {{" + right
+    return "\n".join(lines)
+
+
+def infer_root_block_label(block: str) -> str | None:
+    name = _node_name(block)
+    return ROOT_NODE_LABELS.get(name)
+
+
+def build_phandle_label_map(content: str) -> dict[str, str]:
+    phandle_labels: dict[str, str] = {}
+    for node_name, label in KNOWN_PHANDLE_LABELS.items():
+        block = extract_block(content, node_name)
+        if not block:
+            continue
+        phandle = property_value(block, "phandle")
+        if not phandle:
+            continue
+        key = phandle.strip("<>").strip().lower()
+        if key.startswith("0x"):
+            phandle_labels[key] = label
+    return phandle_labels
 
 
 def append_unique_root_nodes(model: BoardModel, nodes: list[NodeFact]) -> None:
@@ -667,14 +812,14 @@ def build_supply_overlays(content: str) -> list[OverlayFact]:
     return overlays
 
 
-def build_imported_node_overlays(content: str) -> list[OverlayFact]:
+def build_imported_node_overlays(content: str, phandle_labels: dict[str, str]) -> list[OverlayFact]:
     overlays: list[OverlayFact] = []
     for dumped_name in IMPORTED_NODE_ORDER:
         block = extract_block(content, dumped_name)
         if not block:
             continue
         target = IMPORTED_NODE_TARGETS[dumped_name]
-        normalized = convert_dumped_block_to_overlay(block, target)
+        normalized = convert_dumped_block_to_overlay(block, target, phandle_labels)
         status = property_value(block, "status")
         overlays.append(
             OverlayFact(
@@ -685,11 +830,67 @@ def build_imported_node_overlays(content: str) -> list[OverlayFact]:
             )
         )
 
-    overlays.extend(build_imported_port_overlays(content))
+    overlays.extend(build_imported_port_overlays(content, phandle_labels))
     return overlays
 
 
-def build_imported_port_overlays(content: str) -> list[OverlayFact]:
+def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> list[OverlayFact]:
+    overlays: list[OverlayFact] = []
+
+    for target, node_name, label in (
+        ("i2c6", "hym8563@51", "hym8563"),
+        ("i2c7", "es8316@11", "es8316"),
+    ):
+        block = extract_block(content, node_name)
+        if not block:
+            continue
+        overlays.append(
+            OverlayFact(
+                target=target,
+                category="helper-node",
+                block=(
+                    f"&{target} {{\n"
+                    '\tstatus = "okay";\n\n'
+                    + render_labeled_child_block(block, label, phandle_labels)
+                    + "\n};\n"
+                ),
+                enabled=True,
+            )
+        )
+
+    pinctrl_children: list[tuple[str, str]] = []
+    for parent_name, node_name, label in (
+        ("usb", "vcc5v0-host-en", "vcc5v0_host_en"),
+        ("headphone", "hp-det", "hp_det"),
+        ("sdio-pwrseq", "wifi-enable-h", "wifi_enable_h"),
+        ("wireless-wlan", "wifi-host-wake-irq", "wifi_host_wake_irq"),
+    ):
+        block = extract_block(content, node_name)
+        if not block:
+            continue
+        pinctrl_children.append((parent_name, render_labeled_child_block(block, label, phandle_labels)))
+
+    if pinctrl_children:
+        body_lines = ["&pinctrl {"]
+        for parent_name, child_block in pinctrl_children:
+            body_lines.append(f"\t{parent_name} {{")
+            body_lines.append(indent_with_tabs(child_block.rstrip(), 2))
+            body_lines.append("\t};")
+            body_lines.append("")
+        body_lines.append("};\n")
+        overlays.append(
+            OverlayFact(
+                target="pinctrl",
+                category="helper-node",
+                block="\n".join(body_lines),
+                enabled=True,
+            )
+        )
+
+    return overlays
+
+
+def build_imported_port_overlays(content: str, phandle_labels: dict[str, str]) -> list[OverlayFact]:
     overlays: list[OverlayFact] = []
     for dumped_name, dp_target, u3_target in (
         ("phy@fed80000", "usbdp_phy0_dp", "usbdp_phy0_u3"),
@@ -709,12 +910,31 @@ def build_imported_port_overlays(content: str) -> list[OverlayFact]:
             overlays.append(
                 OverlayFact(
                     target=target,
-                    block=f"&{target} {{\n\tstatus = {status};\n}};\n",
+                    block=replace_numeric_phandles(f"&{target} {{\n\tstatus = {status};\n}};\n", phandle_labels),
                     category="enabled-node",
                     enabled=status == '"okay"',
                 )
             )
     return overlays
+
+
+def render_labeled_child_block(block: str, label: str, phandle_labels: dict[str, str]) -> str:
+    normalized = strip_phandle_properties(block.replace("\t", "    ").strip())
+    lines = normalized.splitlines()
+    if not lines:
+        return normalized
+    header = lines[0]
+    if "{" in header:
+        left, right = header.split("{", 1)
+        node_name = left.split(":")[-1].strip()
+        lines[0] = f"{label}: {node_name} {{" + right
+    normalized = "\n".join(lines)
+    return replace_numeric_phandles(normalized, phandle_labels)
+
+
+def indent_with_tabs(block: str, depth: int) -> str:
+    prefix = "\t" * depth
+    return "\n".join(f"{prefix}{line}" if line else "" for line in block.splitlines())
 
 
 def render_rk860x_node(block: str, labels: list[str], node_name: str, compatible_fallback: str) -> str:
@@ -776,7 +996,7 @@ def normalize_block_header(block: str) -> str:
     return "\n".join(lines)
 
 
-def convert_dumped_block_to_overlay(block: str, target: str) -> str:
+def convert_dumped_block_to_overlay(block: str, target: str, phandle_labels: dict[str, str]) -> str:
     lines = block.strip().splitlines()
     if not lines:
         return f"&{target} {{\n}};\n"
@@ -784,5 +1004,5 @@ def convert_dumped_block_to_overlay(block: str, target: str) -> str:
     body_lines = [line for line in body_lines if "phandle =" not in line]
     body = "\n".join(body_lines).rstrip()
     if body:
-        return f"&{target} {{\n{body}\n}};\n"
+        return replace_numeric_phandles(f"&{target} {{\n{body}\n}};\n", phandle_labels)
     return f"&{target} {{\n}};\n"
