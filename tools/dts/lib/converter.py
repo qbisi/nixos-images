@@ -129,7 +129,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     if soc_family == "rk3588" and has_single_rk806_scheme(content):
         model.includes.append('"rk3588-rk806-single.dtsi"')
         for block in build_fixed_regulator_blocks():
-            append_unique_root_nodes(
+            replace_or_append_root_nodes(
                 model,
                 [NodeFact(name=_node_name(block), block=block, category="regulator")],
             )
@@ -206,6 +206,17 @@ def append_unique_root_nodes(model: BoardModel, nodes: list[NodeFact]) -> None:
             continue
         model.root_nodes.append(node)
         existing.add(node.name)
+
+
+def replace_or_append_root_nodes(model: BoardModel, nodes: list[NodeFact]) -> None:
+    existing = {node.name: index for index, node in enumerate(model.root_nodes)}
+    for node in nodes:
+        index = existing.get(node.name)
+        if index is None:
+            model.root_nodes.append(node)
+            existing[node.name] = len(model.root_nodes) - 1
+            continue
+        model.root_nodes[index] = node
 
 
 def build_vendor_to_mainline_model(
@@ -565,11 +576,14 @@ def build_fixed_regulator_blocks() -> list[str]:
 
 def build_rk860x_overlays(content: str) -> list[OverlayFact]:
     overlays: list[OverlayFact] = []
+    i2c0_block = extract_block(content, "i2c@fd880000")
     i2c1_block = extract_block(content, "i2c@fea90000")
     i2c6_block = extract_block(content, "i2c@fec80000")
     npu_block = extract_block(i2c1_block or "", "rk8602@42")
-    big0_block = extract_block(i2c6_block or "", "rk8602@42")
-    big1_block = extract_block(i2c6_block or "", "rk8603@43")
+    big_bus_block = i2c0_block or i2c6_block or ""
+    big_bus_target = "i2c0" if i2c0_block else "i2c6"
+    big0_block = extract_block(big_bus_block, "rk8602@42")
+    big1_block = extract_block(big_bus_block, "rk8603@43")
 
     if npu_block:
         overlays.append(
@@ -579,21 +593,47 @@ def build_rk860x_overlays(content: str) -> list[OverlayFact]:
                 block=(
                     "&i2c1 {\n"
                     '\tstatus = "okay";\n\n'
-                    + render_rk860x_node(npu_block, "vdd_npu_s0", "rk8602@42", "rockchip,rk8602")
+                    + render_rk860x_node(
+                        npu_block,
+                        ["vdd_npu_s0", "vdd_npu_mem_s0"],
+                        "rk8602@42",
+                        "rockchip,rk8602",
+                    )
                     + "\n};\n"
                 ),
                 enabled=True,
             )
         )
     if big0_block or big1_block:
-        body = ['&i2c6 {', '\tstatus = "okay";', ""]
+        body = [f"&{big_bus_target} {{", '\tstatus = "okay";', ""]
         if big0_block:
-            body.append(render_rk860x_node(big0_block, "vdd_cpu_big0_s0", "rk8602@42", "rockchip,rk8602"))
+            body.append(
+                render_rk860x_node(
+                    big0_block,
+                    ["vdd_cpu_big0_s0", "vdd_cpu_big0_mem_s0"],
+                    "rk8602@42",
+                    "rockchip,rk8602",
+                )
+            )
             body.append("")
         if big1_block:
-            body.append(render_rk860x_node(big1_block, "vdd_cpu_big1_s0", "rk8603@43", "rockchip,rk8603"))
+            body.append(
+                render_rk860x_node(
+                    big1_block,
+                    ["vdd_cpu_big1_s0", "vdd_cpu_big1_mem_s0"],
+                    "rk8603@43",
+                    "rockchip,rk8603",
+                )
+            )
         body.append("};\n")
-        overlays.append(OverlayFact(target="i2c6", block="\n".join(body), category="regulator", enabled=True))
+        overlays.append(
+            OverlayFact(
+                target=big_bus_target,
+                block="\n".join(body),
+                category="regulator",
+                enabled=True,
+            )
+        )
     return overlays
 
 
@@ -677,22 +717,23 @@ def build_imported_port_overlays(content: str) -> list[OverlayFact]:
     return overlays
 
 
-def render_rk860x_node(block: str, label: str, node_name: str, compatible_fallback: str) -> str:
+def render_rk860x_node(block: str, labels: list[str], node_name: str, compatible_fallback: str) -> str:
     compatible = property_value(block, "compatible") or f'"{compatible_fallback}"'
     reg = property_value(block, "reg") or "<0x0>"
     vin_supply = property_value(block, "vin-supply") or "<&vcc5v0_sys>"
     if vin_supply.startswith("<0x"):
         vin_supply = "<&vcc5v0_sys>"
     regulator_compatible = property_value(block, "regulator-compatible") or '"rk860x-reg"'
-    regulator_name = property_value(block, "regulator-name") or f'"{label}"'
+    regulator_name = property_value(block, "regulator-name") or f'"{labels[0]}"'
     min_uv = property_value(block, "regulator-min-microvolt") or "<550000>"
     max_uv = property_value(block, "regulator-max-microvolt") or "<950000>"
     ramp_delay = property_value(block, "regulator-ramp-delay") or "<2300>"
     suspend_selector = property_value(block, "rockchip,suspend-voltage-selector") or "<1>"
+    label_prefix = ": ".join(labels)
 
     return "\n".join(
         [
-            f"\t{label}: {node_name} {{",
+            f"\t{label_prefix}: {node_name} {{",
             f"\t\tcompatible = {compatible};",
             f"\t\treg = {reg};",
             "\t\tregulator-always-on;",
