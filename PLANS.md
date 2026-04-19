@@ -477,43 +477,7 @@ Behavior:
 - accept either board names or DTS paths as inputs
 - keep input resolution efficient for repeated benchmark runs
 
-## 9. Existing Implementation to Reuse
-
-We already have a working implementation under `tools/dts/`. The re-implementation should begin by studying and selectively reusing the current design rather than treating this as a greenfield project.
-
-Current reusable structure:
-
-- thin CLI entrypoints in:
-  - `tools/dts/clean_rk3588_dump.py`
-  - `tools/dts/benchmark_rk3588_dump_cleanup.py`
-- shared conversion pipeline in `tools/dts/lib/converter.py`
-- shared data model in `tools/dts/lib/board_model.py`
-- shared text/block parsing helpers in `tools/dts/lib/parse.py`
-- shared rendering in `tools/dts/lib/render.py`
-- shared validation and round-trip helpers in `tools/dts/lib/validate.py`
-
-Reusable design ideas from the current implementation:
-
-- Keep CLI wrappers thin and move the real logic into `tools/dts/lib/`
-- Preserve a small intermediate board model (`BoardModel`, `NodeFact`, `OverlayFact`, `UnresolvedFact`)
-- Keep parsing, classification, rendering, and validation as separate modules
-- Preserve the benchmark artifact pipeline:
-  - compile vendor DTS
-  - decompile to dumped DTS
-  - restore cleaned DTS from the dumped DTS
-  - build any extra merged or normalized artifacts only when needed for `EVAL.md` evaluation
-- Preserve unresolved reporting so the tool can surface partial coverage instead of failing silently
-
-Rewrite guidance:
-
-- Reuse architecture where it is clean and proven
-- Revisit heuristics and extraction rules where the current implementation is too ad hoc or overly hardcoded
-- Ignore the existing score system in `tools/dts/lib/score.py` as the benchmark design basis
-- Keep the benchmark flow aligned with `EVAL.md`
-- Design input resolution around efficient handling of either board names or explicit DTS paths
-- Prefer preserving module boundaries even if internal logic is rewritten
-
-## 10. Expected Artifacts
+## 9. Expected Artifacts
 
 For each benchmark case, the pipeline should produce:
 
