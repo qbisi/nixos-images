@@ -79,6 +79,8 @@ ROOT_NODE_LABELS = {
     "vcc3v3-pcie30": "vcc3v3_pcie30",
     "vcc5v0-host-regulator": "vcc5v0_host",
     "vcc5v0-sys": "vcc5v0_sys",
+    "vcc5v0-usb": "vcc5v0_usb",
+    "vcc5v0-usbdcin": "vcc5v0_usbdcin",
     "wifi-diable-gpio-regulator": "wifi_disable",
     "wireless-wlan": "wireless_wlan",
 }
@@ -1315,11 +1317,20 @@ def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> 
     pinctrl_children: list[tuple[str, str]] = []
     for parent_name, node_name, label in (
         ("usb", "vcc5v0-host-en", "vcc5v0_host_en"),
+        ("usb-typec", "typec5v-pwren", "typec5v_pwren"),
+        ("cam", "mipicsi0-pwr", "mipicsi0_pwr"),
+        ("cam", "mipicsi1-pwr", "mipicsi1_pwr"),
+        ("cam", "mipidcphy0-pwr", "mipidcphy0_pwr"),
         ("headphone", "hp-det", "hp_det"),
         ("hdmirx", "hdmirx-det", "hdmirx_det"),
-        ("hym8563", "rtc-int", "rtc_int"),
+        ("hym8563", "hym8563-int", "hym8563_int"),
         ("sdio-pwrseq", "wifi-enable-h", "wifi_enable_h"),
+        ("wireless-bluetooth", "uart8-gpios", "uart8_gpios"),
+        ("wireless-bluetooth", "bt-reset-gpio", "bt_reset_gpio"),
+        ("wireless-bluetooth", "bt-wake-gpio", "bt_wake_gpio"),
+        ("wireless-bluetooth", "bt-irq-gpio", "bt_irq_gpio"),
         ("wireless-wlan", "wifi-host-wake-irq", "wifi_host_wake_irq"),
+        ("wireless-wlan", "wifi-poweren-gpio", "wifi_poweren_gpio"),
     ):
         block = extract_block(content, node_name)
         if not block:
