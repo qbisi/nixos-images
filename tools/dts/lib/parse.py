@@ -15,6 +15,10 @@ def detect_soc_family(content: str, override: str | None = None) -> str:
     if override:
         return override
     lowered = content.lower()
+    if "pcie@fe150000" in lowered:
+        return "rk3588"
+    if '"rk3588.dtsi"' in lowered or "rockchip,rk3588" in lowered:
+        return "rk3588"
     if "rockchip,rk3588s" in lowered or 'rk3588s.dtsi' in lowered:
         return "rk3588s"
     return "rk3588"

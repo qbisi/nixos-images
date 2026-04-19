@@ -417,17 +417,17 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     recovered_root_nodes = recover_dump_root_nodes(content, phandle_labels, alias_targets)
     append_unique_root_nodes(model, recovered_root_nodes)
 
-    if soc_family == "rk3588" and has_single_rk806_scheme(content):
+    if has_single_rk806_scheme(content):
         model.includes.append('"rk3588-rk806-single.dtsi"')
         for block in build_fixed_regulator_blocks():
-            replace_or_append_root_nodes(
+            append_unique_root_nodes(
                 model,
                 [NodeFact(name=_node_name(block), block=block, category="regulator")],
             )
         overlays = build_rk860x_overlays(content)
         model.overlays.extend(overlays)
         model.overlays.extend(build_supply_overlays(content))
-    elif soc_family == "rk3588" and has_dual_rk806_scheme(content):
+    elif has_dual_rk806_scheme(content):
         model.includes.append('"rk3588-rk806-dual.dtsi"')
 
     for node_name, target in (("tsadc@fec00000", "tsadc"),):
@@ -476,6 +476,8 @@ def should_restore_dump_root_node(
     block: str,
     alias_targets: dict[str, str],
 ) -> bool:
+    if name == "sdio-pwrseq":
+        return True
     if property_value(block, "status") == '"disabled"':
         return False
     if name in {"chosen", "aliases", "clocks"}:
@@ -497,6 +499,9 @@ def normalize_dump_root_block(block: str, phandle_labels: dict[str, str]) -> str
     block = block.replace("\t", "    ").strip()
     block = ensure_root_block_label(block)
     block = strip_phandle_properties(block)
+    block = "\n".join(
+        line for line in block.splitlines() if line.strip() != 'status = "disabled";'
+    )
     block = replace_numeric_phandles(block, phandle_labels)
     return normalize_block_header(block) + "\n"
 
@@ -616,7 +621,13 @@ def ensure_root_block_label(block: str) -> str:
 
 def infer_root_block_label(block: str) -> str | None:
     name = _node_name(block)
-    return ROOT_NODE_LABELS.get(name)
+    label = ROOT_NODE_LABELS.get(name)
+    if label:
+        return label
+    regulator_name = property_value(block, "regulator-name")
+    if regulator_name:
+        return normalize_label_name(regulator_name.strip().strip('"'))
+    return None
 
 
 def build_phandle_label_map(content: str) -> dict[str, str]:
@@ -1317,20 +1328,43 @@ def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> 
     pinctrl_children: list[tuple[str, str]] = []
     for parent_name, node_name, label in (
         ("usb", "vcc5v0-host-en", "vcc5v0_host_en"),
+        ("usb", "vcc5v0-otg-en", "vcc5v0_otg_en"),
+        ("usb", "vcc5v0-u2host-en", "vcc5v0_u2host_en"),
+        ("usb", "vcc5v0-u3host-en", "vcc5v0_u3host_en"),
+        ("usb", "vcc5v0-usb-en", "vcc5v0_usb_en"),
+        ("vcc5v0-buck", "vcc5v0-buck-en", "vcc5v0_buck_en"),
+        ("vcc4v0-mode", "vcc4v0-sys-mode-en", "vcc4v0_sys_mode_en"),
         ("usb-typec", "typec5v-pwren", "typec5v_pwren"),
         ("cam", "mipicsi0-pwr", "mipicsi0_pwr"),
         ("cam", "mipicsi1-pwr", "mipicsi1_pwr"),
         ("cam", "mipidcphy0-pwr", "mipidcphy0_pwr"),
+        ("cam", "mipidphy0-pwr", "mipidphy0_pwr"),
+        ("cam", "mipidcphy-pwr", "mipidcphy_pwr"),
         ("headphone", "hp-det", "hp_det"),
         ("hdmirx", "hdmirx-det", "hdmirx_det"),
         ("hym8563", "hym8563-int", "hym8563_int"),
+        ("hym8563", "rtc-int", "rtc_int"),
         ("sdio-pwrseq", "wifi-enable-h", "wifi_enable_h"),
         ("wireless-bluetooth", "uart8-gpios", "uart8_gpios"),
+        ("wireless-bluetooth", "uart6-gpios", "uart6_gpios"),
+        ("wireless-bluetooth", "uart9-gpios", "uart9_gpios"),
+        ("wireless-bluetooth", "uart7-gpios", "uart7_gpios"),
+        ("wireless-bluetooth", "bt-gpio", "bt_gpio"),
         ("wireless-bluetooth", "bt-reset-gpio", "bt_reset_gpio"),
         ("wireless-bluetooth", "bt-wake-gpio", "bt_wake_gpio"),
         ("wireless-bluetooth", "bt-irq-gpio", "bt_irq_gpio"),
         ("wireless-wlan", "wifi-host-wake-irq", "wifi_host_wake_irq"),
         ("wireless-wlan", "wifi-poweren-gpio", "wifi_poweren_gpio"),
+        ("usb", "vcc3v3-pcie30-en", "vcc3v3_pcie30_en"),
+        ("usb", "vcc3v3-host32-en", "vcc3v3_host32_en"),
+        ("usb", "vcc5v0-host20-en", "vcc5v0_host20_en"),
+        ("usb", "vcc5v0-host30-en", "vcc5v0_host30_en"),
+        ("gpio-leds", "sys-led-pin", "sys_led_pin"),
+        ("gpio-leds", "usr-led-pin", "usr_led_pin"),
+        ("sdmmc", "sd-s0-pwr", "sd_s0_pwr"),
+        ("sdmmc", "sdmmc-pwr", "sdmmc_pwr"),
+        ("leds_gpio", "leds-rgb", "leds_rgb"),
+        ("leds", "leds-gpio", "leds_gpio"),
     ):
         block = extract_block(content, node_name)
         if not block:
