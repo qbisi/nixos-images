@@ -12,6 +12,8 @@ from lib.validate import compile_dts_to_dtb, decompile_dtb_to_dts
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+MAX_ERROR_SAMPLES = 8
+MAX_PROPERTY_ERROR_SAMPLES = 12
 
 
 def display_path(path: Path) -> str:
@@ -23,6 +25,92 @@ def display_path(path: Path) -> str:
 
 def default_work_root() -> Path:
     return Path("/tmp") / "rk3588-dump-cleanup-bench"
+
+
+def compact_command_result(result: dict[str, object] | None) -> dict[str, object] | None:
+    if result is None:
+        return None
+    compact = {"status": result.get("status")}
+    if "output" in result:
+        compact["output"] = result["output"]
+    if result.get("status") == "failed":
+        stderr = str(result.get("stderr", "")).strip()
+        if stderr:
+            compact["stderr_preview"] = "\n".join(stderr.splitlines()[:6])
+    if result.get("status") == "skipped" and "reason" in result:
+        compact["reason"] = result["reason"]
+    return compact
+
+
+def compact_list(values: list[object], limit: int) -> dict[str, object]:
+    return {
+        "count": len(values),
+        "sample": values[:limit],
+        "truncated": len(values) > limit,
+    }
+
+
+def compact_evaluation(evaluation: dict[str, object]) -> dict[str, object]:
+    errors = evaluation.get("errors", {})
+    mismatched_properties = errors.get("mismatched_properties", [])
+    return {
+        "total_score": evaluation.get("total_score"),
+        "breakdown": evaluation.get("breakdown"),
+        "errors": {
+            "missing_nodes": compact_list(list(errors.get("missing_nodes", [])), MAX_ERROR_SAMPLES),
+            "extra_nodes": compact_list(list(errors.get("extra_nodes", [])), MAX_ERROR_SAMPLES),
+            "mismatched_properties": compact_list(
+                list(mismatched_properties),
+                MAX_PROPERTY_ERROR_SAMPLES,
+            ),
+        },
+    }
+
+
+def compact_case_result(result: dict[str, object]) -> dict[str, object]:
+    compact: dict[str, object] = {
+        "input": result["input"],
+        "soc_family": result["soc_family"],
+    }
+    if "artifacts" in result:
+        compact["artifacts"] = result["artifacts"]
+    if "compile" in result:
+        compact["compile"] = compact_command_result(result.get("compile"))
+    if "decompile" in result:
+        compact["decompile"] = compact_command_result(result.get("decompile"))
+    if "restored_validation" in result:
+        compact["restored_validation"] = compact_command_result(result.get("restored_validation"))
+    if "restored_decompile" in result:
+        compact["restored_decompile"] = compact_command_result(result.get("restored_decompile"))
+    unresolved = list(result.get("unresolved", []))
+    compact["unresolved"] = compact_list(unresolved, MAX_ERROR_SAMPLES)
+    if "evaluation" in result:
+        compact["evaluation"] = compact_evaluation(result["evaluation"])
+    return compact
+
+
+def summarize_results(results: list[dict[str, object]]) -> list[dict[str, object]]:
+    summary: list[dict[str, object]] = []
+    for result in results:
+        evaluation = result.get("evaluation", {})
+        breakdown = evaluation.get("breakdown", {})
+        artifacts = result.get("artifacts", {})
+        summary.append(
+            {
+                "input": result["input"],
+                "dumped_dts": artifacts.get("dumped_dts"),
+                "restored_dts": artifacts.get("restored_dts"),
+                "score": evaluation.get("total_score"),
+                "build_validity": breakdown.get("build_validity", {}).get("score"),
+                "delta_correctness": breakdown.get("delta_correctness", {}).get("score"),
+                "semantic_fidelity": breakdown.get("semantic_fidelity", {}).get("score"),
+                "restored_compiles": result.get("restored_validation", {}).get("status") == "ok",
+                "missing_node_count": len(evaluation.get("errors", {}).get("missing_nodes", [])),
+                "extra_node_count": len(evaluation.get("errors", {}).get("extra_nodes", [])),
+                "mismatched_property_count": len(evaluation.get("errors", {}).get("mismatched_properties", [])),
+            }
+        )
+    return summary
 
 
 def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[str, object]:
@@ -142,7 +230,8 @@ def main() -> int:
         parser.error("Provide one or more board names or DTS paths.")
 
     results = [benchmark_one(input_path, args.work_root.resolve(), args.include_kind) for input_path in inputs]
-    print(json.dumps({"results": results}, indent=2))
+    compact_results = [compact_case_result(result) for result in results]
+    print(json.dumps({"results": compact_results, "summary": summarize_results(results)}, indent=2))
     return 0
 
 
