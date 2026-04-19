@@ -453,28 +453,67 @@ Purpose:
 
 Primary input:
 
-- `vendor.dts`
+- either:
+  - a board name, resolved as `dts/vendor/**/$board_name.dts`
+  - or an explicit DTS path
 
 Primary derived artifacts:
 
 - `vendor.compiled.dtb`
 - `vendor.dumped.dts`
 - `restored.dts`
-- optional restored recompiled / redecompiled artifacts for normalized scoring
+- optional merged / normalized intermediate artifacts needed by evaluation
 
 Primary output:
 
-- per-case benchmark results and aggregate scoring
+- per-case evaluation results following `EVAL.md`
 
 Behavior:
 
 - compile vendor DTS
 - decompile compiled DTB to produce dumped DTS
 - run restoration from dumped DTS
-- compare restored DTS against original vendor DTS
-- optionally compare normalized compiled forms as a secondary metric
+- evaluate the result according to `EVAL.md`
+- accept either board names or DTS paths as inputs
+- keep input resolution efficient for repeated benchmark runs
 
-## 9. Expected Artifacts
+## 9. Existing Implementation to Reuse
+
+We already have a working implementation under `tools/dts/`. The re-implementation should begin by studying and selectively reusing the current design rather than treating this as a greenfield project.
+
+Current reusable structure:
+
+- thin CLI entrypoints in:
+  - `tools/dts/clean_rk3588_dump.py`
+  - `tools/dts/benchmark_rk3588_dump_cleanup.py`
+- shared conversion pipeline in `tools/dts/lib/converter.py`
+- shared data model in `tools/dts/lib/board_model.py`
+- shared text/block parsing helpers in `tools/dts/lib/parse.py`
+- shared rendering in `tools/dts/lib/render.py`
+- shared validation and round-trip helpers in `tools/dts/lib/validate.py`
+
+Reusable design ideas from the current implementation:
+
+- Keep CLI wrappers thin and move the real logic into `tools/dts/lib/`
+- Preserve a small intermediate board model (`BoardModel`, `NodeFact`, `OverlayFact`, `UnresolvedFact`)
+- Keep parsing, classification, rendering, and validation as separate modules
+- Preserve the benchmark artifact pipeline:
+  - compile vendor DTS
+  - decompile to dumped DTS
+  - restore cleaned DTS from the dumped DTS
+  - build any extra merged or normalized artifacts only when needed for `EVAL.md` evaluation
+- Preserve unresolved reporting so the tool can surface partial coverage instead of failing silently
+
+Rewrite guidance:
+
+- Reuse architecture where it is clean and proven
+- Revisit heuristics and extraction rules where the current implementation is too ad hoc or overly hardcoded
+- Ignore the existing score system in `tools/dts/lib/score.py` as the benchmark design basis
+- Keep the benchmark flow aligned with `EVAL.md`
+- Design input resolution around efficient handling of either board names or explicit DTS paths
+- Prefer preserving module boundaries even if internal logic is rewritten
+
+## 10. Expected Artifacts
 
 For each benchmark case, the pipeline should produce:
 
@@ -500,9 +539,50 @@ And evaluation should treat:
 
 ---
 
-## 10. Task Definition (for Codex)
+## 11. Evaluation Contract
 
-> Re-implement `clean_rk3588_dump.py` and `benchmark_rk3588_dump_cleanup.py` around a bootstrap pipeline that takes an original vendor RK3588/RK3588S DTS, derives a dumped DTS by compiling and decompiling it, converts that dumped DTS into a minimal board-level restored DTS by diffing against the corresponding SoC dtsi, and evaluates the result primarily by comparing the restored DTS against the original vendor DTS while ignoring SoC-level policy nodes and runtime/bootloader artifacts.
+The benchmark should follow `EVAL.md`, not the legacy scoring helpers.
+
+Metrics:
+
+- Build Validity (20)
+  - restored DTS compiles with `dtc`
+  - no unresolved references
+- Delta Correctness (40)
+  - no SoC-level nodes incorrectly emitted
+  - board-level nodes correctly extracted
+  - disabled nodes not included
+- Semantic Fidelity (40)
+  - compare merged tree `(base + restored)` with the original vendor DTS
+  - must match enabled nodes, board devices, resource bindings, graph connections, and assigned-clocks
+  - ignore reserved-memory, thermal-zones, OPP, chosen, and memory
+
+Benchmark output should include:
+
+- total score `(0-100)`
+- per-metric breakdown
+- list of errors:
+  - missing nodes
+  - extra nodes
+  - mismatched properties
+
+## 12. Benchmark Input Resolution
+
+The benchmark interface should accept:
+
+- a board name like `orangepi-5-plus`
+- or a direct DTS path
+
+Resolution rules:
+
+- if the argument exists as a path, use it directly
+- otherwise resolve it as `dts/vendor/**/$board_name.dts`
+- fail on ambiguous matches
+- keep lookup efficient enough for repeated runs and batch evaluation
+
+## 13. Task Definition (for Codex)
+
+> Re-implement `clean_rk3588_dump.py` and `benchmark_rk3588_dump_cleanup.py` around a bootstrap pipeline that takes an original vendor RK3588/RK3588S DTS, derives a dumped DTS by compiling and decompiling it, converts that dumped DTS into a minimal board-level restored DTS by diffing against the corresponding SoC dtsi, and evaluates the result using the `EVAL.md` contract: build validity, delta correctness, and semantic fidelity against the merged `(base + restored)` tree, while ignoring SoC-level policy nodes and runtime artifacts that are explicitly out of scope.
 
 ```
 ```
