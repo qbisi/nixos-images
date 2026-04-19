@@ -474,6 +474,8 @@ def should_restore_dump_root_node(
     block: str,
     alias_targets: dict[str, str],
 ) -> bool:
+    if property_value(block, "status") == '"disabled"':
+        return False
     if name in {"chosen", "aliases", "clocks"}:
         return False
     if infer_dump_overlay_target(block, alias_targets):
@@ -1174,6 +1176,8 @@ def build_imported_node_overlays(content: str, phandle_labels: dict[str, str]) -
         if target in {"i2c0", "i2c1"}:
             continue
         normalized = convert_dumped_block_to_overlay(block, target, phandle_labels, alias_targets)
+        if overlay_is_empty(normalized):
+            continue
         status = property_value(block, "status")
         overlays.append(
             OverlayFact(
@@ -1194,6 +1198,8 @@ def build_imported_node_overlays(content: str, phandle_labels: dict[str, str]) -
         ):
             continue
         normalized = convert_dumped_block_to_overlay(block, target, phandle_labels, alias_targets)
+        if overlay_is_empty(normalized):
+            continue
         status = property_value(block, "status")
         overlays.append(
             OverlayFact(
@@ -1217,14 +1223,15 @@ def build_nested_dump_overlays(content: str, phandle_labels: dict[str, str]) -> 
         route_dp0 = extract_block(route or "", "route-dp0")
         if route_dp0:
             status = property_value(route_dp0, "status") or '"okay"'
-            overlays.append(
-                OverlayFact(
-                    target="route_dp0",
-                    category="recovered-overlay",
-                    block='&route_dp0 {\n\tstatus = ' + status + ';\n\tconnect = <&vp2_out_dp0>;\n};\n',
-                    enabled=status == '"okay"',
+            if status == '"okay"':
+                overlays.append(
+                    OverlayFact(
+                        target="route_dp0",
+                        category="recovered-overlay",
+                        block='&route_dp0 {\n\tstatus = ' + status + ';\n\tconnect = <&vp2_out_dp0>;\n};\n',
+                        enabled=True,
+                    )
                 )
-            )
 
     for parent_name, phy_name, phy_target, port_name, port_target in (
         ("syscon@fd5d0000", "usb2-phy@0", "u2phy0", "otg-port", "u2phy0_otg"),
@@ -1246,6 +1253,8 @@ def build_nested_dump_overlays(content: str, phandle_labels: dict[str, str]) -> 
                 enabled=property_value(phy_block, "status") == '"okay"',
             )
         )
+        if overlay_is_empty(overlays[-1].block):
+            overlays.pop()
 
         port_block = extract_block(phy_block, port_name)
         if not port_block:
@@ -1258,6 +1267,8 @@ def build_nested_dump_overlays(content: str, phandle_labels: dict[str, str]) -> 
                 enabled=property_value(port_block, "status") == '"okay"',
             )
         )
+        if overlay_is_empty(overlays[-1].block):
+            overlays.pop()
 
     for block in iter_all_blocks(content):
         regulator_name = property_value(block, "regulator-name")
@@ -1358,6 +1369,8 @@ def build_common_dump_overlays(content: str, phandle_labels: dict[str, str]) -> 
                 enabled=property_value(block, "status") == '"okay"',
             )
         )
+        if overlay_is_empty(overlays[-1].block):
+            overlays.pop()
     return overlays
 
 
@@ -1552,13 +1565,17 @@ def filtered_overlay_body_lines(block: str, target: str, alias_targets: dict[str
     property_lines = direct_property_lines(block)
     if target in STATUS_ONLY_TARGETS:
         status = property_value(block, "status")
-        return [f'\tstatus = {status};'] if status else []
+        return [f'\tstatus = {status};'] if status == '"okay"' else []
     if target in EMPTY_OVERLAY_TARGETS:
         return []
 
     allowed = MINIMAL_OVERLAY_PROPERTIES.get(target)
     if allowed is None:
-        return [line for line in property_lines if "phandle =" not in line]
+        return [
+            line
+            for line in property_lines
+            if "phandle =" not in line and line.strip() != 'status = "disabled";'
+        ]
 
     selected = render_allowed_properties(block, allowed)
     return selected
@@ -1625,12 +1642,19 @@ def render_allowed_properties(block: str, allowed: set[str]) -> list[str]:
     rendered: list[str] = []
     for name in allowed:
         value = property_value(block, name)
+        if name == "status" and value != '"okay"':
+            continue
         if value is not None:
             rendered.append(f"\t{name} = {value};")
             continue
         if has_property(block, name):
             rendered.append(f"\t{name};")
     return rendered
+
+
+def overlay_is_empty(block: str) -> bool:
+    inner = block.split("{", 1)[1].rsplit("}", 1)[0]
+    return not inner.strip()
 
 
 def render_parent_properties(block: str, allowed: set[str]) -> str:

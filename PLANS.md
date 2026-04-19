@@ -20,7 +20,7 @@ Core flow:
 The output must:
 
 - Include only `rk3588.dtsi` or `rk3588s.dtsi`
-- Optionally include `rk3588-rk806-single.dtsi` or `rk3588-rk806-dual.dtsi`
+- Include only `rk3588-rk806-single.dtsi` or `rk3588-rk806-dual.dtsi` (for vendor restored dts)
 - Include no other `.dtsi` files in restored vendor DTS output
 - Represent **board-level deltas only**
 - Be **compilable**
@@ -118,15 +118,9 @@ Always generate:
 
 ```dts
 /dts-v1/;
-#include "rk3588.dtsi"
+#include "rk3588(s).dtsi"
+#include "rk3588-rk806-single(dual).dtsi.dtsi"
 ````
-
-or:
-
-```dts
-/dts-v1/;
-#include "rk3588s.dtsi"
-```
 
 Then:
 
