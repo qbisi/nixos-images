@@ -182,6 +182,7 @@ ROOT_NODE_TARGETS = {
     "i2s@fddf0000": "i2s5_8ch",
     "i2s@fddf4000": "i2s6_8ch",
     "i2s@fddf8000": "i2s7_8ch",
+    "saradc@fec10000": "saradc",
     "dfi@fe060000": "dfi",
     "dmc": "dmc",
     "vop@fdd90000": "vop",
@@ -278,6 +279,7 @@ STATUS_ONLY_TARGETS = {
     "rkvenc1",
     "rkvenc1_mmu",
     "rkvenc_ccu",
+    "saradc",
     "spdif_tx2",
     "tsadc",
     "u2phy0",
@@ -297,8 +299,11 @@ STATUS_ONLY_TARGETS = {
     "usbdp_phy1_u3",
     "usbhost3_0",
     "usbhost_dwc3_0",
+    "uart6",
     "vdpu",
     "vdpu_mmu",
+    "vop",
+    "vop_mmu",
 }
 MINIMAL_OVERLAY_PROPERTIES = {
     "cpu_b0": {"cpu-supply", "mem-supply"},
