@@ -3,9 +3,9 @@
 ## Scope
 
 Compare:
-- Input: fdtdump.dts
+- Input: dts/vendor/**$board_name.dts
 - Base: rk3588(s).dtsi
-- Output: restored.dts
+- Output: /tmp/$board_name.restored.dts
 
 ## Metrics
 

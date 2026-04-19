@@ -1,12 +1,21 @@
 ````markdown
-# Bootstrap Plan: Restore RK3588 Device Tree from fdtdump
+# Bootstrap Plan: Restore RK3588 Device Tree from Vendor DTS Dumps
 
 ## Goal
 
-Build an initial pipeline to transform:
+Re-implement these two tools around one consistent evaluation pipeline:
 
-- Input: `fdtdump.dts` (decompiled from `/sys/firmware/fdt`)
-- Output: `restored.dts` (a minimal board-level DTS)
+- `tools/dts/clean_rk3588_dump.py`
+- `tools/dts/benchmark_rk3588_dump_cleanup.py`
+
+The end-to-end goal is to start from an original vendor DTS, derive a dumped DTS by compiling and decompiling it, restore a cleaner board DTS from that dump, and then compare the restored DTS against the original vendor DTS.
+
+Core flow:
+
+- Input 1: `vendor.dts` (original vendor board DTS)
+- Derived intermediate: `dumped.dts` (produced by compiling and then decompiling `vendor.dts`)
+- Output: `restored.dts` (a minimal board-level DTS reconstructed from `dumped.dts`)
+- Final comparison target: compare `restored.dts` against `vendor.dts`
 
 The output must:
 
@@ -129,9 +138,28 @@ Then:
 
 ---
 
-### Phase A: Parse Input
+### Phase A: Acquire Dumped Input from Vendor DTS
 
-Input: `fdtdump.dts`
+Input: `vendor.dts`
+
+Produce the dumped form used by the cleanup tool:
+
+1. compile `vendor.dts` -> `vendor.compiled.dtb`
+2. decompile `vendor.compiled.dtb` -> `vendor.dumped.dts`
+
+This dumped DTS is the effective input to the restoration pipeline.
+
+Artifacts at this phase:
+
+- `vendor.dts`
+- `vendor.compiled.dtb`
+- `vendor.dumped.dts`
+
+---
+
+### Phase B: Parse Dumped Input
+
+Input: `vendor.dumped.dts`
 
 Build AST / IR:
 
@@ -150,7 +178,7 @@ Also extract:
 
 ---
 
-### Phase B: Detect Base SoC
+### Phase C: Detect Base SoC
 
 ```text
 if exists("pcie@fe150000"):
@@ -161,7 +189,7 @@ else:
 
 ---
 
-### Phase C: Load Base DTSI
+### Phase D: Load Base DTSI
 
 * Parse `rk3588.dtsi` or `rk3588s.dtsi`
 * Build indices:
@@ -173,7 +201,7 @@ else:
 
 ---
 
-### Phase D: Node Matching
+### Phase E: Node Matching
 
 Match input nodes to base nodes:
 
@@ -192,7 +220,7 @@ Classify nodes:
 
 ---
 
-### Phase E: Apply Ignore Rules
+### Phase F: Apply Ignore Rules
 
 Drop nodes if:
 
@@ -204,7 +232,7 @@ Drop nodes if:
 
 ---
 
-### Phase F: Extract Deltas
+### Phase G: Extract Deltas
 
 For each matched node:
 
@@ -233,7 +261,7 @@ For each matched node:
 
 ---
 
-### Phase G: Add Board Nodes
+### Phase H: Add Board Nodes
 
 For nodes not in base:
 
@@ -252,7 +280,7 @@ Rules:
 
 ---
 
-### Phase H: Restore Graph
+### Phase I: Restore Graph
 
 Handle:
 
@@ -274,7 +302,7 @@ Rules:
 
 ---
 
-### Phase I: Reference Naming
+### Phase J: Reference Naming
 
 Priority:
 
@@ -288,7 +316,7 @@ Fallback allowed (bootstrap):
 
 ---
 
-### Phase J: Emit Output
+### Phase K: Emit Output
 
 Structure:
 
@@ -394,11 +422,65 @@ Do NOT attempt:
 
 ---
 
-## 8. Expected Output
+## 8. Tool Contracts
 
-The pipeline should produce:
+### `clean_rk3588_dump.py`
 
-* `input.fdtdump.dts`
+Purpose:
+
+- Restore a minimal board DTS from a dumped DTS
+
+Primary input:
+
+- `dumped.dts`
+
+Primary output:
+
+- `restored.dts`
+
+Behavior:
+
+- detect RK3588 vs RK3588S
+- load the matching base dtsi
+- extract board-level deltas from the dumped DTS
+- emit a compilable minimal board DTS
+
+### `benchmark_rk3588_dump_cleanup.py`
+
+Purpose:
+
+- Evaluate the cleanup pipeline against original vendor DTS inputs
+
+Primary input:
+
+- `vendor.dts`
+
+Primary derived artifacts:
+
+- `vendor.compiled.dtb`
+- `vendor.dumped.dts`
+- `restored.dts`
+- optional restored recompiled / redecompiled artifacts for normalized scoring
+
+Primary output:
+
+- per-case benchmark results and aggregate scoring
+
+Behavior:
+
+- compile vendor DTS
+- decompile compiled DTB to produce dumped DTS
+- run restoration from dumped DTS
+- compare restored DTS against original vendor DTS
+- optionally compare normalized compiled forms as a secondary metric
+
+## 9. Expected Artifacts
+
+For each benchmark case, the pipeline should produce:
+
+* `input.vendor.dts`
+* `input.compiled.dtb`
+* `input.dumped.dts`
 * `output.restored.dts`
 
 Where:
@@ -410,11 +492,17 @@ Where:
   * based on rk3588(s).dtsi
   * ready for further refinement
 
+And evaluation should treat:
+
+* `vendor.dts` as the ground-truth reference
+* `dumped.dts` as the reconstruction input
+* `restored.dts` as the reconstruction result
+
 ---
 
-## 9. Task Definition (for Codex)
+## 10. Task Definition (for Codex)
 
-> Implement a bootstrap pipeline that converts a decompiled RK3588/RK3588S device tree into a minimal board-level DTS by diffing against the corresponding SoC dtsi, extracting only enabled nodes, board devices, resource bindings, graph connections, and assigned-clocks, while ignoring SoC-level policy nodes and runtime/bootloader artifacts.
+> Re-implement `clean_rk3588_dump.py` and `benchmark_rk3588_dump_cleanup.py` around a bootstrap pipeline that takes an original vendor RK3588/RK3588S DTS, derives a dumped DTS by compiling and decompiling it, converts that dumped DTS into a minimal board-level restored DTS by diffing against the corresponding SoC dtsi, and evaluates the result primarily by comparing the restored DTS against the original vendor DTS while ignoring SoC-level policy nodes and runtime/bootloader artifacts.
 
 ```
 ```
