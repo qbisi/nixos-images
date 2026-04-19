@@ -33,7 +33,23 @@ SINGLE_RK806_REQUIRED_NAMES = (
 )
 LABEL_REF_RE = re.compile(r"<&([\w]+)")
 ANGLE_VALUE_RE = re.compile(r"<([^>]+)>")
+HEX_TOKEN_RE = re.compile(r"\b0x[0-9a-fA-F]+\b")
 WHOLE_LIST_PHANDLE_PROPERTIES = {"pinctrl-0", "pinctrl-1", "pinctrl-2"}
+KEEP_HEX_PROPERTY_NAMES = {
+    "interrupts",
+    "phandle",
+    "linux,phandle",
+    "pwms",
+    "reg",
+    "rockchip,pins",
+    "rockchip,suspend-voltage-selector",
+    "size",
+}
+KEEP_HEX_PROPERTY_SUFFIXES = (
+    "-gpio",
+    "-gpios",
+    "_gpio",
+)
 FIRST_TOKEN_PHANDLE_PROPERTIES = {
     "WIFI,host_wake_irq",
     "clocks",
@@ -501,7 +517,6 @@ def should_restore_dump_root_node(
 def normalize_dump_root_block(block: str, phandle_labels: dict[str, str]) -> str:
     block = block.replace("\t", "    ").strip()
     block = ensure_root_block_label(block)
-    block = strip_phandle_properties(block)
     block = "\n".join(
         line for line in block.splitlines() if line.strip() != 'status = "disabled";'
     )
@@ -517,8 +532,48 @@ def strip_phandle_properties(block: str) -> str:
 def replace_numeric_phandles(block: str, phandle_labels: dict[str, str]) -> str:
     rewritten_lines: list[str] = []
     for line in block.splitlines():
-        rewritten_lines.append(rewrite_phandle_line(line, phandle_labels))
+        rewritten = rewrite_phandle_line(line, phandle_labels)
+        rewritten_lines.append(normalize_numeric_literals_in_line(rewritten))
     return "\n".join(rewritten_lines)
+
+
+def normalize_numeric_literals_in_line(line: str) -> str:
+    if "=" not in line or "0x" not in line:
+        return line
+
+    name, remainder = line.split("=", 1)
+    property_name = name.strip()
+    if should_keep_hex_literals(property_name):
+        return line
+
+    match = ANGLE_VALUE_RE.search(remainder)
+    if not match:
+        return line
+
+    def replace_token(token_match: re.Match[str]) -> str:
+        token = token_match.group(0)
+        try:
+            value = int(token, 16)
+        except ValueError:
+            return token
+        if value <= 0xF:
+            return token.lower()
+        return str(value)
+
+    normalized = HEX_TOKEN_RE.sub(replace_token, match.group(1))
+    return name + "=" + remainder[: match.start()] + "<" + normalized + ">" + remainder[match.end() :]
+
+
+def should_keep_hex_literals(property_name: str) -> bool:
+    if property_name in KEEP_HEX_PROPERTY_NAMES:
+        return True
+    if property_name.startswith("#"):
+        return True
+    if property_name.endswith(KEEP_HEX_PROPERTY_SUFFIXES):
+        return True
+    if "_gpios" in property_name:
+        return True
+    return False
 
 
 def rewrite_phandle_line(line: str, phandle_labels: dict[str, str]) -> str:
@@ -1496,7 +1551,7 @@ def build_imported_port_overlays(content: str, phandle_labels: dict[str, str]) -
 
 
 def render_labeled_child_block(block: str, label: str, phandle_labels: dict[str, str]) -> str:
-    normalized = strip_phandle_properties(block.replace("\t", "    ").strip())
+    normalized = block.replace("\t", "    ").strip()
     lines = normalized.splitlines()
     if not lines:
         return normalized
@@ -1633,7 +1688,7 @@ def filtered_overlay_body_lines(block: str, target: str, alias_targets: dict[str
         return [
             line
             for line in property_lines
-            if "phandle =" not in line and line.strip() != 'status = "disabled";'
+            if line.strip() != 'status = "disabled";'
         ]
 
     selected = render_allowed_properties(block, allowed)
@@ -1699,7 +1754,7 @@ def direct_property_lines(block: str) -> list[str]:
 
 def render_allowed_properties(block: str, allowed: set[str]) -> list[str]:
     rendered: list[str] = []
-    for name in allowed:
+    for name in sorted(allowed | {"phandle"}):
         value = property_value(block, name)
         if name == "status" and value != '"okay"':
             continue
