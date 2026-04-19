@@ -360,6 +360,8 @@ ALLOWED_DUMP_OVERLAY_TARGETS = STATUS_ONLY_TARGETS | set(MINIMAL_OVERLAY_PROPERT
 
 def default_output_path(input_path: Path, mode: str) -> Path:
     if mode == "dump-cleanup":
+        if input_path.name.endswith(".dumped.dts"):
+            return input_path.with_name(input_path.name[: -len(".dumped.dts")] + ".dts")
         if input_path.name.endswith(".dts.dumped"):
             return input_path.with_name(input_path.name[: -len(".dumped")])
         return input_path.with_name(input_path.stem + ".cleaned.dts")
@@ -370,6 +372,8 @@ def infer_mode(input_path: Path, explicit_mode: str | None) -> str:
     if explicit_mode:
         return explicit_mode
     if "fdtdump" in input_path.parts:
+        return "dump-cleanup"
+    if input_path.name.endswith(".dumped.dts"):
         return "dump-cleanup"
     if input_path.name.endswith(".dts.dumped"):
         return "dump-cleanup"
