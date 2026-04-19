@@ -157,6 +157,7 @@ def normalize_statement(text: str) -> str:
     statement = normalize_inline_whitespace(strip_comments(text).strip())
     statement = re.sub(r"\s*=\s*", " = ", statement)
     statement = re.sub(r">\s*,\s*<", " ", statement)
+    statement = normalize_gpio_line_names(statement)
     statement = normalize_numeric_literals(statement)
     if not statement or statement == ";":
         return ""
@@ -178,3 +179,51 @@ def normalize_numeric_literals(text: str) -> str:
         return token
 
     return re.sub(r"\b0x[0-9a-fA-F]+\b", replace, text)
+
+
+def normalize_gpio_line_names(statement: str) -> str:
+    prefix = "gpio-line-names = "
+    if not statement.startswith(prefix):
+        return statement
+    raw = statement[len(prefix):].rstrip(";").strip()
+    if raw.startswith("[") and raw.endswith("]"):
+        try:
+            values = [int(token, 16) for token in raw[1:-1].split() if token]
+        except ValueError:
+            return statement
+        return prefix + render_string_list(decode_null_terminated(values)) + ";"
+    if raw.startswith("<") and raw.endswith(">"):
+        try:
+            cells = [int(token, 0) for token in raw[1:-1].split() if token]
+        except ValueError:
+            return statement
+        values: list[int] = []
+        for cell in cells:
+            values.extend(
+                [
+                    (cell >> 24) & 0xFF,
+                    (cell >> 16) & 0xFF,
+                    (cell >> 8) & 0xFF,
+                    cell & 0xFF,
+                ]
+            )
+        return prefix + render_string_list(decode_null_terminated(values)) + ";"
+    return statement
+
+
+def decode_null_terminated(values: list[int]) -> list[str]:
+    strings: list[str] = []
+    current: list[int] = []
+    for value in values:
+        if value == 0:
+            strings.append(bytes(current).decode("utf-8", errors="ignore"))
+            current = []
+            continue
+        current.append(value)
+    if current:
+        strings.append(bytes(current).decode("utf-8", errors="ignore"))
+    return strings
+
+
+def render_string_list(values: list[str]) -> str:
+    return ", ".join(f'"{value}"' for value in values)
