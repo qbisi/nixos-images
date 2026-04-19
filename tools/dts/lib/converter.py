@@ -403,6 +403,7 @@ def has_dual_rk806_scheme(content: str) -> bool:
 def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     phandle_labels = build_phandle_label_map(content)
     alias_targets = build_dump_alias_target_map(content)
+    rk860x_overlays = build_rk860x_overlays(content)
     model = BoardModel(
         source_kind="dump-cleanup",
         soc=soc_family,
@@ -424,11 +425,13 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
                 model,
                 [NodeFact(name=_node_name(block), block=block, category="regulator")],
             )
-        overlays = build_rk860x_overlays(content)
-        model.overlays.extend(overlays)
+        model.overlays.extend(rk860x_overlays)
         model.overlays.extend(build_supply_overlays(content))
     elif has_dual_rk806_scheme(content):
         model.includes.append('"rk3588-rk806-dual.dtsi"')
+    elif rk860x_overlays:
+        model.overlays.extend(rk860x_overlays)
+        model.overlays.extend(build_supply_overlays(content))
 
     for node_name, target in (("tsadc@fec00000", "tsadc"),):
         block = extract_block(content, node_name)
@@ -1083,10 +1086,21 @@ def build_rk860x_overlays(content: str) -> list[OverlayFact]:
     i2c1_block = extract_block(content, "i2c@fea90000")
     i2c6_block = extract_block(content, "i2c@fec80000")
     npu_block = extract_block(i2c1_block or "", "rk8602@42")
-    big_bus_block = i2c0_block or i2c6_block or ""
-    big_bus_target = "i2c0" if i2c0_block else "i2c6"
-    big0_block = extract_block(big_bus_block, "rk8602@42")
-    big1_block = extract_block(big_bus_block, "rk8603@43")
+    i2c0_big0_block = extract_block(i2c0_block or "", "rk8602@42")
+    i2c0_big1_block = extract_block(i2c0_block or "", "rk8603@43")
+    i2c6_big0_block = extract_block(i2c6_block or "", "rk8602@42")
+    i2c6_big1_block = extract_block(i2c6_block or "", "rk8603@43")
+
+    if i2c0_big0_block or i2c0_big1_block:
+        big_bus_block = i2c0_block or ""
+        big_bus_target = "i2c0"
+        big0_block = i2c0_big0_block
+        big1_block = i2c0_big1_block
+    else:
+        big_bus_block = i2c6_block or ""
+        big_bus_target = "i2c6"
+        big0_block = i2c6_big0_block
+        big1_block = i2c6_big1_block
 
     if npu_block:
         pinctrl = render_parent_properties(i2c1_block or "", {"pinctrl-names", "pinctrl-0"})
