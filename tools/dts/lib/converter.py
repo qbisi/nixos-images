@@ -1212,6 +1212,39 @@ def build_nested_dump_overlays(content: str, phandle_labels: dict[str, str]) -> 
                 )
             )
 
+    for parent_name, phy_name, phy_target, port_name, port_target in (
+        ("syscon@fd5d0000", "usb2-phy@0", "u2phy0", "otg-port", "u2phy0_otg"),
+        ("syscon@fd5d4000", "usb2-phy@4000", "u2phy1", "otg-port", "u2phy1_otg"),
+        ("syscon@fd5d8000", "usb2-phy@8000", "u2phy2", "host-port", "u2phy2_host"),
+        ("syscon@fd5dc000", "usb2-phy@c000", "u2phy3", "host-port", "u2phy3_host"),
+    ):
+        parent = extract_block(content, parent_name)
+        if not parent:
+            continue
+        phy_block = extract_block(parent, phy_name)
+        if not phy_block:
+            continue
+        overlays.append(
+            OverlayFact(
+                target=phy_target,
+                category="recovered-overlay",
+                block=convert_dumped_block_to_overlay(phy_block, phy_target, phandle_labels),
+                enabled=property_value(phy_block, "status") == '"okay"',
+            )
+        )
+
+        port_block = extract_block(phy_block, port_name)
+        if not port_block:
+            continue
+        overlays.append(
+            OverlayFact(
+                target=port_target,
+                category="recovered-overlay",
+                block=convert_dumped_block_to_overlay(port_block, port_target, phandle_labels),
+                enabled=property_value(port_block, "status") == '"okay"',
+            )
+        )
+
     for block in iter_all_blocks(content):
         regulator_name = property_value(block, "regulator-name")
         if not regulator_name:
