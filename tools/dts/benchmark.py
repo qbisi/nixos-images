@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from lib.converter import detect_soc_family, render_conversion
-from lib.eval import discover_vendor_rk3588_dts, evaluate_restored_dts, resolve_vendor_input
+from lib.score import discover_vendor_rk3588_dts, evaluate_restored_dts, resolve_vendor_input
 from lib.validate import compile_dts_to_dtb, decompile_dtb_to_dts
 
 
@@ -76,26 +76,19 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
     )
 
     restored_decompile: dict[str, object] | None = None
-    evaluation: dict[str, object] | None = None
+    restored_compiled_content = ""
     if restored_compile["status"] == "ok":
         restored_decompile = decompile_dtb_to_dts(restored_compiled_dtb, restored_compiled_dts)
         if restored_decompile["status"] == "ok":
-            evaluation = evaluate_restored_dts(
-                vendor_compiled_dts=dumped_content,
-                restored_compiled_dts=restored_compiled_dts.read_text(encoding="utf-8", errors="ignore"),
-                restored_source=restored_content,
-                restored_validation_ok=True,
-                unresolved=[{"kind": item.kind, "detail": item.detail} for item in restored_model.unresolved],
-            )
+            restored_compiled_content = restored_compiled_dts.read_text(encoding="utf-8", errors="ignore")
 
-    if evaluation is None:
-        evaluation = evaluate_restored_dts(
-            vendor_compiled_dts=dumped_content,
-            restored_compiled_dts="",
-            restored_source=restored_content,
-            restored_validation_ok=False,
-            unresolved=[{"kind": item.kind, "detail": item.detail} for item in restored_model.unresolved],
-        )
+    evaluation = evaluate_restored_dts(
+        vendor_compiled_dts=dumped_content,
+        restored_compiled_dts=restored_compiled_content,
+        restored_source=restored_content,
+        restored_validation_ok=restored_compile["status"] == "ok",
+        unresolved=[{"kind": item.kind, "detail": item.detail} for item in restored_model.unresolved],
+    )
 
     return {
         "input": display_path(input_path),
@@ -170,7 +163,7 @@ def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | N
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Benchmark RK3588 dump cleanup using the EVAL.md contract against vendor DTS inputs."
+        description="Benchmark RK3588 dump cleanup using score.py with the EVAL.md contract."
     )
     parser.add_argument(
         "inputs",
@@ -207,10 +200,7 @@ def main() -> int:
     if not inputs:
         parser.error("Provide one or more board names or DTS paths, or use --vendor-rockchip-all.")
 
-    results = []
-    for input_path in inputs:
-        results.append(benchmark_one(input_path, args.work_root.resolve(), args.include_kind))
-
+    results = [benchmark_one(input_path, args.work_root.resolve(), args.include_kind) for input_path in inputs]
     print(json.dumps({"results": results, "aggregate": summarize_results(results)}, indent=2))
     return 0
 
