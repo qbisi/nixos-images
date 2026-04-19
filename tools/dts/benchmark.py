@@ -109,58 +109,6 @@ def benchmark_one(input_path: Path, work_root: Path, include_kind: str) -> dict[
     }
 
 
-def summarize_results(results: list[dict[str, object]]) -> dict[str, object] | None:
-    successful = [item for item in results if item.get("evaluation")]
-    if not successful:
-        return None
-
-    scores = [int(item["evaluation"]["total_score"]) for item in successful]  # type: ignore[index]
-    sorted_results = sorted(
-        successful,
-        key=lambda item: (int(item["evaluation"]["total_score"]), item["input"]),  # type: ignore[index]
-    )
-
-    failed_compile = [item["input"] for item in results if item.get("compile", {}).get("status") != "ok"]
-    failed_decompile = [
-        item["input"]
-        for item in results
-        if item.get("compile", {}).get("status") == "ok" and item.get("decompile", {}).get("status") != "ok"
-    ]
-    failed_restore_compile = [
-        item["input"]
-        for item in results
-        if item.get("restored_validation", {}).get("status") != "ok"
-    ]
-    failed_restore_decompile = [
-        item["input"]
-        for item in results
-        if item.get("restored_validation", {}).get("status") == "ok"
-        and item.get("restored_decompile", {}).get("status") != "ok"
-    ]
-
-    return {
-        "cases": len(results),
-        "successful_cases": len(successful),
-        "avg_total_score": round(sum(scores) / len(scores), 2),
-        "best_case": {
-            "input": sorted_results[-1]["input"],
-            "score": sorted_results[-1]["evaluation"]["total_score"],  # type: ignore[index]
-        },
-        "worst_case": {
-            "input": sorted_results[0]["input"],
-            "score": sorted_results[0]["evaluation"]["total_score"],  # type: ignore[index]
-        },
-        "failed_compile_cases": len(failed_compile),
-        "failed_decompile_cases": len(failed_decompile),
-        "failed_restore_compile_cases": len(failed_restore_compile),
-        "failed_restore_decompile_cases": len(failed_restore_decompile),
-        "failed_compile_inputs": failed_compile,
-        "failed_decompile_inputs": failed_decompile,
-        "failed_restore_compile_inputs": failed_restore_compile,
-        "failed_restore_decompile_inputs": failed_restore_decompile,
-    }
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Benchmark RK3588 dump cleanup using score.py with the EVAL.md contract."
@@ -182,11 +130,6 @@ def main() -> int:
         default=default_work_root(),
         help="Directory for generated DTB, dumped DTS, restored DTS, and compiled restored DTS artifacts.",
     )
-    parser.add_argument(
-        "--vendor-rockchip-all",
-        action="store_true",
-        help="Benchmark all RK3588/RK3588S DTS files under dts/vendor/rockchip.",
-    )
     args = parser.parse_args()
 
     try:
@@ -195,13 +138,11 @@ def main() -> int:
         parser.error(str(exc))
         return 2
 
-    if args.vendor_rockchip_all:
-        inputs = discover_vendor_rk3588_dts(REPO_ROOT, detect_soc_family)
     if not inputs:
-        parser.error("Provide one or more board names or DTS paths, or use --vendor-rockchip-all.")
+        parser.error("Provide one or more board names or DTS paths.")
 
     results = [benchmark_one(input_path, args.work_root.resolve(), args.include_kind) for input_path in inputs]
-    print(json.dumps({"results": results, "aggregate": summarize_results(results)}, indent=2))
+    print(json.dumps({"results": results}, indent=2))
     return 0
 
 

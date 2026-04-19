@@ -390,6 +390,14 @@ def has_single_rk806_scheme(content: str) -> bool:
     return all(f'regulator-name = "{name}";' in content for name in SINGLE_RK806_REQUIRED_NAMES)
 
 
+def has_dual_rk806_scheme(content: str) -> bool:
+    if "rk806master@0" not in content or "rk806slave@1" not in content:
+        return False
+    if "spi@feb20000" not in content:
+        return False
+    return True
+
+
 def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     phandle_labels = build_phandle_label_map(content)
     alias_targets = build_dump_alias_target_map(content)
@@ -417,6 +425,8 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
         overlays = build_rk860x_overlays(content)
         model.overlays.extend(overlays)
         model.overlays.extend(build_supply_overlays(content))
+    elif soc_family == "rk3588" and has_dual_rk806_scheme(content):
+        model.includes.append('"rk3588-rk806-dual.dtsi"')
 
     for node_name, target in (("tsadc@fec00000", "tsadc"),):
         block = extract_block(content, node_name)
@@ -1382,22 +1392,7 @@ def build_rockchip_suspend_overlay(content: str) -> list[OverlayFact]:
 
 
 def default_dump_cleanup_includes(soc_family: str) -> list[str]:
-    includes = [f'"{soc_family}.dtsi"']
-    if soc_family != "rk3588":
-        return includes
-    return [
-        "<dt-bindings/gpio/gpio.h>",
-        "<dt-bindings/leds/common.h>",
-        "<dt-bindings/pwm/pwm.h>",
-        "<dt-bindings/pinctrl/rockchip.h>",
-        "<dt-bindings/input/rk-input.h>",
-        "<dt-bindings/display/drm_mipi_dsi.h>",
-        "<dt-bindings/display/rockchip_vop.h>",
-        "<dt-bindings/sensor-dev.h>",
-        '"dt-bindings/usb/pd.h"',
-        '"rk3588.dtsi"',
-        '"rk3588-linux.dtsi"',
-    ]
+    return [f'"{soc_family}.dtsi"']
 
 
 def build_imported_port_overlays(content: str, phandle_labels: dict[str, str]) -> list[OverlayFact]:

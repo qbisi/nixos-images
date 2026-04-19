@@ -20,6 +20,8 @@ Core flow:
 The output must:
 
 - Include only `rk3588.dtsi` or `rk3588s.dtsi`
+- Optionally include `rk3588-rk806-single.dtsi` or `rk3588-rk806-dual.dtsi`
+- Include no other `.dtsi` files in restored vendor DTS output
 - Represent **board-level deltas only**
 - Be **compilable**
 - Be **minimal and maintainable**
@@ -131,6 +133,9 @@ Then:
 * Minimal `/ {}` root
 * `&node { ... }` patches
 * New board devices under correct parent
+* For restored vendor DTS output, the only allowed includes are:
+  * `rk3588.dtsi` or `rk3588s.dtsi`
+  * optional `rk3588-rk806-single.dtsi` or `rk3588-rk806-dual.dtsi`
 
 ---
 
@@ -442,6 +447,7 @@ Behavior:
 
 - detect RK3588 vs RK3588S
 - load the matching base dtsi
+- restrict restored vendor DTS includes to the SoC dtsi plus optional `rk3588-rk806-single.dtsi` or `rk3588-rk806-dual.dtsi`
 - extract board-level deltas from the dumped DTS
 - emit a compilable minimal board DTS
 
@@ -493,6 +499,7 @@ Where:
   * minimal
   * board-focused
   * based on rk3588(s).dtsi
+  * limited to the SoC dtsi plus optional RK806 single/dual dtsi
   * ready for further refinement
 
 And evaluation should treat:
