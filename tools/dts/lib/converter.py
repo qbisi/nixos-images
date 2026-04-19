@@ -1425,6 +1425,7 @@ def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> 
         ("wireless-wlan", "wifi-host-wake-irq", "wifi_host_wake_irq"),
         ("wireless-wlan", "wifi-poweren-gpio", "wifi_poweren_gpio"),
         ("usb", "vcc3v3-pcie30-en", "vcc3v3_pcie30_en"),
+        ("pcie3", "pcie3-reg", "vcc3v3_pcie30_en: pcie3_reg"),
         ("usb", "vcc3v3-host32-en", "vcc3v3_host32_en"),
         ("usb", "vcc5v0-host20-en", "vcc5v0_host20_en"),
         ("usb", "vcc5v0-host30-en", "vcc5v0_host30_en"),
