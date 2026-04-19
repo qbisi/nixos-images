@@ -194,18 +194,22 @@ ROOT_NODE_TARGETS = {
     "jpegd@fdb90000": "jpegd",
     "iommu@fdb90480": "jpegd_mmu",
     "iep@fdbb0000": "iep",
-    "iommu@fdbb0480": "iep_mmu",
+    "iommu@fdbb0800": "iep_mmu",
     "vdpu@fdb50400": "vdpu",
     "iommu@fdb50000": "vdpu_mmu",
-    "iommu@fdbd0480": "rkvenc0_mmu",
-    "iommu@fdbe0480": "rkvenc1_mmu",
+    "iommu@fdba0800": "jpege0_mmu",
+    "iommu@fdba4800": "jpege1_mmu",
+    "iommu@fdba8800": "jpege2_mmu",
+    "iommu@fdbac800": "jpege3_mmu",
+    "iommu@fdbdf000": "rkvenc0_mmu",
+    "iommu@fdbef000": "rkvenc1_mmu",
     "iommu@fdc38700": "rkvdec0_mmu",
     "iommu@fdc48700": "rkvdec1_mmu",
-    "rga2@fdb80000": "rga2",
-    "rga3-core@fdac0000": "rga3_core0",
-    "iommu@fdac0480": "rga3_0_mmu",
-    "rga3-core@fdad0000": "rga3_core1",
-    "iommu@fdad0480": "rga3_1_mmu",
+    "rga@fdb80000": "rga2",
+    "rga@fdb60000": "rga3_core0",
+    "iommu@fdb60f00": "rga3_0_mmu",
+    "rga@fdb70000": "rga3_core1",
+    "iommu@fdb70f00": "rga3_1_mmu",
 }
 COMPATIBLE_TARGETS = {
     "rockchip,vpu-jpege-ccu": "jpege_ccu",
@@ -412,6 +416,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
             )
 
     model.overlays.extend(build_imported_node_overlays(content, phandle_labels))
+    model.overlays.extend(build_nested_dump_overlays(content, phandle_labels))
     model.overlays.extend(build_helper_node_overlays(content, phandle_labels))
     model.overlays.extend(build_common_dump_overlays(content, phandle_labels))
     model.overlays.extend(build_rockchip_suspend_overlay(content))
@@ -1160,6 +1165,10 @@ def build_imported_node_overlays(content: str, phandle_labels: dict[str, str]) -
         target = infer_dump_overlay_target(block, alias_targets)
         if not target or target in seen_targets:
             continue
+        if target in {"i2c0", "i2c1"} and (
+            extract_block(block, "rk8602@42") or extract_block(block, "rk8603@43")
+        ):
+            continue
         normalized = convert_dumped_block_to_overlay(block, target, phandle_labels, alias_targets)
         status = property_value(block, "status")
         overlays.append(
@@ -1173,6 +1182,40 @@ def build_imported_node_overlays(content: str, phandle_labels: dict[str, str]) -
         seen_targets.add(target)
 
     overlays.extend(build_imported_port_overlays(content, phandle_labels))
+    return overlays
+
+
+def build_nested_dump_overlays(content: str, phandle_labels: dict[str, str]) -> list[OverlayFact]:
+    overlays: list[OverlayFact] = []
+    display = extract_block(content, "display-subsystem")
+    if display:
+        route = extract_block(display, "route")
+        route_dp0 = extract_block(route or "", "route-dp0")
+        if route_dp0:
+            overlays.append(
+                OverlayFact(
+                    target="route_dp0",
+                    category="recovered-overlay",
+                    block=convert_dumped_block_to_overlay(route_dp0, "route_dp0", phandle_labels),
+                    enabled=property_value(route_dp0, "status") == '"okay"',
+                )
+            )
+
+    for block in iter_all_blocks(content):
+        regulator_name = property_value(block, "regulator-name")
+        if not regulator_name:
+            continue
+        target = regulator_name.strip().strip('"')
+        if target not in EMPTY_OVERLAY_TARGETS:
+            continue
+        overlays.append(
+            OverlayFact(
+                target=target,
+                category="recovered-overlay",
+                block=f"&{target} {{\n}};\n",
+                enabled=False,
+            )
+        )
     return overlays
 
 
