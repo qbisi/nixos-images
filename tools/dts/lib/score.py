@@ -156,6 +156,7 @@ def normalize_inline_whitespace(text: str) -> str:
 def normalize_statement(text: str) -> str:
     statement = normalize_inline_whitespace(strip_comments(text).strip())
     statement = re.sub(r"\s*=\s*", " = ", statement)
+    statement = re.sub(r">\s*,\s*<", " ", statement)
     statement = normalize_numeric_literals(statement)
     if not statement or statement == ";":
         return ""

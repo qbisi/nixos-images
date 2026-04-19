@@ -53,6 +53,8 @@ FIRST_TOKEN_PHANDLE_PROPERTIES = {
     "rockchip,codec",
     "rockchip,cpu",
     "rockchip,frame-master",
+    "sbu1-dc-gpios",
+    "sbu2-dc-gpios",
     "vbat-supply",
     "vbus-supply",
     "vin-supply",
@@ -599,6 +601,7 @@ def build_phandle_label_map(content: str) -> dict[str, str]:
         label = infer_node_label(block, alias_targets)
         if label:
             phandle_labels[key] = label
+            phandle_labels[str(int(key, 16))] = label
     pinctrl_block = extract_block(content, "pinctrl")
     if pinctrl_block:
         for block in iter_all_blocks(pinctrl_block):
@@ -613,6 +616,7 @@ def build_phandle_label_map(content: str) -> dict[str, str]:
             label = normalize_label_name(_node_name(block))
             if label and key not in phandle_labels:
                 phandle_labels[key] = label
+                phandle_labels[str(int(key, 16))] = label
     return phandle_labels
 
 
@@ -1014,6 +1018,7 @@ def build_fixed_regulator_blocks() -> list[str]:
             "\tregulator-boot-on;\n"
             "\tregulator-min-microvolt = <5000000>;\n"
             "\tregulator-max-microvolt = <5000000>;\n"
+            "\tvin-supply = <&vcc12v_dcin>;\n"
             "};\n"
         ),
         (
