@@ -37,6 +37,7 @@ WHOLE_LIST_PHANDLE_PROPERTIES = {"pinctrl-0", "pinctrl-1", "pinctrl-2"}
 FIRST_TOKEN_PHANDLE_PROPERTIES = {
     "WIFI,host_wake_irq",
     "clocks",
+    "connect",
     "enable-gpios",
     "gpio",
     "gpios",
@@ -535,6 +536,8 @@ def rewrite_gpio_tokens(property_name: str, tokens: list[str]) -> list[str]:
         "hp-det-gpio",
         "int-n-gpios",
         "reset-gpios",
+        "sbu1-dc-gpios",
+        "sbu2-dc-gpios",
         "shutdown-gpios",
     }:
         return tokens
@@ -1053,22 +1056,23 @@ def build_rk860x_overlays(content: str) -> list[OverlayFact]:
 
     if npu_block:
         pinctrl = render_parent_properties(i2c1_block or "", {"pinctrl-names", "pinctrl-0"})
+        block = (
+            "&i2c1 {\n"
+            '\tstatus = "okay";\n\n'
+            + pinctrl
+            + render_rk860x_node(
+                npu_block,
+                ["vdd_npu_s0", "vdd_npu_mem_s0"],
+                "rk8602@42",
+                "rockchip,rk8602",
+            )
+            + "\n};\n"
+        )
         overlays.append(
             OverlayFact(
                 target="i2c1",
                 category="regulator",
-                block=(
-                    "&i2c1 {\n"
-                    '\tstatus = "okay";\n\n'
-                    + pinctrl
-                    + render_rk860x_node(
-                        npu_block,
-                        ["vdd_npu_s0", "vdd_npu_mem_s0"],
-                        "rk8602@42",
-                        "rockchip,rk8602",
-                    )
-                    + "\n};\n"
-                ),
+                block=replace_numeric_phandles(block, build_phandle_label_map(content)),
                 enabled=True,
             )
         )
@@ -1098,10 +1102,11 @@ def build_rk860x_overlays(content: str) -> list[OverlayFact]:
                 )
             )
         body.append("};\n")
+        block = "\n".join(body)
         overlays.append(
             OverlayFact(
                 target=big_bus_target,
-                block="\n".join(body),
+                block=replace_numeric_phandles(block, build_phandle_label_map(content)),
                 category="regulator",
                 enabled=True,
             )
@@ -1192,12 +1197,13 @@ def build_nested_dump_overlays(content: str, phandle_labels: dict[str, str]) -> 
         route = extract_block(display, "route")
         route_dp0 = extract_block(route or "", "route-dp0")
         if route_dp0:
+            status = property_value(route_dp0, "status") or '"okay"'
             overlays.append(
                 OverlayFact(
                     target="route_dp0",
                     category="recovered-overlay",
-                    block=convert_dumped_block_to_overlay(route_dp0, "route_dp0", phandle_labels),
-                    enabled=property_value(route_dp0, "status") == '"okay"',
+                    block='&route_dp0 {\n\tstatus = ' + status + ';\n\tconnect = <&vp2_out_dp0>;\n};\n',
+                    enabled=status == '"okay"',
                 )
             )
 
