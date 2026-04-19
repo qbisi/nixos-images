@@ -432,6 +432,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
         model.root_nodes.append(NodeFact(name="chosen", block=chosen, category="core"))
 
     recovered_root_nodes = recover_dump_root_nodes(content, phandle_labels, alias_targets)
+    recovered_root_nodes = disambiguate_root_node_labels(recovered_root_nodes)
     append_unique_root_nodes(model, recovered_root_nodes)
 
     if has_single_rk806_scheme(content):
@@ -487,6 +488,31 @@ def recover_dump_root_nodes(
             )
         )
     return recovered
+
+
+def disambiguate_root_node_labels(nodes: list[NodeFact]) -> list[NodeFact]:
+    seen: set[str] = set()
+    rewritten: list[NodeFact] = []
+    for node in nodes:
+        labels = block_labels(node.block)
+        if not labels:
+            rewritten.append(node)
+            continue
+        primary = labels[0]
+        if primary not in seen:
+            seen.add(primary)
+            rewritten.append(node)
+            continue
+        fallback = normalize_label_name(node.name) or primary
+        candidate = fallback
+        suffix = 2
+        while candidate in seen:
+            candidate = f"{fallback}_{suffix}"
+            suffix += 1
+        rewritten_block = replace_block_primary_label(node.block, candidate)
+        seen.add(candidate)
+        rewritten.append(NodeFact(name=node.name, block=rewritten_block, category=node.category))
+    return rewritten
 
 
 def should_restore_dump_root_node(
@@ -1404,6 +1430,9 @@ def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> 
         ("vcc5v0-buck", "vcc5v0-buck-en", "vcc5v0_buck_en"),
         ("vcc4v0-mode", "vcc4v0-sys-mode-en", "vcc4v0_sys_mode_en"),
         ("usb-typec", "typec5v-pwren", "typec5v_pwren"),
+        ("usb-typec", "typec5v-pwren0", "typec5v_pwren0"),
+        ("usb-typec", "typec5v-pwren1", "typec5v_pwren1"),
+        ("vcc-supply", "vcc-5v0-pwren", "vcc_5v0_pwren"),
         ("cam", "mipicsi0-pwr", "mipicsi0_pwr"),
         ("cam", "mipicsi1-pwr", "mipicsi1_pwr"),
         ("cam", "mipidcphy0-pwr", "mipidcphy0_pwr"),
@@ -1435,6 +1464,7 @@ def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> 
         ("sdmmc", "sdmmc-pwr", "sdmmc_pwr"),
         ("leds_gpio", "leds-rgb", "leds_rgb"),
         ("leds", "leds-gpio", "leds_gpio"),
+        ("leds", "led-rgb-b", "led_rgb_b"),
     ):
         block = extract_block(content, node_name)
         if not block:
@@ -1626,6 +1656,22 @@ def normalize_block_header(block: str) -> str:
     if len(parts) >= 2:
         left = f"{parts[-2]}: {parts[-1]} "
         lines[0] = left + "{" + right
+    return "\n".join(lines)
+
+
+def replace_block_primary_label(block: str, new_label: str) -> str:
+    lines = block.splitlines()
+    if not lines:
+        return block
+    header = lines[0]
+    if "{" not in header:
+        return block
+    left, right = header.split("{", 1)
+    parts = [part.strip() for part in left.split(":") if part.strip()]
+    if len(parts) < 2:
+        return block
+    parts[0] = new_label
+    lines[0] = ": ".join(parts) + " {" + right
     return "\n".join(lines)
 
 
