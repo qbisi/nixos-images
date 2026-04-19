@@ -169,6 +169,8 @@ ALIAS_TARGET_RENAMES = {
 }
 ROOT_NODE_TARGETS = {
     "display-subsystem": "display_subsystem",
+    "hdmiphy@fed60000": "hdptxphy_hdmi0",
+    "hdmiphy@fed70000": "hdptxphy_hdmi1",
     "jpege-ccu": "jpege_ccu",
     "mpp-srv": "mpp_srv",
     "rkvenc-ccu@fdbf0000": "rkvenc_ccu",
@@ -374,6 +376,7 @@ def has_single_rk806_scheme(content: str) -> bool:
 
 def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     phandle_labels = build_phandle_label_map(content)
+    alias_targets = build_dump_alias_target_map(content)
     model = BoardModel(
         source_kind="dump-cleanup",
         soc=soc_family,
@@ -385,7 +388,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     if chosen:
         model.root_nodes.append(NodeFact(name="chosen", block=chosen, category="core"))
 
-    recovered_root_nodes = recover_dump_root_nodes(content, phandle_labels)
+    recovered_root_nodes = recover_dump_root_nodes(content, phandle_labels, alias_targets)
     append_unique_root_nodes(model, recovered_root_nodes)
 
     if soc_family == "rk3588" and has_single_rk806_scheme(content):
@@ -416,12 +419,16 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
     return model
 
 
-def recover_dump_root_nodes(content: str, phandle_labels: dict[str, str]) -> list[NodeFact]:
+def recover_dump_root_nodes(
+    content: str,
+    phandle_labels: dict[str, str],
+    alias_targets: dict[str, str],
+) -> list[NodeFact]:
     recovered: list[NodeFact] = []
     for block in iter_root_blocks(content):
         name = _node_name(block)
         category = classify_block(block)
-        if not should_restore_dump_root_node(name, category, block):
+        if not should_restore_dump_root_node(name, category, block, alias_targets):
             continue
         normalized = normalize_dump_root_block(block, phandle_labels)
         recovered.append(
@@ -434,8 +441,15 @@ def recover_dump_root_nodes(content: str, phandle_labels: dict[str, str]) -> lis
     return recovered
 
 
-def should_restore_dump_root_node(name: str, category: str, block: str) -> bool:
+def should_restore_dump_root_node(
+    name: str,
+    category: str,
+    block: str,
+    alias_targets: dict[str, str],
+) -> bool:
     if name in {"chosen", "aliases", "clocks"}:
+        return False
+    if infer_dump_overlay_target(block, alias_targets):
         return False
     if name == "reserved-memory":
         return True
@@ -479,7 +493,9 @@ def rewrite_phandle_line(line: str, phandle_labels: dict[str, str]) -> str:
     tokens = match.group(1).split()
     rewritten_tokens = tokens[:]
 
-    if property_name in WHOLE_LIST_PHANDLE_PROPERTIES:
+    if property_name in WHOLE_LIST_PHANDLE_PROPERTIES or (
+        property_name == "clocks" and all(phandle_labels.get(token.lower()) for token in tokens)
+    ):
         changed = False
         for index, token in enumerate(tokens):
             label = phandle_labels.get(token.lower())
@@ -489,7 +505,7 @@ def rewrite_phandle_line(line: str, phandle_labels: dict[str, str]) -> str:
             changed = True
         if not changed:
             return line
-    elif property_name in FIRST_TOKEN_PHANDLE_PROPERTIES and tokens:
+    elif (property_name in FIRST_TOKEN_PHANDLE_PROPERTIES or property_name.endswith("-supply")) and tokens:
         label = phandle_labels.get(tokens[0].lower())
         if not label:
             return line
@@ -616,6 +632,8 @@ def infer_node_label(block: str, alias_targets: dict[str, str]) -> str | None:
         return KNOWN_PHANDLE_LABELS[node_name]
     if node_name in ROOT_NODE_LABELS:
         return ROOT_NODE_LABELS[node_name]
+    if node_name in ROOT_NODE_TARGETS:
+        return ROOT_NODE_TARGETS[node_name]
     if node_name in alias_targets:
         return alias_targets[node_name]
     regulator_name = property_value(block, "regulator-name")
@@ -1024,6 +1042,7 @@ def build_rk860x_overlays(content: str) -> list[OverlayFact]:
     big1_block = extract_block(big_bus_block, "rk8603@43")
 
     if npu_block:
+        pinctrl = render_parent_properties(i2c1_block or "", {"pinctrl-names", "pinctrl-0"})
         overlays.append(
             OverlayFact(
                 target="i2c1",
@@ -1031,6 +1050,7 @@ def build_rk860x_overlays(content: str) -> list[OverlayFact]:
                 block=(
                     "&i2c1 {\n"
                     '\tstatus = "okay";\n\n'
+                    + pinctrl
                     + render_rk860x_node(
                         npu_block,
                         ["vdd_npu_s0", "vdd_npu_mem_s0"],
@@ -1044,6 +1064,10 @@ def build_rk860x_overlays(content: str) -> list[OverlayFact]:
         )
     if big0_block or big1_block:
         body = [f"&{big_bus_target} {{", '\tstatus = "okay";', ""]
+        parent_props = render_parent_properties(big_bus_block, {"pinctrl-names", "pinctrl-0"})
+        if parent_props:
+            body.append(parent_props.rstrip())
+            body.append("")
         if big0_block:
             body.append(
                 render_rk860x_node(
@@ -1113,6 +1137,8 @@ def build_imported_node_overlays(content: str, phandle_labels: dict[str, str]) -
         if not block:
             continue
         target = IMPORTED_NODE_TARGETS[dumped_name]
+        if target in {"i2c0", "i2c1"}:
+            continue
         normalized = convert_dumped_block_to_overlay(block, target, phandle_labels, alias_targets)
         status = property_value(block, "status")
         overlays.append(
@@ -1514,3 +1540,10 @@ def render_allowed_properties(block: str, allowed: set[str]) -> list[str]:
         if has_property(block, name):
             rendered.append(f"\t{name};")
     return rendered
+
+
+def render_parent_properties(block: str, allowed: set[str]) -> str:
+    properties = render_allowed_properties(block, allowed)
+    if not properties:
+        return ""
+    return "\n".join(properties) + "\n"
