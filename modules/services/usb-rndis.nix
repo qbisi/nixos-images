@@ -175,7 +175,10 @@ in
       "libcomposite"
     ];
 
-    networking.networkmanager.unmanaged = [ cfg.interface ];
+    networking = {
+      networkmanager.unmanaged = [ cfg.interface ];
+      useNetworkd = true;
+    };
 
     systemd.network.networks."40-${cfg.interface}" = {
       matchConfig.Name = cfg.interface;
