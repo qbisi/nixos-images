@@ -158,13 +158,13 @@ in
 
     ipv4Address = lib.mkOption {
       type = lib.types.str;
-      default = "192.168.42.1";
+      default = "10.0.10.1";
       description = "IPv4 address assigned to the USB RNDIS interface.";
     };
 
     prefixLength = lib.mkOption {
       type = lib.types.int;
-      default = 24;
+      default = 31;
       description = "Prefix length assigned to the USB RNDIS interface.";
     };
   };
