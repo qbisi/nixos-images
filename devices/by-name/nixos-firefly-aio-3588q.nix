@@ -60,6 +60,10 @@
     };
   };
 
+  services = {
+    usb-rndis.enable = true;
+  };
+
   environment.systemPackages = with pkgs; [
     usbutils
     pciutils
