@@ -41,7 +41,7 @@
     users = {
       admin = {
         name = "nix";
-        initialPassword = "1234";
+        initialPassword = "";
         uid = 1000;
         isNormalUser = true;
         linger = true;
