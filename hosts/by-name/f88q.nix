@@ -61,6 +61,16 @@
       enable = true;
       autosuggestions.enable = true;
       syntaxHighlighting.enable = true;
+      ohMyZsh = {
+        enable = true;
+        theme = "gentoo";
+        plugins = [
+          "git"
+          "history"
+          "wd"
+          "sudo"
+        ];
+      };
     };
     nix-ld.enable = true;
   };
