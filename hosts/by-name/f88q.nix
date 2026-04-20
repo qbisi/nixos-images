@@ -4,6 +4,7 @@
   lib,
   self,
   inputs,
+  inputs',
   ...
 }:
 {
@@ -34,6 +35,7 @@
       enable = true;
       ensureProfiles.profiles = { };
     };
+    nameservers = [ "223.5.5.5" ];
   };
 
   users = {
@@ -135,6 +137,7 @@
     vim
     git
     python3
+    inputs.spectrum.packages."aarch64-linux".spectrum
   ];
 
   environment.etc."xdg/kscreenlockerrc".text = lib.generators.toINI { } {

@@ -22,6 +22,9 @@
       url = "github:zhaofengli/colmena";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    spectrum = {
+      url = "git+ssh://git@192.168.50.76:/qbisi/spectrum";
+    };
   };
 
   outputs =
