@@ -8,7 +8,7 @@
 }:
 {
   deployment = {
-    targetHost = "192.168.100.200";
+    targetHost = "192.168.100.158";
     targetUser = "root";
     buildOnTarget = false;
   };
@@ -80,6 +80,7 @@
         };
       };
     };
+    usb-rndis.enable = true;
   };
 
   # disable hibernation

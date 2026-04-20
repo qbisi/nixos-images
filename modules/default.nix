@@ -18,6 +18,7 @@
           ./overlay/system/boot/loader/grub.nix
           ./overlay/hardware/device-tree.nix
           ./desktop-managers/plasma6.nix
+          ./services/usb-rndis.nix
           inputs.disko.nixosModules.default
         ];
 
