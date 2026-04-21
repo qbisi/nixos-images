@@ -9,7 +9,7 @@
 }:
 {
   deployment = {
-    targetHost = "192.168.42.1";
+    targetHost = "10.0.10.1";
     targetUser = "root";
     buildOnTarget = false;
   };

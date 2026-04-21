@@ -164,7 +164,7 @@ in
 
     prefixLength = lib.mkOption {
       type = lib.types.int;
-      default = 31;
+      default = 30;
       description = "Prefix length assigned to the USB RNDIS interface.";
     };
   };
@@ -189,8 +189,9 @@ in
         DHCPServer = "yes";
       };
       dhcpServerConfig = {
-        EmitDNS = "yes";
-        DNS = cfg.ipv4Address;
+        PoolSize = 2;
+        EmitDNS = "no";
+        EmitRouter = "no";
       };
     };
 
