@@ -35,25 +35,39 @@ let
 
     echo "${cfg.idVendor}" > idVendor
     echo "${cfg.idProduct}" > idProduct
-    echo "${cfg.bcdUSB}" > bcdUSB
-    echo "${cfg.bcdDevice}" > bcdDevice
+    echo "0x0200" > bcdUSB
+    echo "0x02" > bDeviceClass
+    echo "0x02" > bDeviceSubClass
+    echo "0x00" > bDeviceProtocol
+    echo "0x3066" > bcdDevice
+
+    # Windows extensions to force config
+    echo "1" > os_desc/use
+    echo "0xcd" > os_desc/b_vendor_code
+    echo "MSFT100" > os_desc/qw_sign
 
     mkdir -p strings/0x409
     echo "${cfg.serialNumber}" > strings/0x409/serialnumber
     echo "${cfg.manufacturer}" > strings/0x409/manufacturer
     echo "${cfg.product}" > strings/0x409/product
 
+    # Single RNDIS-only configuration.
     mkdir -p configs/c.1/strings/0x409
     echo "${cfg.configuration}" > configs/c.1/strings/0x409/configuration
     echo "${toString cfg.maxPower}" > configs/c.1/MaxPower
 
-    mkdir -p functions/rndis.gs0
-    echo "${cfg.devAddr}" > functions/rndis.gs0/dev_addr
-    echo "${cfg.hostAddr}" > functions/rndis.gs0/host_addr
+    mkdir -p functions/rndis.usb0
+    echo "RNDIS" > functions/rndis.usb0/os_desc/interface.rndis/compatible_id
+    echo "5162001" > functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id
+    echo "${cfg.devAddr}" > functions/rndis.usb0/dev_addr
+    echo "${cfg.hostAddr}" > functions/rndis.usb0/host_addr
+    echo "${toString cfg.qmult}" > functions/rndis.usb0/qmult || true
 
-    echo "${toString cfg.qmult}" > functions/rndis.gs0/qmult || true
+    # Link only the RNDIS function, per the Windows driver-binding workaround.
+    ln -s functions/rndis.usb0 configs/c.1
 
-    ln -s functions/rndis.gs0 configs/c.1/
+    # Expose the RNDIS configuration through Microsoft OS descriptors.
+    ln -s configs/c.1 os_desc
 
     echo "$UDC" > UDC
   '';
@@ -90,18 +104,6 @@ in
       description = "USB gadget product ID written to configfs.";
     };
 
-    bcdUSB = lib.mkOption {
-      type = lib.types.str;
-      default = "0x0200";
-      description = "USB specification version written to configfs.";
-    };
-
-    bcdDevice = lib.mkOption {
-      type = lib.types.str;
-      default = "0x0100";
-      description = "Device release number written to configfs.";
-    };
-
     serialNumber = lib.mkOption {
       type = lib.types.str;
       default = "1234567890";
@@ -128,7 +130,7 @@ in
 
     maxPower = lib.mkOption {
       type = lib.types.int;
-      default = 120;
+      default = 500;
       description = "USB gadget MaxPower value for the RNDIS configuration.";
     };
 
