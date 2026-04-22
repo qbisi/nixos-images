@@ -123,7 +123,6 @@ self: pkgs: {
           CONFIG_OF_UPSTREAM=n
           CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
-          CONFIG_ADC=y
         ''
         + pkgs.lib.optionalString (withUsb || withNvme) ''
           CONFIG_USE_PREBOOT=y
