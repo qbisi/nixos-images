@@ -465,6 +465,7 @@ def build_dump_cleanup_model(content: str, soc_family: str) -> BoardModel:
 
     if not model.overlays:
         model.unresolved.append(UnresolvedFact(kind="coverage", detail="No dump-specific overlays were recognized"))
+    model.includes = ensure_required_includes(content, model.includes, force_gpio=True)
     return model
 
 
@@ -962,8 +963,13 @@ def select_mainline_includes(content: str, soc_family: str) -> list[str]:
     return ensure_required_includes(content, selected)
 
 
-def ensure_required_includes(content: str, includes: list[str]) -> list[str]:
+def ensure_required_includes(content: str, includes: list[str], force_gpio: bool = False) -> list[str]:
     selected = includes[:]
+    if (
+        (force_gpio or "RK_P" in content or "GPIO_ACTIVE_" in content)
+        and "<dt-bindings/gpio/gpio.h>" not in selected
+    ):
+        selected.insert(0, "<dt-bindings/gpio/gpio.h>")
     if "PHY_MODE_PCIE_" in content and "<dt-bindings/phy/phy-snps-pcie3.h>" not in selected:
         selected.append("<dt-bindings/phy/phy-snps-pcie3.h>")
     return selected
@@ -993,6 +999,7 @@ def should_keep_overlay(target: str, block: str) -> bool:
         "i2s7_8ch",
         "usbdp_phy0_dp",
         "usbdp_phy0_u3",
+        "usbdp_phy1_dp",
         "usbdp_phy1_u3",
         "usbdrd3_0",
         "usbdrd3_1",
@@ -1432,6 +1439,8 @@ def build_helper_node_overlays(content: str, phandle_labels: dict[str, str]) -> 
         ("usb-typec", "typec5v-pwren", "typec5v_pwren"),
         ("usb-typec", "typec5v-pwren0", "typec5v_pwren0"),
         ("usb-typec", "typec5v-pwren1", "typec5v_pwren1"),
+        ("usb-typec", "typec0_5v-pwren", "typec0_5v_pwren"),
+        ("usb-typec", "typec1_5v-pwren", "typec1_5v_pwren"),
         ("vcc-supply", "vcc-5v0-pwren", "vcc_5v0_pwren"),
         ("cam", "mipicsi0-pwr", "mipicsi0_pwr"),
         ("cam", "mipicsi1-pwr", "mipicsi1_pwr"),
