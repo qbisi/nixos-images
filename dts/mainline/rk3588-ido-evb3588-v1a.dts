@@ -169,6 +169,16 @@
 	            regulator-max-microvolt = <5000000>;
 	            vin-supply = <&vcc12v_dcin>;
 	        };
+
+	leds {
+		compatible = "gpio-leds";
+		status = "okay";
+
+		heartbeat {
+			gpios = <&gpio0 RK_PB0 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+		};
+	};
 };
 
 &saradc {
