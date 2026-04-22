@@ -5,6 +5,7 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/leds/common.h>
 #include <dt-bindings/soc/rockchip,vop2.h>
+#include <dt-bindings/usb/pd.h>
 #include "rk3588.dtsi"
 
 / {
@@ -20,41 +21,33 @@
 
 	analog-sound {
 		compatible = "simple-audio-card";
-		label = "rockchip,es8388-codec";
 		pinctrl-names = "default";
 		pinctrl-0 = <&hp_detect>;
-		simple-audio-card,name = "Analog";
+		simple-audio-card,name = "rockchip,es8388";
 		simple-audio-card,format = "i2s";
 		simple-audio-card,mclk-fs = <256>;
 		simple-audio-card,hp-det-gpios = <&gpio1 RK_PD5 GPIO_ACTIVE_HIGH>;
-		simple-audio-card,bitclock-master = <&daicpu>;
-		simple-audio-card,frame-master = <&daicpu>;
-
-		simple-audio-card,widgets =
-			"Microphone", "Onboard Microphone",
-			"Microphone", "Microphone Jack",
-			"Speaker", "Speaker",
-			"Headphone", "Headphones";
+		simple-audio-card,bitclock-master = <&masterdai>;
+		simple-audio-card,frame-master = <&masterdai>;
 
 		simple-audio-card,routing =
-			"Headphones", "LOUT1",
-			"Headphones", "ROUT1",
-			"Speaker", "LOUT2",
-			"Speaker", "ROUT2",
+		"Headphones", "LOUT1",
+		"Headphones", "ROUT1",
+		"LINPUT1", "Microphone Jack",
+		"RINPUT1", "Microphone Jack",
+		"LINPUT2", "Onboard Microphone",
+		"RINPUT2", "Onboard Microphone";
+		simple-audio-card,widgets =
+		"Microphone", "Microphone Jack",
+		"Microphone", "Onboard Microphone",
+		"Headphone", "Headphones";
 
-			/* single ended signal to LINPUT1 */
-			"LINPUT1", "Microphone Jack",
-			"RINPUT1", "Microphone Jack",
-			/* differential signal */
-			"LINPUT2", "Onboard Microphone",
-			"RINPUT2", "Onboard Microphone";
-
-		daicpu: simple-audio-card,cpu {
+		simple-audio-card,cpu {
 			sound-dai = <&i2s0_8ch>;
 			system-clock-frequency = <12288000>;
 		};
 
-		daicodec: simple-audio-card,codec {
+		masterdai: simple-audio-card,codec {
 			sound-dai = <&es8388>;
 			system-clock-frequency = <12288000>;
 		};
@@ -68,7 +61,7 @@
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
 		pinctrl-0 = <&led_net_en>, <&led_sata_en>,
-			    <&led_user_en>, <&led_work_en>;
+		<&led_user_en>, <&led_work_en>;
 
 		net {
 			label = "blue:net";
@@ -201,7 +194,20 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&vcc5v0_usb_hub_en>;
 		regulator-name = "vcc5v0_usb_hub";
+		regulator-boot-on;
 		regulator-always-on;
+		vin-supply = <&vcc5v0_sys>;
+	};
+
+	vbus5v0_typec: vbus5v0-typec {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio4 RK_PA7 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&vbus5v0_typec_en>;
+		regulator-name = "vbus5v0_typec";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
 		vin-supply = <&vcc5v0_sys>;
 	};
 
@@ -274,10 +280,10 @@
 	phy-handle = <&rgmii_phy>;
 	phy-mode = "rgmii-rxid";
 	pinctrl-0 = <&gmac0_miim
-		     &gmac0_tx_bus2
-		     &gmac0_rx_bus2
-		     &gmac0_rgmii_clk
-		     &gmac0_rgmii_bus>;
+	&gmac0_tx_bus2
+	&gmac0_rx_bus2
+	&gmac0_rgmii_clk
+	&gmac0_rgmii_bus>;
 	pinctrl-names = "default";
 	rx_delay = <0x00>;
 	tx_delay = <0x43>;
@@ -293,6 +299,13 @@
 	status = "okay";
 };
 
+&hdmi0_sound {
+	status = "okay";
+};
+
+&i2s5_8ch {
+	status = "okay";
+};
 
 &hdptxphy0 {
 	status = "okay";
@@ -311,6 +324,14 @@
 };
 
 &hdmi1 {
+	status = "okay";
+};
+
+&hdmi1_sound {
+	status = "okay";
+};
+
+&i2s6_8ch {
 	status = "okay";
 };
 
@@ -398,6 +419,65 @@
 	};
 };
 
+&i2c6 {
+	status = "okay";
+
+	husb311@4e {
+		compatible = "hynetek,husb311";
+		reg = <0x4e>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <RK_PA0 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&usbc0_int>;
+		vbus-supply = <&vbus5v0_typec>;
+		status = "okay";
+
+		connector {
+			compatible = "usb-c-connector";
+			label = "USB-C";
+			data-role = "dual";
+			power-role = "dual";
+			try-power-role = "sink";
+			op-sink-microwatt = <1000000>;
+			sink-pdos = <PDO_FIXED(5000, 1000, PDO_FIXED_USB_COMM)>;
+			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+
+			altmodes {
+				displayport {
+					svid = /bits/ 16 <0xff01>;
+					vdo = <0xffffffff>;
+				};
+			};
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+					usbc0_role_sw: endpoint {
+						remote-endpoint = <&usb_host0_xhci_drd_sw>;
+					};
+				};
+
+				port@1 {
+					reg = <1>;
+					usbc0_ss: endpoint {
+						remote-endpoint = <&usbdp_phy0_typec_ss>;
+					};
+				};
+
+				port@2 {
+					reg = <2>;
+					usbc0_sbu: endpoint {
+						remote-endpoint = <&usbdp_phy0_typec_sbu>;
+					};
+				};
+			};
+		};
+	};
+};
+
 &i2c7 {
 	status = "okay";
 
@@ -418,10 +498,10 @@
 &i2s0_8ch {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2s0_lrck
-		     &i2s0_mclk
-		     &i2s0_sclk
-		     &i2s0_sdi0
-		     &i2s0_sdo0>;
+	&i2s0_mclk
+	&i2s0_sclk
+	&i2s0_sdi0
+	&i2s0_sdo0>;
 	status = "okay";
 };
 
@@ -525,6 +605,16 @@
 		vcc5v0_usb_hub_en: vcc5v0_usb_hub_en {
 			rockchip,pins = <4 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
+
+		vbus5v0_typec_en: vbus5v0-typec-en {
+			rockchip,pins = <4 RK_PA7 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	usb-typec {
+		usbc0_int: usbc0-int {
+			rockchip,pins = <1 RK_PA0 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
 	};
 };
 
@@ -577,7 +667,7 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&pmic_pins>, <&rk806_dvs1_null>,
-			    <&rk806_dvs2_null>, <&rk806_dvs3_null>;
+		<&rk806_dvs2_null>, <&rk806_dvs3_null>;
 
 		system-power-controller;
 
@@ -904,12 +994,19 @@
 	status = "okay";
 };
 
+&u2phy0 {
+	status = "okay";
+};
+
+&u2phy0_otg {
+	status = "okay";
+};
+
 &u2phy1 {
 	status = "okay";
 };
 
 &u2phy1_otg {
-	phy-supply = <&vcc5v0_host>;
 	status = "okay";
 };
 
@@ -919,7 +1016,7 @@
 
 &u2phy2_host {
 	/* connected to USB hub, which is powered by vcc5v0_sys */
-	phy-supply = <&vcc5v0_sys>;
+	phy-supply = <&vcc5v0_usb_hub>;
 	status = "okay";
 };
 
@@ -930,6 +1027,30 @@
 &u2phy3_host {
 	phy-supply = <&vcc5v0_host>;
 	status = "okay";
+};
+
+&usbdp_phy0 {
+	mode-switch;
+	orientation-switch;
+	rockchip,dp-lane-mux = < 2 3 >;
+	sbu1-dc-gpios = <&gpio0 RK_PC6 GPIO_ACTIVE_HIGH>;
+	sbu2-dc-gpios = <&gpio0 RK_PD3 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+
+	port {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		usbdp_phy0_typec_ss: endpoint@0 {
+			reg = <0>;
+			remote-endpoint = <&usbc0_ss>;
+		};
+
+		usbdp_phy0_typec_sbu: endpoint@1 {
+			reg = <1>;
+			remote-endpoint = <&usbc0_sbu>;
+		};
+	};
 };
 
 &usbdp_phy1 {
@@ -944,6 +1065,18 @@
 	status = "okay";
 };
 
+/* Type C port */
+&usb_host0_xhci {
+	usb-role-switch;
+	status = "okay";
+
+	port {
+		usb_host0_xhci_drd_sw: endpoint {
+			remote-endpoint = <&usbc0_role_sw>;
+		};
+	};
+};
+
 &usb_host1_ehci {
 	status = "okay";
 };
@@ -954,10 +1087,6 @@
 
 &usb_host1_xhci {
 	dr_mode = "host";
-	status = "okay";
-};
-
-&usb_host2_xhci {
 	status = "okay";
 };
 
