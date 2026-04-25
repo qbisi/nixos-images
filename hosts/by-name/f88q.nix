@@ -137,6 +137,7 @@
     git
     python3
     inputs.spectrum.packages."aarch64-linux".spectrum
+    inputs.optispectrum.packages."aarch64-linux".optispectrum
   ];
 
   environment.etc."xdg/kscreenlockerrc".text = lib.generators.toINI { } {

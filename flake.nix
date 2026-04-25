@@ -23,7 +23,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     spectrum = {
-      url = "git+ssh://git@192.168.50.76:/qbisi/spectrum";
+      url = "git+ssh://git@github.com:/qbisi/spectrum";
+    };
+    optispectrum = {
+      url = "git+ssh://git@github.com:/qbisi/optispectrum";
     };
   };
 

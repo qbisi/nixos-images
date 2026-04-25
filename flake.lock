@@ -134,6 +134,22 @@
     },
     "nixpkgs_2": {
       "locked": {
+        "lastModified": 1776877367,
+        "narHash": "sha256-EHq1/OX139R1RvBzOJ0aMRT3xnWyqtHBRUBuO1gFzjI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "0726a0ecb6d4e08f6adced58726b95db924cef57",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
         "lastModified": 1775423009,
         "narHash": "sha256-vPKLpjhIVWdDrfiUM8atW6YkIggCEKdSAlJPzzhkQlw=",
         "owner": "NixOS",
@@ -148,18 +164,37 @@
         "type": "github"
       }
     },
+    "optispectrum": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1777088913,
+        "narHash": "sha256-RhZOfqNi9Kvw9Vnd4Z9/0qA0i12WY+bCQFGHe9HbBck=",
+        "ref": "refs/heads/master",
+        "rev": "f31f31b8450fabc170c956c48a10643ac5ab0862",
+        "revCount": 4,
+        "type": "git",
+        "url": "ssh://git@github.com/qbisi/optispectrum"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/qbisi/optispectrum"
+      }
+    },
     "root": {
       "inputs": {
         "colmena": "colmena",
         "disko": "disko",
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs",
+        "optispectrum": "optispectrum",
         "spectrum": "spectrum"
       }
     },
     "spectrum": {
       "inputs": {
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1775553479,
@@ -168,11 +203,11 @@
         "rev": "17ae74ccdaa3818b91043b7aee001a8ab8334a0e",
         "revCount": 6,
         "type": "git",
-        "url": "ssh://git@192.168.50.76/qbisi/spectrum"
+        "url": "ssh://git@github.com/qbisi/spectrum"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@192.168.50.76/qbisi/spectrum"
+        "url": "ssh://git@github.com/qbisi/spectrum"
       }
     },
     "stable": {
