@@ -16,6 +16,7 @@
 
   nixpkgs = {
     flake.source = lib.mkDefault inputs.nixpkgs;
+    config.allowUnfree = true;
   };
 
   imports = [
@@ -78,6 +79,7 @@
   };
 
   services = {
+    sdrplayApi.enable = true;
     desktopManager.plasma6 = {
       mobile.enable = true;
     };
@@ -128,6 +130,7 @@
     i2c-tools
     libgpiod
     alsa-utils
+    v4l-utils
     minicom
     evtest
     libinput

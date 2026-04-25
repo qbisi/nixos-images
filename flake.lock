@@ -169,11 +169,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1777088913,
-        "narHash": "sha256-RhZOfqNi9Kvw9Vnd4Z9/0qA0i12WY+bCQFGHe9HbBck=",
+        "lastModified": 1777111736,
+        "narHash": "sha256-sTJUtXNEqF7I/kC5VwdPQ2eVvxuRO4a6YLLfrbcXoa8=",
         "ref": "refs/heads/master",
-        "rev": "f31f31b8450fabc170c956c48a10643ac5ab0862",
-        "revCount": 4,
+        "rev": "fa6c639005b6793fb5186ed9b110b3706194c438",
+        "revCount": 13,
         "type": "git",
         "url": "ssh://git@github.com/qbisi/optispectrum"
       },
