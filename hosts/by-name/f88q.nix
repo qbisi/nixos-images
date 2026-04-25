@@ -81,7 +81,8 @@
   services = {
     sdrplayApi.enable = true;
     desktopManager.plasma6 = {
-      mobile.enable = true;
+      # mobile.enable = true;
+      enable = true;
     };
     displayManager = {
       sddm = {
