@@ -85,6 +85,7 @@
   nix = {
     substituters = lib.mkForce [ ];
     settings = {
+      substituters = lib.mkForce [ ];
       experimental-features = [
         "nix-command"
         "flakes"
