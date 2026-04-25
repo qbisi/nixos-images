@@ -162,6 +162,8 @@
 
   nix = {
     settings = {
+      # disalbe official cache
+      substituters = lib.mkForce [];
       experimental-features = [
         "nix-command"
         "flakes"
