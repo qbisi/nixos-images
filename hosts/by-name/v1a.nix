@@ -83,6 +83,7 @@
   documentation.enable = false;
 
   nix = {
+    substituters = lib.mkForce [ ];
     settings = {
       experimental-features = [
         "nix-command"

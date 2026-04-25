@@ -35,6 +35,7 @@
   };
 
   nix.settings = {
+    substituters = lib.mkForce [ ];
     experimental-features = [
       "nix-command"
       "flakes"
