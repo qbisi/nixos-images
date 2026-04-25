@@ -83,7 +83,6 @@
   documentation.enable = false;
 
   nix = {
-    substituters = lib.mkForce [ ];
     settings = {
       substituters = lib.mkForce [ ];
       experimental-features = [
