@@ -20,7 +20,41 @@
 	chosen {
 		stdout-path = "serial2:1500000n8";
 	};
-
+	
+	analog-sound {
+		compatible = "simple-audio-card";
+		pinctrl-names = "default";
+		pinctrl-0 = <&hp_det>;
+		simple-audio-card,name = "rockchip,es8388";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,mclk-fs = <256>;
+		simple-audio-card,hp-det-gpios = <&gpio1 RK_PC4 GPIO_ACTIVE_HIGH>;
+		simple-audio-card,bitclock-master = <&masterdai>;
+		simple-audio-card,frame-master = <&masterdai>;
+		
+		simple-audio-card,routing =
+		"Headphones", "LOUT1",
+		"Headphones", "ROUT1",
+		"LINPUT1", "Microphone Jack",
+		"RINPUT1", "Microphone Jack",
+		"LINPUT2", "Onboard Microphone",
+		"RINPUT2", "Onboard Microphone";
+		simple-audio-card,widgets =
+		"Microphone", "Microphone Jack",
+		"Microphone", "Onboard Microphone",
+		"Headphone", "Headphones";
+		
+		simple-audio-card,cpu {
+			sound-dai = <&i2s0_8ch>;
+			system-clock-frequency = <12288000>;
+		};
+		
+		masterdai: simple-audio-card,codec {
+			sound-dai = <&es8388>;
+			system-clock-frequency = <12288000>;
+		};
+	};
+	
 	sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
 		clocks = <&hym8563>;
@@ -224,19 +258,25 @@
 		};
 	};
 	
+	headphone {
+		hp_det: hp-det {
+			rockchip,pins = <1 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+	
 	wireless-bluetooth {
 		bt_gpio: bt-gpio {
 			rockchip,pins =
-				<2 RK_PC1 RK_FUNC_GPIO &pcfg_pull_none>,
-				<2 RK_PB6 RK_FUNC_GPIO &pcfg_pull_up>,
-				<0 RK_PC6 RK_FUNC_GPIO &pcfg_pull_down>;
+			<2 RK_PC1 RK_FUNC_GPIO &pcfg_pull_none>,
+			<2 RK_PB6 RK_FUNC_GPIO &pcfg_pull_up>,
+			<0 RK_PC6 RK_FUNC_GPIO &pcfg_pull_down>;
 		};
-
+		
 		uart9_gpios: uart9-gpios {
 			rockchip,pins = <4 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
-
+	
 	wireless-wlan {
 		wifi_host_wake_irq: wifi-host-wake-irq {
 			rockchip,pins = <4 RK_PC6 RK_FUNC_GPIO &pcfg_pull_down>;
@@ -654,7 +694,7 @@
 	non-removable;
 	sd-uhs-sdr104;
 	status = "okay";
-
+	
 	brcmf: wifi@1 {
 		compatible = "brcm,bcm43455-fmac", "brcm,bcm4329-fmac";
 		reg = <1>;
@@ -671,7 +711,7 @@
 	pinctrl-0 = <&uart9m0_xfer &uart9m0_ctsn &uart9m0_rtsn>;
 	uart-has-rtscts;
 	status = "okay";
-
+	
 	bluetooth {
 		compatible = "brcm,bcm4345c5";
 		clocks = <&hym8563>;
@@ -846,6 +886,22 @@
 	};
 };
 
+&i2c5 {
+	status = "okay";
+	
+	es8388: es8388@11 {
+		compatible = "everest,es8388", "everest,es8323";
+		reg = <0x11>;
+		assigned-clocks = <&mclkout_i2s0>;
+		assigned-clock-rates = <12288000>;
+		clocks = <&mclkout_i2s0>;
+		clock-names = "mclk";
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s0_mclk>;
+		#sound-dai-cells = <0>;
+	};
+};
+
 &i2c8 {
 	status = "okay";
 	pinctrl-names = "default";
@@ -864,6 +920,16 @@
 		"usb_host1_pwr", "usb_host2_pwr", "host_J52", "host_J55",
 		"", "", "edp_on", "";
 	};
+};
+
+&i2s0_8ch {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2s0_lrck
+	&i2s0_mclk
+	&i2s0_sclk
+	&i2s0_sdi0
+	&i2s0_sdo0>;
+	status = "okay";
 };
 
 &combphy1_ps {
