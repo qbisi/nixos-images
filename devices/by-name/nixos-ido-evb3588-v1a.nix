@@ -53,16 +53,43 @@
     };
   };
 
+  networking.wireless.extraConfig = ''
+    p2p_disabled=1
+  '';
+
   services = {
     usb-rndis.enable = true;
   };
 
-  environment.systemPackages = with pkgs; [
-    usbutils
-    pciutils
-    minicom
-    libgpiod
-  ];
+  systemd.services.es8388-headphones-ucm = {
+    description = "Apply ES8388 headphones UCM profile";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "sound.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.alsa-utils}/bin/alsaucm -c hw:0 set _verb HiFi set _enadev Headphones";
+    };
+  };
+
+  environment = {
+    variables = {
+      MESA_GLSL_VERSION_OVERRIDE = 330;
+      ALSA_CONFIG_UCM2 = "${pkgs.alsa-ucm-conf-rk3588}/share/alsa/ucm2";
+    };
+    systemPackages = with pkgs; [
+      usbutils
+      pciutils
+      i2c-tools
+      libgpiod
+      alsa-utils
+      v4l-utils
+      minicom
+      evtest
+      libinput
+      ethtool
+    ];
+  };
 
   boot = {
     kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18;
