@@ -242,6 +242,12 @@
 };
 
 &pinctrl {
+	hdmirx {
+		hdmirx_det: hdmirx-det {
+			rockchip,pins = <1 RK_PD5 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+	
 	typec {
 		usbc0_int: usbc0-int {
 			rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
@@ -890,14 +896,15 @@
 	status = "okay";
 	
 	es8388: es8388@11 {
-		compatible = "everest,es8388", "everest,es8323";
+		compatible = "everest,es8388";
 		reg = <0x11>;
-		assigned-clocks = <&mclkout_i2s0>;
+		assigned-clocks = <&cru I2S0_8CH_MCLKOUT>;
 		assigned-clock-rates = <12288000>;
-		clocks = <&mclkout_i2s0>;
-		clock-names = "mclk";
-		pinctrl-names = "default";
-		pinctrl-0 = <&i2s0_mclk>;
+		AVDD-supply = <&vcc_3v3_s3>;
+		clocks = <&cru I2S0_8CH_MCLKOUT>;
+		DVDD-supply = <&vcc_1v8_s3>;
+		HPVDD-supply = <&vcc_3v3_s3>;
+		PVDD-supply = <&vcc_1v8_s3>;
 		#sound-dai-cells = <0>;
 	};
 };
@@ -1056,6 +1063,18 @@
 
 &usb_host1_ohci {
 	status = "okay";
+};
+
+&hdmi_receiver_cma {
+	status = "okay";
+};
+
+&hdmi_receiver {
+	status = "okay";
+	hpd-gpios = <&gpio1 RK_PD5 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&hdmim1_rx_cec &hdmim1_rx_hpdin &hdmim1_rx_scl &hdmim1_rx_sda &hdmirx_det>;
+	pinctrl-names = "default";
+	memory-region = <&hdmi_receiver_cma>;
 };
 
 &hdmi0 {
