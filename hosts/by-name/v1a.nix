@@ -78,6 +78,10 @@
 
   environment.systemPackages = with pkgs; [
     ffmpeg
+    alsa-utils
+    v4l-utils
+    evtest
+    libinput
   ];
 
   documentation.enable = false;

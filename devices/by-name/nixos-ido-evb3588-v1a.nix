@@ -67,11 +67,7 @@
       pciutils
       i2c-tools
       libgpiod
-      alsa-utils
-      v4l-utils
       minicom
-      evtest
-      libinput
       ethtool
     ];
   };
