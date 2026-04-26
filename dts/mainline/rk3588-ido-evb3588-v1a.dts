@@ -83,13 +83,40 @@
 		vin-supply = <&vcc5v0_sys>;
 	};
 	
-	vcc5v0_host: vcc5v0-host {
+	modem_power: modem-power {
 		compatible = "regulator-fixed";
-		regulator-name = "vcc5v0_host";
+		regulator-name = "modem-enable";
 		regulator-boot-on;
 		regulator-always-on;
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
+		gpios = <&gpio4 RK_PC2 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		startup-delay-us = <500000>;
+		vin-supply = <&vcc5v0_usb>;
+	};
+	
+	vcc5v0_usb_host1: regulator-vcc5v0-usb-host1 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc5v0_usb_host1";
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&pca9539 8 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		vin-supply = <&vcc5v0_usb>;
+	};
+	
+	vcc5v0_usb_host2: regulator-vcc5v0-usb-host2 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc5v0_usb_host2";
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&pca9539 9 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
 		vin-supply = <&vcc5v0_usb>;
 	};
 	
@@ -102,7 +129,7 @@
 		regulator-max-microvolt = <5000000>;
 		gpio = <&pca9539 3 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
-		vin-supply = <&vcc5v0_host>;
+		vin-supply = <&vcc5v0_usb>;
 	};
 	
 	vcc5v0_usb_host4: regulator-vcc5v0-usb-host4 {
@@ -114,7 +141,7 @@
 		regulator-max-microvolt = <5000000>;
 		gpio = <&pca9539 4 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
-		vin-supply = <&vcc5v0_host>;
+		vin-supply = <&vcc5v0_usb>;
 	};
 	
 	vcc5v0_usb: vcc5v0-usb {
@@ -170,11 +197,7 @@
 };
 
 &pinctrl {
-	usb {
-		vcc5v0_host_en: vcc5v0-host-en {
-			rockchip,pins = <4 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-		
+	typec {
 		usbc0_int: usbc0-int {
 			rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
@@ -751,17 +774,21 @@
 
 &i2c8 {
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c8m2_xfer>;
 	
 	pca9539: gpio@74 {
 		compatible = "nxp,pca9539";
 		reg = <0x74>;
 		gpio-controller;
 		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
 		gpio-line-names =
-			"", "", "fan", "usb_host3_pwr",
-			"usb_host4_pwr", "host_J54", "host_J53", "",
-			"usb_host1_pwr", "usb_host2_pwr", "host_J52", "host_J55",
-			"", "", "edp_on", "";
+		"", "", "fan", "usb_host3_pwr",
+		"usb_host4_pwr", "host_J54", "host_J53", "",
+		"usb_host1_pwr", "usb_host2_pwr", "host_J52", "host_J55",
+		"", "", "edp_on", "";
 	};
 };
 
