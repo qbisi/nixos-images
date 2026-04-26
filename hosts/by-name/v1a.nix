@@ -76,6 +76,21 @@
     nix-ld.enable = true;
   };
 
+  environment.systemPackages = with pkgs; [
+    usbutils
+    pciutils
+    i2c-tools
+    libgpiod
+    alsa-utils
+    v4l-utils
+    minicom
+    evtest
+    libinput
+    ethtool
+    iperf3
+    vim
+  ];
+
   environment.variables = {
     MESA_GLSL_VERSION_OVERRIDE = 330;
   };
