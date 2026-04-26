@@ -698,11 +698,13 @@
 	no-mmc;
 	no-sd;
 	non-removable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdiom0_pins>;
 	sd-uhs-sdr104;
 	status = "okay";
 	
 	brcmf: wifi@1 {
-		compatible = "brcm,bcm43455-fmac", "brcm,bcm4329-fmac";
+		compatible = "brcm,bcm43752-fmac", "brcm,bcm4329-fmac";
 		reg = <1>;
 		interrupt-parent = <&gpio4>;
 		interrupts = <RK_PC6 IRQ_TYPE_LEVEL_HIGH>;
