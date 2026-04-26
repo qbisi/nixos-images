@@ -46,9 +46,6 @@
       "nix-command"
       "flakes"
     ];
-    substituters = [
-      "https://cache.qbisi.cc"
-    ];
     trusted-public-keys = [
       "cache.qbisi.cc-1:xEChzP5k8fj+7wajY+e9IDORRTGMhViP5NaqMShGGjQ="
     ];
