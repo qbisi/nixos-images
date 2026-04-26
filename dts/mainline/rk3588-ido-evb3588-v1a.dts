@@ -145,12 +145,83 @@
 	};
 };
 
+&pinctrl {
+    usb {
+        vcc5v0_host_en: vcc5v0-host-en {
+                        rockchip,pins = <4 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
+                    };
+
+        usbc0_int: usbc0-int {
+                        rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
+                    };
+
+        vbus5v0_typec_en: vbus5v0-typec-en {
+                        rockchip,pins = <1 RK_PD3 RK_FUNC_GPIO &pcfg_pull_none>;
+                    };
+    };
+
+    sdio-pwrseq {
+        wifi_enable_h: wifi-enable-h {
+                        rockchip,pins = <0x00 0x17 0x00 0x177>;
+                    };
+    };
+
+    wireless-bluetooth {
+        uart9_gpios: uart9-gpios {
+                        rockchip,pins = <0x04 0x14 0x00 0x177>;
+                    };
+    };
+};
+
+&cpu_b0 {
+	cpu-supply = <&vdd_cpu_big0_s0>;
+};
+
+&cpu_b1 {
+	cpu-supply = <&vdd_cpu_big0_s0>;
+};
+
+&cpu_b2 {
+	cpu-supply = <&vdd_cpu_big1_s0>;
+};
+
+&cpu_b3 {
+	cpu-supply = <&vdd_cpu_big1_s0>;
+};
+
+&cpu_l0 {
+	cpu-supply = <&vdd_cpu_lit_s0>;
+};
+
+&cpu_l1 {
+	cpu-supply = <&vdd_cpu_lit_s0>;
+};
+
+&cpu_l2 {
+	cpu-supply = <&vdd_cpu_lit_s0>;
+};
+
+&cpu_l3 {
+	cpu-supply = <&vdd_cpu_lit_s0>;
+};
+
+&gpu {
+    mali-supply = <&vdd_gpu_s0>;
+    mem-supply = <&vdd_gpu_mem_s0>;
+    status = "okay";
+};
+
 &tsadc {
     status = "okay";
 };
 
 &saradc {
 	vref-supply = <&avcc_1v8_s0>;
+	status = "okay";
+};
+
+&uart2 {
+	pinctrl-0 = <&uart2m0_xfer>;
 	status = "okay";
 };
 
@@ -472,9 +543,29 @@
 	};
 };
 
-&uart2 {
-	pinctrl-0 = <&uart2m0_xfer>;
-	status = "okay";
+&sdhci {
+    bus-width = <8>;
+    max-frequency = <200000000>;
+    mmc-hs400-1_8v;
+    mmc-hs400-enhanced-strobe;
+    no-sd;
+    no-sdio;
+    non-removable;
+    status = "okay";
+};
+
+&sdmmc {
+    bus-width = <4>;
+    cap-mmc-highspeed;
+    cap-sd-highspeed;
+    disable-wp;
+    max-frequency = <150000000>;
+    no-mmc;
+    no-sdio;
+    sd-uhs-sdr104;
+    status = "okay";
+    vmmc-supply = <&vcc3v3_sd>;
+    vqmmc-supply = <&vccio_sd_s0>;
 };
 
 &gmac1 {
@@ -490,7 +581,6 @@
 	&gmac1_clkinout>;
 	snps,reset-gpio = <&gpio0 RK_PC0 GPIO_ACTIVE_LOW>;
 	snps,reset-active-low;
-	// Reset time is 20ms, 100ms for rtl8211f
 	snps,reset-delays-us = <0 20000 100000>;
 	tx_delay = <0x34>;
 	rx_delay = <0x32>;
@@ -501,81 +591,6 @@
 	rgmii_phy1: ethernet-phy@1 {
 		compatible = "ethernet-phy-ieee802.3-c22";
 		reg = <0x1>;
-	};
-};
-
-&combphy1_ps {
-    status = "okay";
-};
-
-&sata1 {
-	status = "okay";
-};
-
-&cpu_b0 {
-	cpu-supply = <&vdd_cpu_big0_s0>;
-};
-
-&cpu_b1 {
-	cpu-supply = <&vdd_cpu_big0_s0>;
-};
-
-&cpu_b2 {
-	cpu-supply = <&vdd_cpu_big1_s0>;
-};
-
-&cpu_b3 {
-	cpu-supply = <&vdd_cpu_big1_s0>;
-};
-
-&cpu_l0 {
-	cpu-supply = <&vdd_cpu_lit_s0>;
-};
-
-&cpu_l1 {
-	cpu-supply = <&vdd_cpu_lit_s0>;
-};
-
-&cpu_l2 {
-	cpu-supply = <&vdd_cpu_lit_s0>;
-};
-
-&cpu_l3 {
-	cpu-supply = <&vdd_cpu_lit_s0>;
-};
-
-&gpu {
-    mali-supply = <&vdd_gpu_s0>;
-    mem-supply = <&vdd_gpu_mem_s0>;
-    status = "okay";
-};
-
-&hdmi0 {
-    enable-gpios = <&gpio4 RK_PA7 GPIO_ACTIVE_HIGH>;
-    status = "okay";
-};
-
-&hdmi0_sound {
-	status = "okay";
-};
-
-&i2s5_8ch {
-	status = "okay";
-};
-
-&hdptxphy0 {
-	status = "okay";
-};
-
-&hdmi0_in {
-	hdmi0_in_vp0: endpoint {
-		remote-endpoint = <&vp0_out_hdmi0>;
-	};
-};
-
-&hdmi0_out {
-	hdmi0_out_con: endpoint {
-		remote-endpoint = <&hdmi0_con_in>;
 	};
 };
 
@@ -710,11 +725,12 @@
 	};
 };
 
-&i2s0_8ch {
-    #sound-dai-cells = <0x00>;
-    pinctrl-0 = <&i2s0_lrck &i2s0_sclk &i2s0_sdi0 &i2s0_sdo0>;
-    pinctrl-names = "default";
+&combphy1_ps {
     status = "okay";
+};
+
+&sata1 {
+	status = "disabled";
 };
 
 &combphy0_ps {
@@ -734,59 +750,6 @@
     reset-gpios = <&gpio4 RK_PB6 GPIO_ACTIVE_HIGH>;
     status = "okay";
     vpcie3v3-supply = <&vcc3v3_pcie30>;
-};
-
-&pinctrl {
-    usb {
-        usbc0_int: usbc0-int {
-                        rockchip,pins = <0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;
-                    };
-
-        vcc5v0_host_en: vcc5v0-host-en {
-                        rockchip,pins = <0x04 0x08 0x00 0x177>;
-                    };
-
-        vbus5v0_typec_en: vbus5v0-typec-en {
-                        rockchip,pins = <1 RK_PD3 RK_FUNC_GPIO &pcfg_pull_none>;
-                    };
-    };
-
-    sdio-pwrseq {
-        wifi_enable_h: wifi-enable-h {
-                        rockchip,pins = <0x00 0x17 0x00 0x177>;
-                    };
-    };
-
-    wireless-bluetooth {
-        uart9_gpios: uart9-gpios {
-                        rockchip,pins = <0x04 0x14 0x00 0x177>;
-                    };
-    };
-};
-
-&sdhci {
-    bus-width = <8>;
-    max-frequency = <200000000>;
-    mmc-hs400-1_8v;
-    mmc-hs400-enhanced-strobe;
-    no-sd;
-    no-sdio;
-    non-removable;
-    status = "okay";
-};
-
-&sdmmc {
-    bus-width = <4>;
-    cap-mmc-highspeed;
-    cap-sd-highspeed;
-    disable-wp;
-    max-frequency = <150000000>;
-    no-mmc;
-    no-sdio;
-    sd-uhs-sdr104;
-    status = "okay";
-    vmmc-supply = <&vcc3v3_sd>;
-    vqmmc-supply = <&vccio_sd_s0>;
 };
 
 &u2phy0 {
@@ -864,19 +827,19 @@
 	status = "okay";
 };
 
-&u2phy3 {
-	status = "okay";
-};
-
-&u2phy3_host {
-	status = "okay";
-};
-
 &usb_host0_ehci {
 	status = "okay";
 };
 
 &usb_host0_ohci {
+	status = "okay";
+};
+
+&u2phy3 {
+	status = "okay";
+};
+
+&u2phy3_host {
 	status = "okay";
 };
 
@@ -886,6 +849,35 @@
 
 &usb_host1_ohci {
 	status = "okay";
+};
+
+&hdmi0 {
+    enable-gpios = <&gpio4 RK_PA7 GPIO_ACTIVE_HIGH>;
+    status = "okay";
+};
+
+&hdmi0_sound {
+	status = "okay";
+};
+
+&i2s5_8ch {
+	status = "okay";
+};
+
+&hdptxphy0 {
+	status = "okay";
+};
+
+&hdmi0_in {
+	hdmi0_in_vp0: endpoint {
+		remote-endpoint = <&vp0_out_hdmi0>;
+	};
+};
+
+&hdmi0_out {
+	hdmi0_out_con: endpoint {
+		remote-endpoint = <&hdmi0_con_in>;
+	};
 };
 
 &vop {
