@@ -53,23 +53,8 @@
     };
   };
 
-  networking.wireless.extraConfig = ''
-    p2p_disabled=1
-  '';
-
   services = {
     usb-rndis.enable = true;
-  };
-
-  systemd.services.es8388-headphones-ucm = {
-    description = "Apply ES8388 headphones UCM profile";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "sound.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "${pkgs.alsa-utils}/bin/alsaucm -c hw:0 set _verb HiFi set _enadev Headphones";
-    };
   };
 
   environment = {
