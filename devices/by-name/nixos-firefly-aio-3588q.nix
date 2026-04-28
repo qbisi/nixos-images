@@ -45,12 +45,6 @@
       name = "rockchip/rk3588-firefly-aio-3588q.dtb";
       platform = "rockchip";
       dtsFile = ../../dts/mainline/rk3588-firefly-aio-3588q.dts;
-      overlays = [
-        {
-          name = "mipi-yx4005";
-          dtsFile = ../../dts/mainline/overlays/rk3588-mipi-yx4005.dtso;
-        }
-      ];
       dtboBuildExtraIncludePaths = lib.mkAfter [ ../../dts/mainline ];
     };
     serial = {
@@ -72,7 +66,7 @@
   ];
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18;
+    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_7_0;
     initrd.allowMissingModules = !config.boot.kernelPackages.kernel.configfile.autoModules;
     kernelParams = [
       "console=tty1"

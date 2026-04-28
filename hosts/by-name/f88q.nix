@@ -25,6 +25,18 @@
   ];
 
   hardware = {
+    deviceTree = {
+      overlays = [
+        # {
+        #   name = "mipi-ili9881c-gt9xx-8inch";
+        #   dtsFile = ../../dts/mainline/overlays/rk3588-mipi-ili9881c-gt9xx-8inch.dtso;
+        # }
+        {
+          name = "mipi-yx4005";
+          dtsFile = ../../dts/mainline/overlays/rk3588-mipi-yx4005.dtso;
+        }
+      ];
+    };
     graphics.enable = true;
   };
 
@@ -163,7 +175,7 @@
   nix = {
     settings = {
       # disalbe official cache
-      substituters = lib.mkForce [];
+      substituters = lib.mkForce [ ];
       experimental-features = [
         "nix-command"
         "flakes"
