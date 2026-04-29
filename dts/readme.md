@@ -8,11 +8,11 @@ This directory keeps three kinds of device-tree sources:
 
 ## `dts/mainline/`
 
-Mainline files are copied from Linux kernel `6.18` and then adjusted out of tree for boards that are not upstream yet.
+Mainline files are copied from Linux kernel `v7.0` and then adjusted out of tree for boards that are not upstream yet.
 
 Upstream reference:
 
-- kernel source: <https://github.com/torvalds/linux/tree/v6.18>
+- kernel source: <https://github.com/torvalds/linux/tree/v7.0>
 
 Layout:
 
