@@ -274,6 +274,15 @@
 	cpu-supply = <&vdd_cpu_lit_s0>;
 };
 
+&gpu {
+	mali-supply = <&vdd_gpu_s0>;
+	status = "okay";
+};
+
+&pd_gpu {
+	domain-supply = <&vdd_gpu_s0>;
+};
+
 &dp0 {
 	status = "okay";
 };
@@ -302,11 +311,6 @@
 	pinctrl-names = "default";
 	rx_delay = <0x00>;
 	tx_delay = <0x43>;
-	status = "okay";
-};
-
-&gpu {
-	mali-supply = <&vdd_gpu_s0>;
 	status = "okay";
 };
 
