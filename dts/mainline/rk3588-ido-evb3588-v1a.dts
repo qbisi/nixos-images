@@ -697,6 +697,7 @@
 };
 
 &sdhci {
+	/delete-property/ supports-cqe;
 	bus-width = <8>;
 	max-frequency = <200000000>;
 	mmc-hs400-1_8v;
@@ -878,8 +879,12 @@
 			power-role = "dual";
 			try-power-role = "sink";
 			op-sink-microwatt = <1000000>;
-			sink-pdos = <PDO_FIXED(5000, 1000, PDO_FIXED_USB_COMM)>;
-			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM)>;
+			sink-pdos = <PDO_FIXED(5000, 1000, PDO_FIXED_DUAL_ROLE |
+						   PDO_FIXED_USB_COMM |
+						   PDO_FIXED_DATA_SWAP)>;
+			source-pdos = <PDO_FIXED(5000, 3000, PDO_FIXED_DUAL_ROLE |
+						   PDO_FIXED_USB_COMM |
+						   PDO_FIXED_DATA_SWAP)>;
 
 			altmodes {
 				displayport {
