@@ -71,7 +71,7 @@ in
         type = lib.types.nullOr (lib.types.strMatching "[0-9]+[KMGTP]?");
         default = null;
         example = "16M";
-        description = "esp partition start size";
+        description = "primary partition start seek";
       };
 
       espSize = lib.mkOption {
