@@ -80,7 +80,7 @@ in
         description = "esp partition size";
       };
 
-      _extraPartition = lib.mkOption {
+      _primaryContent = lib.mkOption {
         type = lib.types.nullOr lib.types.attrs;
         internal = true;
         default = null;
@@ -164,7 +164,13 @@ in
                 };
               })
 
-              (lib.mkIf (cfg._extraPartition != null) cfg._extraPartition)
+              (lib.mkIf (cfg._primaryContent != null) {
+                primary = {
+                  size = "100%";
+                  start = lib.mkIf (cfg.primaryStart != null && !cfg.enableESP) cfg.primaryStart;
+                  content = cfg._primaryContent;
+                };
+              })
             ];
           };
         };
