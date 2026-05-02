@@ -11,6 +11,7 @@
 
 let
   cfg = config.boot.growPartition;
+  relocateESP = config.systemd.services.relocate-esp.enable or false;
   rootFsType = config.fileSystems.${cfg.mountPoint}.fsType or null;
   rootIsBtrfs = rootFsType == "btrfs";
   rootIsExt = builtins.elem rootFsType [
@@ -56,7 +57,8 @@ in
     ];
     systemd.services.growpart = {
       wantedBy = [ "-.mount" ];
-      after = [ "-.mount" ];
+      requires = lib.optional relocateESP "relocate-esp.service";
+      after = [ "-.mount" ] ++ lib.optional relocateESP "relocate-esp.service";
       before = [
         "systemd-growfs-root.service"
         "shutdown.target"
@@ -71,10 +73,9 @@ in
         # growpart returns 1 if the partition is already grown
         SuccessExitStatus = "0 1";
       };
-      path = with pkgs;
-        [ cloud-utils.guest ]
-        ++ lib.optional rootIsBtrfs btrfs-progs
-        ++ lib.optional rootIsExt e2fsprogs;
+      path =
+        with pkgs;
+        [ cloud-utils.guest ] ++ lib.optional rootIsBtrfs btrfs-progs ++ lib.optional rootIsExt e2fsprogs;
       script = ''
         rootDevice="${config.fileSystems.${cfg.mountPoint}.device}"
         rootDevice="$(readlink -f "$rootDevice")"

@@ -82,8 +82,8 @@
     ];
     consoleLogLevel = 6;
     loader.timeout = 0;
-    loader.grub.enable = false;
-    loader.generic-extlinux-compatible.enable = true;
+    # loader.grub.enable = false;
+    # loader.generic-extlinux-compatible.enable = true;
   };
 
 }

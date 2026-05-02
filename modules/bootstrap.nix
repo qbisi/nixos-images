@@ -10,6 +10,7 @@
     "${modulesPath}/profiles/minimal.nix"
     ./config/passless.nix
     ./system/grow-partition.nix
+    ./system/relocate-esp.nix
   ];
 
   nixpkgs.flake = {
