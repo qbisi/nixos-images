@@ -16,7 +16,7 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      # enableESP = false;
+      enableESP = true;
       fileSystem = "ext4";
       primaryStart = "16M";
       uboot.enable = true;
@@ -82,9 +82,8 @@
     ];
     consoleLogLevel = 6;
     loader.timeout = 0;
-    # mipi output is for now broken with extlinux
-    # loader.grub.enable = false;
-    # loader.generic-extlinux-compatible.enable = true;
+    loader.grub.enable = false;
+    loader.generic-extlinux-compatible.enable = true;
   };
 
 }
