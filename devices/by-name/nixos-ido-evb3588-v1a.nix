@@ -53,10 +53,6 @@
     };
   };
 
-  services = {
-    usb-rndis.enable = true;
-  };
-
   environment = {
     variables = {
       MESA_GLSL_VERSION_OVERRIDE = 330;

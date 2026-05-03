@@ -107,6 +107,9 @@
         };
       };
     };
+    services = {
+      usb-rndis.enable = true;
+    };
   };
 
   # disable hibernation

@@ -35,6 +35,10 @@
     useNetworkd = true;
   };
 
+  services = {
+    usb-rndis.enable = true;
+  };
+
   nix.settings = {
     substituters = lib.mkForce [ ];
     experimental-features = [

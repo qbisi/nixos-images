@@ -37,6 +37,10 @@
     nameservers = [ "223.5.5.5" ];
   };
 
+  services = {
+    usb-rndis.enable = true;
+  };
+
   users = {
     defaultUserShell = pkgs.zsh;
     users = {
