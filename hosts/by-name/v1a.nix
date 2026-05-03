@@ -39,6 +39,15 @@
 
   services = {
     usb-rndis.enable = true;
+    getty = {
+      autologinOnce = true;
+      autologinUser = config.users.users.admin.name;
+    };
+    cage = {
+      enable = true;
+      program = "${inputs.optispectrum.packages."aarch64-linux".optispectrum}/bin/optispectrum";
+      user = config.users.users.admin.name;
+    };
   };
 
   users = {
@@ -99,6 +108,4 @@
       ];
     };
   };
-
-  system.stateVersion = "26.05";
 }

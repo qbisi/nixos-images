@@ -1,4 +1,5 @@
 {
+  lib,
   self,
   inputs,
   ...
@@ -26,6 +27,8 @@
           self.overlays.default
           (import ../overlays.nix)
         ];
+
+        system.stateVersion = lib.mkDefault (lib.strings.fileContents "${inputs.nixpkgs}/lib/.version");
       };
       bootstrap = import ./bootstrap.nix;
     };

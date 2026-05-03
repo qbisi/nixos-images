@@ -44,10 +44,6 @@
     hostName = "f88q";
     firewall.enable = false;
     nftables.enable = true;
-    networkmanager = {
-      enable = true;
-      ensureProfiles.profiles = { };
-    };
     nameservers = [ "223.5.5.5" ];
   };
 
@@ -92,87 +88,20 @@
 
   services = {
     sdrplayApi.enable = true;
-    desktopManager.plasma6 = {
-      mobile.enable = true;
-      # enable = true;
+    usb-rndis.enable = true;
+    getty = {
+      autologinOnce = true;
+      autologinUser = config.users.users.admin.name;
     };
-    displayManager = {
-      sddm = {
-        enable = true;
-        wayland.enable = true;
-        autoLogin = {
-          enable = true;
-          user = config.users.users.admin.name;
-          relogin = true;
-        };
-      };
+    cage = {
+      enable = true;
+      program = "${inputs.optispectrum.packages."aarch64-linux".optispectrum}/bin/optispectrum";
+      user = config.users.users.admin.name;
     };
-    services = {
-      usb-rndis.enable = true;
-    };
-  };
-
-  # disable hibernation
-  systemd.sleep.settings.Sleep = {
-    AllowSuspend = false;
-    AllowHibernation = false;
   };
 
   environment.variables = {
     MESA_GLSL_VERSION_OVERRIDE = 330;
-  };
-
-  environment.plasma6.mobile.excludePackages = with pkgs.kdePackages; [
-    alligator
-    audiotube
-    calindori
-    kalk
-    kasts
-    kclock
-    keysmith
-    koko
-    kongress
-    krecorder
-    ktrip
-    kweather
-    plasma-dialer
-    qmlkonsole
-    spacebar
-  ];
-
-  environment.systemPackages = with pkgs; [
-    usbutils
-    pciutils
-    i2c-tools
-    libgpiod
-    alsa-utils
-    v4l-utils
-    minicom
-    evtest
-    libinput
-    ethtool
-    iperf3
-    vim
-    git
-    python3
-    inputs.spectrum.packages."aarch64-linux".spectrum
-    inputs.optispectrum.packages."aarch64-linux".optispectrum
-  ];
-
-  environment.etc."xdg/kscreenlockerrc".text = lib.generators.toINI { } {
-    Daemon = {
-      RequirePassword = false;
-      Autolock = false;
-      LockOnResume = false;
-    };
-  };
-
-  documentation = {
-    enable = false;
-    doc.enable = false;
-    info.enable = false;
-    man.enable = false;
-    nixos.enable = false;
   };
 
   nix = {
@@ -185,6 +114,4 @@
       ];
     };
   };
-
-  system.stateVersion = "26.05";
 }
