@@ -5,41 +5,20 @@
   utils,
   ...
 }:
-
 let
-  growPartition = config.boot.growPartition;
-  growPartitionEnable =
-    if builtins.isAttrs growPartition then growPartition.enable else growPartition;
-  growPartitionMountPoint = if builtins.isAttrs growPartition then growPartition.mountPoint else "/";
-  diskoCfg = config.disko.bootImage;
-  espPartition = config.disko.devices.disk.main.content.partitions.ESP;
-  espContent = espPartition.content;
-  enableESPRelocation =
-    growPartitionEnable
-    && config.disko.enableConfig
-    && diskoCfg.fileSystem != null
-    && diskoCfg.enableESP;
-  espHasFileSystem =
-    espContent != null
-    && espContent.type == "filesystem"
-    && espContent.format == "vfat"
-    && espContent.mountpoint != null;
-  espMountOptions = espContent.mountOptions or [ ];
-  espMountOptionArgs = lib.concatMapStringsSep " " (
-    opt: "-o ${lib.escapeShellArg opt}"
-  ) espMountOptions;
+  cfg = config.boot.espRelocation;
 in
-
 {
-  config = lib.mkIf growPartitionEnable {
-    assertions = [
-      {
-        assertion = !enableESPRelocation || espHasFileSystem;
-        message = "disko.bootImage.enableESP requires the ESP partition to define a vfat filesystem";
-      }
-    ];
+  options = {
+    boot.espRelocation = {
+      enable = lib.mkEnableOption "esp part relocation in gpt disk" // {
+        default = config.disko.bootImage.enableESP;
+      };
+    };
+  };
 
-    systemd.services = lib.optionalAttrs (enableESPRelocation && espHasFileSystem) {
+  config = lib.mkIf cfg.enable {
+    systemd.services = {
       relocate-esp = {
         description = "Move EFI system partition to the end of the disk";
         wantedBy = [ "multi-user.target" ];
@@ -61,49 +40,44 @@ in
         path = with pkgs; [
           gptfdisk
         ];
-        script = ''
-          set -euo pipefail
+        script =
+          let
+            espPartition = config.disko.devices.disk.main.content.partitions.ESP;
+          in
+          ''
+            set -euo pipefail
 
-          rootDevice="$(readlink -f ${
-            lib.escapeShellArg config.fileSystems.${growPartitionMountPoint}.device
-          })"
-          parentDevice="$rootDevice"
-          while [ "''${parentDevice%[0-9]}" != "''${parentDevice}" ]; do
-            parentDevice="''${parentDevice%[0-9]}"
-          done
-          if [ "''${parentDevice%[0-9]p}" != "''${parentDevice}" ] && [ -b "''${parentDevice%p}" ]; then
-            parentDevice="''${parentDevice%p}"
-          fi
+            espDevice="${espPartition.device}"
+            espDevice="$(readlink -f "$espDevice")"
+            parentDevice="$espDevice"
+            while [ "''${parentDevice%[0-9]}" != "''${parentDevice}" ]; do
+              parentDevice="''${parentDevice%[0-9]}";
+            done
+            espPartNum="''${espDevice#"''${parentDevice}"}"
+            if [ "''${parentDevice%[0-9]p}" != "''${parentDevice}" ] && [ -b "''${parentDevice%p}" ]; then
+              parentDevice="''${parentDevice%p}"
+            fi
+            espBackup="/tmp/relocate-esp.img"
 
-          espPartNum="${toString espPartition._index}"
-          if [ "''${parentDevice%[0-9]}" != "$parentDevice" ]; then
-            espDevice="$parentDevice"p"$espPartNum"
-          else
-            espDevice="$parentDevice$espPartNum"
-          fi
-          espBackup="/tmp/relocate-esp.img"
+            dd if="$espDevice" of="$espBackup" bs=4M conv=fsync status=none
 
-          dd if=${lib.escapeShellArg espContent.device} of="$espBackup" bs=4M conv=fsync status=none
+            if findmnt --mountpoint ${espPartition.content.mountpoint} >/dev/null 2>&1; then
+              umount ${espPartition.content.mountpoint}
+            fi
 
-          if findmnt --mountpoint ${lib.escapeShellArg espContent.mountpoint} >/dev/null 2>&1; then
-            umount ${lib.escapeShellArg espContent.mountpoint}
-          fi
+            sgdisk --move-second-header "$parentDevice"
+            sgdisk --delete="$espPartNum" "$parentDevice"
+            sgdisk \
+              --align-end \
+              --new="$espPartNum:${espPartition.start}:${espPartition.end}" \
+              --change-name="$espPartNum:${espPartition.label}" \
+              --typecode="$espPartNum:EF00" \
+              --attributes="$espPartNum:=:0" \
+              "$parentDevice"
 
-          sgdisk --move-second-header "$parentDevice"
-          sgdisk --delete="$espPartNum" "$parentDevice"
-          sgdisk \
-            --align-end \
-            --new="$espPartNum:${espPartition.start}:${espPartition.end}" \
-            --change-name="$espPartNum:${espPartition.label}" \
-            --typecode="$espPartNum:${espPartition.type}" \
-            --attributes="$espPartNum:=:0" \
-            "$parentDevice"
-
-          dd if="$espBackup" of="$espDevice" bs=4M conv=fsync status=none
-          mkdir -p ${lib.escapeShellArg espContent.mountpoint}
-          mount -t vfat ${espMountOptionArgs} "$espDevice" ${lib.escapeShellArg espContent.mountpoint}
-          rm -f "$espBackup"
-        '';
+            dd if="$espBackup" of="$espDevice" bs=4M conv=fsync status=none
+            mount -a
+          '';
       };
     };
   };
