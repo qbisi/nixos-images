@@ -180,6 +180,7 @@ in
     networking = {
       networkmanager.unmanaged = [ cfg.interface ];
       useNetworkd = true;
+      firewall.trustedInterfaces = [ cfg.interface ];
     };
 
     systemd.network.networks."40-${cfg.interface}" = {
