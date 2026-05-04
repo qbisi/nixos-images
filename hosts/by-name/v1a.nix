@@ -30,22 +30,14 @@
   networking = {
     firewall.enable = false;
     nftables.enable = true;
-    networkmanager = {
-      enable = true;
-      ensureProfiles.profiles = { };
-    };
     nameservers = [ "223.5.5.5" ];
   };
 
   services = {
     usb-rndis.enable = true;
-    getty = {
-      autologinOnce = true;
-      autologinUser = config.users.users.admin.name;
-    };
     cage = {
       enable = true;
-      program = "${inputs.optispectrum.packages."aarch64-linux".optispectrum}/bin/optispectrum";
+      program = "${inputs.optispectrum.packages."aarch64-linux".optispectrum}/bin/optispectrum --fullscreen";
       user = config.users.users.admin.name;
     };
   };
