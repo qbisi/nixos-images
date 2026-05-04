@@ -276,6 +276,12 @@
 		};
 	};
 
+	sdmmc {
+		sdmmc_det_gpio: sdmmc-det-gpio {
+			rockchip,pins = <0 RK_PA4 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
 	headphone {
 		hp_det: hp-det {
 			rockchip,pins = <1 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
@@ -712,10 +718,13 @@
 	bus-width = <4>;
 	cap-mmc-highspeed;
 	cap-sd-highspeed;
+	cd-gpios = <&gpio0 RK_PA4 GPIO_ACTIVE_LOW>;
 	disable-wp;
 	max-frequency = <150000000>;
 	no-mmc;
 	no-sdio;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc_clk &sdmmc_cmd &sdmmc_det_gpio &sdmmc_bus4>;
 	sd-uhs-sdr104;
 	status = "okay";
 	vmmc-supply = <&vcc3v3_sd>;
