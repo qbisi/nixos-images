@@ -93,8 +93,7 @@
     ffmpeg
     alsa-utils
     v4l-utils
-    evtest
-    libinput
+    iperf3
   ];
 
   documentation.enable = false;
