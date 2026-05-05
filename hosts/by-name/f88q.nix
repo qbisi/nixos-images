@@ -97,6 +97,8 @@
     };
   };
 
+  i18n.defaultLocale = "zh_CN.UTF-8";
+
   environment.variables = {
     MESA_GLSL_VERSION_OVERRIDE = 330;
   };
