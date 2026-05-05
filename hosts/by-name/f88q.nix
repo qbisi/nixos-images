@@ -89,13 +89,10 @@
   services = {
     sdrplayApi.enable = true;
     usb-rndis.enable = true;
-    getty = {
-      autologinOnce = true;
-      autologinUser = config.users.users.admin.name;
-    };
     cage = {
       enable = true;
-      program = "${inputs.optispectrum.packages."aarch64-linux".optispectrum}/bin/optispectrum";
+      program = "${inputs.optispectrum.packages."aarch64-linux".optispectrum}/bin/optispectrum --fullscreen";
+      environment.LANG = "zh_CN.UTF-8";
       user = config.users.users.admin.name;
     };
   };
