@@ -15,7 +15,6 @@
   };
 
   nixpkgs = {
-    flake.source = lib.mkDefault inputs.nixpkgs;
     config.allowUnfree = true;
   };
 

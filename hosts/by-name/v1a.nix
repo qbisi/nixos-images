@@ -14,10 +14,6 @@
     buildOnTarget = false;
   };
 
-  nixpkgs = {
-    flake.source = lib.mkDefault inputs.nixpkgs;
-  };
-
   imports = [
     "${self}/devices/by-name/nixos-ido-evb3588-v1a.nix"
     "${self}/modules/config/passless.nix"
