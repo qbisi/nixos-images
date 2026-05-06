@@ -65,6 +65,8 @@
       libgpiod
       minicom
       ethtool
+      rsync
+      clashtui
     ];
   };
 

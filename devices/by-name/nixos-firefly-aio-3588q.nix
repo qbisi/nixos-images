@@ -59,6 +59,8 @@
     pciutils
     minicom
     libgpiod
+    rsync
+    clashtui
   ];
 
   boot = {
