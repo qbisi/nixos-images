@@ -14,9 +14,12 @@
     buildOnTarget = false;
   };
 
+  nixpkgs = {
+    config.allowUnfree = true;
+  };
+
   imports = [
     "${self}/devices/by-name/nixos-ido-evb3588-v1a.nix"
-    "${self}/modules/config/passless.nix"
   ];
 
   hardware = {
@@ -27,6 +30,8 @@
     firewall.enable = false;
     nftables.enable = true;
     nameservers = [ "223.5.5.5" ];
+    networkmanager.enable = true;
+    modemmanager.enable = true;
   };
 
   services = {
@@ -77,6 +82,9 @@
       };
     };
     nix-ld.enable = true;
+    vscode.enable = true;
+    chromium.enable = true;
+    clash-verge.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
@@ -90,7 +98,9 @@
 
   nix = {
     settings = {
-      substituters = lib.mkForce [ ];
+      substituters = [
+        "https://mirrors.ustc.edu.cn/nix-channels/store"
+      ];
       experimental-features = [
         "nix-command"
         "flakes"
