@@ -31,10 +31,10 @@
 
   services = {
     usb-rndis.enable = true;
-    cage = {
+    desktopManager.plasma6.enable = true;
+    displayManager.sddm = {
       enable = true;
-      program = "${inputs.optispectrum.packages."aarch64-linux".optispectrum}/bin/optispectrum --fullscreen";
-      user = config.users.users.admin.name;
+      wayland.enable = true;
     };
   };
 
@@ -45,7 +45,7 @@
     users = {
       admin = {
         name = "nix";
-        initialPassword = "";
+        initialPassword = "1234";
         uid = 1000;
         isNormalUser = true;
         linger = true;
