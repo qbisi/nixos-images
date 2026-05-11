@@ -1,0 +1,178 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pinctrl/rockchip.h>
+#include <dt-bindings/soc/rockchip,vop2.h>
+#include <dt-bindings/display/drm_mipi_dsi.h>
+
+/ {
+	compatible = "radxa,rock-5t";
+
+	vcc_tp: vcc-tp {
+		status = "okay";
+		regulator-name = "vcc_tp";
+		compatible = "regulator-fixed";
+		gpio = <&gpio0 RK_PD5 GPIO_ACTIVE_LOW>;
+		enable-active-low;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
+	vcc_lcd_mipi0: vcc-lcd-mipi0 {
+		status = "okay";
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_lcd_mipi0";
+		gpio = <&gpio4 RK_PA4 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-state-mem {
+			regulator-off-in-suspend;
+		};
+	};
+};
+
+&pwm10 {
+	status = "okay";
+	pinctrl-names = "active";
+	pinctrl-0 = <&pwm10m2_pins>;
+};
+
+&dsi0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	dsi0_panel: panel@0 {
+		status = "okay";
+		compatible = "panel-dsi-simple";
+		reg = <0>;
+		backlight = <&sgm37604_bl>;
+		vdd-supply = <&vcc_lcd_mipi0>;
+		vccio-supply = <&vcc_1v8_s0>;
+		reset-gpios = <&gpio3 RK_PC5 GPIO_ACTIVE_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&dsi0_lcd_rst_gpio>;
+
+		prepare-delay-ms = <40>;
+		reset-delay-ms = <60>;
+		init-delay-ms = <80>;
+		stbyb-delay-ms = <20>;
+		enable-delay-ms = <60>;
+		disable-delay-ms = <20>;
+		unprepare-delay-ms = <20>;
+
+		width-mm = <74>;
+		height-mm = <133>;
+
+		dsi,flags = <(MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST | MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_EOT_PACKET)>;
+		dsi,format = <MIPI_DSI_FMT_RGB888>;
+		dsi,lanes = <4>;
+
+		panel-init-sequence = [
+		05 78 01 11
+		05 0A 01 29
+		];
+
+		panel-exit-sequence = [
+		05 10 01 28
+		05 78 01 10
+		];
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: timing0 {
+				clock-frequency = <157000000>;
+				hactive = <1080>;
+				hfront-porch = <115>;
+				hback-porch = <13>;
+				hsync-len = <3>;
+				vactive = <2160>;
+				vfront-porch = <10>;
+				vback-porch = <10>;
+				vsync-len = <2>;
+				hsync-active = <0>;
+				vsync-active = <0>;
+				de-active = <0>;
+				pixelclk-active = <0>;
+			};
+		};
+
+		port {
+			mipi_panel_in: endpoint {
+				remote-endpoint = <&dsi0_out_panel>;
+			};
+		};
+	};
+};
+
+&dsi0_in {
+	dsi0_in_vp3: endpoint {
+		remote-endpoint = <&vp3_out_dsi0>;
+	};
+};
+
+&dsi0_out {
+	dsi0_out_panel: endpoint {
+		remote-endpoint = <&mipi_panel_in>;
+	};
+};
+
+&mipidcphy0 {
+	status = "okay";
+};
+
+&vp3 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	vp3_out_dsi0: endpoint@ROCKCHIP_VOP2_EP_MIPI0 {
+		reg = <ROCKCHIP_VOP2_EP_MIPI0>;
+		remote-endpoint = <&dsi0_in_vp3>;
+	};
+};
+
+&i2c5 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c5m2_xfer>;
+	clock-frequency = <400000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	sec_ts: sec_ts@48 {
+		status = "okay";
+		compatible = "sec,sec_ts";
+		reg = <0x48>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ts_irq>;
+		sec,irq_gpio = <&gpio3 RK_PC6 GPIO_ACTIVE_LOW>;
+		sec,max_coords = <1080>, <2160>;
+	};
+
+	sgm37604_bl: backlight@36 {
+		status = "okay";
+		compatible = "sgmicro,sgm37604a";
+		reg = <0x36>;
+		sgmicro,led-channels = <0x07>;
+		sgmicro,max-current = <0>;
+		default-brightness-level = <30>;
+		enable-gpios = <&gpio3 RK_PC1 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&pinctrl {
+	dsi0-lcd {
+		dsi0_lcd_rst_gpio: dsi0-lcd-rst-gpio {
+			rockchip,pins = <3 RK_PC5 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+	ts {
+		ts_irq: ts_irq {
+			rockchip,pins =
+			<3 RK_PC6 RK_FUNC_GPIO &pcfg_pull_up>;//TP_INT_L
+		};
+	};
+};
