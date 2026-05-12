@@ -46,8 +46,10 @@ self: pkgs: {
     self.buildUBoot (
       {
         defconfig = "generic-rk3399_defconfig";
-        BL31 = "${pkgs.armTrustedFirmwareRK3399}/bl31.elf";
-        ROCKCHIP_TPL = "${pkgs.rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
+        env = {
+          BL31 = "${pkgs.armTrustedFirmwareRK3399}/bl31.elf";
+          ROCKCHIP_TPL = "${pkgs.rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
+        };
         filesToInstall = [
           "u-boot.itb"
           "idbloader.img"
@@ -101,8 +103,10 @@ self: pkgs: {
     self.buildUBoot (
       {
         defconfig = "generic-rk3588_defconfig";
-        BL31 = "${pkgs.armTrustedFirmwareRK3588}/bl31.elf";
-        ROCKCHIP_TPL = pkgs.rkbin.TPL_RK3588;
+        env = {
+          BL31 = "${pkgs.armTrustedFirmwareRK3588}/bl31.elf";
+          ROCKCHIP_TPL = pkgs.rkbin.TPL_RK3588;
+        };
         filesToInstall = [
           "u-boot.itb"
           "idbloader.img"
