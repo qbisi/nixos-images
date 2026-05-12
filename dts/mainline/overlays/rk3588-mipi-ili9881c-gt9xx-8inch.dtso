@@ -12,6 +12,13 @@
 };
 
 &{/} {
+	vcc_lcd_mipi0: regulator-vcc-lcd-mipi0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_lcd_mipi0";
+		enable-active-high;
+		gpio = <&pca9555 2 GPIO_ACTIVE_HIGH>; //PCA_IO0_2
+	};
+
 	backlight: backlight {
 		status = "okay";
 		compatible = "pwm-backlight";
@@ -67,7 +74,7 @@
 		reg = <0>;
 		backlight = <&backlight>;
 
-		enable-gpios = <&pca9555 2 GPIO_ACTIVE_HIGH>;
+		power-supply = <&vcc_lcd_mipi0>;
 		reset-gpios = <&gpio2 RK_PB4 GPIO_ACTIVE_LOW>;
 
 		// enable-delay-ms = <50>;

@@ -58,8 +58,8 @@ Subject: [ARCHEOLOGY] general add panel simple dsi (#3140)
 > X-Git-Archeology:
 ---
  drivers/gpu/drm/panel/Makefile           |   1 +
- drivers/gpu/drm/panel/panel-simple-dsi.c | 773 ++++++++++
- 2 files changed, 774 insertions(+)
+ drivers/gpu/drm/panel/panel-simple-dsi.c | 750 ++++++++++
+ 2 files changed, 751 insertions(+)
 
 diff --git a/drivers/gpu/drm/panel/Makefile b/drivers/gpu/drm/panel/Makefile
 index 111111111111..222222222222 100644
@@ -78,7 +78,7 @@ new file mode 100644
 index 000000000000..111111111111
 --- /dev/null
 +++ b/drivers/gpu/drm/panel/panel-simple-dsi.c
-@@ -0,0 +1,773 @@
+@@ -0,0 +1,750 @@
 +/*
 + * Copyright (C) 2021
 + * This simple dsi driver porting from rock-chip panel-simple.c on linux-4.4
@@ -712,23 +712,6 @@ index 000000000000..111111111111
 +	return 0;
 +}
 +
-+static void panel_simple_shutdown(struct device *dev)
-+{
-+	struct panel_simple *panel = dev_get_drvdata(dev);
-+
-+	panel_simple_disable(&panel->base);
-+
-+	if (panel->prepared) {
-+		if (panel->reset_gpio)
-+			gpiod_direction_output(panel->reset_gpio, !panel->reset_level);
-+
-+		if (panel->enable_gpio)
-+			gpiod_direction_output(panel->enable_gpio, 0);
-+
-+		panel_simple_regulator_disable(&panel->base);
-+	}
-+}
-+
 +struct panel_desc_dsi {
 +	struct panel_desc desc;
 +
@@ -832,11 +815,6 @@ index 000000000000..111111111111
 +	panel_simple_remove(&dsi->dev);
 +}
 +
-+static void panel_simple_dsi_shutdown(struct mipi_dsi_device *dsi)
-+{
-+	panel_simple_shutdown(&dsi->dev);
-+}
-+
 +static struct mipi_dsi_driver panel_simple_dsi_driver = {
 +	.driver = {
 +		.name = "panel-dsi-simple",
@@ -844,7 +822,6 @@ index 000000000000..111111111111
 +	},
 +	.probe = panel_simple_dsi_probe,
 +	.remove = panel_simple_dsi_remove,
-+	.shutdown = panel_simple_dsi_shutdown,
 +};
 +
 +module_mipi_dsi_driver(panel_simple_dsi_driver);
