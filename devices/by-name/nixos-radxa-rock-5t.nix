@@ -16,8 +16,7 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      enableESP = false;
-      imageSize = "2560M";
+      enableESP = true;
       fileSystem = "ext4";
       primaryStart = "16M";
       uboot.enable = true;
@@ -43,6 +42,8 @@
     ];
     deviceTree = {
       name = "rockchip/rk3588-rock-5t.dtb";
+      platform = "rockchip";
+      dtsFile = ../../dts/mainline/rockchip/rk3588-rock-5t.dts;
     };
     serial = {
       enable = true;
@@ -67,8 +68,7 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_6_18;
-    # kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_7_0;
+    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_7_0;
     initrd.allowMissingModules = !config.boot.kernelPackages.kernel.configfile.autoModules;
     kernelParams = [
       "console=tty1"
