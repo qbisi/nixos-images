@@ -19,7 +19,7 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    install -D sgm37604a.ko $out/lib/modules/${linux.modDirVersion}/extra/sgm37604a.ko
+    install -D sgm37604a.ko $out/lib/modules/${linux.modDirVersion}/kernel/sgm37604a.ko
 
     runHook postInstall
   '';

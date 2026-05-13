@@ -19,7 +19,7 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    install -D sec_ts.ko $out/lib/modules/${linux.modDirVersion}/extra/sec_ts.ko
+    install -D sec_ts.ko $out/lib/modules/${linux.modDirVersion}/kernel/sec_ts.ko
 
     runHook postInstall
   '';

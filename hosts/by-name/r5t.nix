@@ -21,7 +21,7 @@
 
   boot = {
     extraModulePackages = [
-      (pkgs.panel-simple-dsi.override { linux = config.boot.kernelPackages.kernel; })
+      # (pkgs.panel-simple-dsi.override { linux = config.boot.kernelPackages.kernel; })
       (pkgs.sgm37604-backlight.override { linux = config.boot.kernelPackages.kernel; })
       (pkgs.sec-ts.override { linux = config.boot.kernelPackages.kernel; })
     ];

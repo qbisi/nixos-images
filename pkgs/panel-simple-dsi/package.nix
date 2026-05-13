@@ -19,7 +19,7 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    install -D panel-simple-dsi.ko $out/lib/modules/${linux.modDirVersion}/extra/panel-simple-dsi.ko
+    install -D panel-simple-dsi.ko $out/lib/modules/${linux.modDirVersion}/kernel/panel-simple-dsi.ko
 
     runHook postInstall
   '';
