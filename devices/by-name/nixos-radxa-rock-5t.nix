@@ -17,6 +17,7 @@
     enableConfig = true;
     bootImage = {
       enableESP = false;
+      imageSize = "2560M";
       fileSystem = "ext4";
       primaryStart = "16M";
       uboot.enable = true;
@@ -66,7 +67,8 @@
   };
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_7_0;
+    kernelPackages = pkgs.linuxPackages_6_18;
+    # kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_7_0;
     initrd.allowMissingModules = !config.boot.kernelPackages.kernel.configfile.autoModules;
     kernelParams = [
       "console=tty1"

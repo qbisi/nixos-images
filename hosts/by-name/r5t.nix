@@ -19,6 +19,14 @@
     "${self}/modules/config/passless.nix"
   ];
 
+  boot = {
+    extraModulePackages = [
+      (pkgs.panel-simple-dsi.override { linux = config.boot.kernelPackages.kernel; })
+      (pkgs.sgm37604-backlight.override { linux = config.boot.kernelPackages.kernel; })
+      (pkgs.sec-ts.override { linux = config.boot.kernelPackages.kernel; })
+    ];
+  };
+
   hardware = {
     deviceTree = {
       dtboBuildExtraIncludePaths = lib.mkAfter [ ../../dts/mainline ];
@@ -43,11 +51,6 @@
 
   environment.systemPackages = with pkgs; [
     iperf3
-  ];
-
-  boot.extraModulePackages = [
-    (pkgs.sgm37604-backlight.override { linux = config.boot.kernelPackages.kernel; })
-    (pkgs.sec-ts.override { linux = config.boot.kernelPackages.kernel; })
   ];
 
   documentation.enable = false;
