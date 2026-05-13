@@ -50,8 +50,7 @@
 		compatible = "panel-dsi-simple";
 		reg = <0>;
 		backlight = <&sgm37604_bl>;
-		vdd-supply = <&vcc_lcd_mipi0>;
-		vccio-supply = <&vcc_1v8_s0>;
+		power-supply = <&vcc_lcd_mipi0>;
 		reset-gpios = <&gpio3 RK_PC5 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&dsi0_lcd_rst_gpio>;
@@ -59,7 +58,6 @@
 		prepare-delay-ms = <40>;
 		reset-delay-ms = <60>;
 		init-delay-ms = <80>;
-		stbyb-delay-ms = <20>;
 		enable-delay-ms = <60>;
 		disable-delay-ms = <20>;
 		unprepare-delay-ms = <20>;
