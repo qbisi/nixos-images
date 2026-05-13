@@ -47,6 +47,7 @@
 
   boot.extraModulePackages = [
     (pkgs.sgm37604-backlight.override { linux = config.boot.kernelPackages.kernel; })
+    (pkgs.sec-ts.override { linux = config.boot.kernelPackages.kernel; })
   ];
 
   documentation.enable = false;
