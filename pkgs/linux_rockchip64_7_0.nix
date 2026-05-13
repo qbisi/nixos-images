@@ -14,10 +14,17 @@ buildLinux {
     hash = "sha256-VKM1wy4oVNvB8gInkRELNiEapkB3KC+ts9E+b5Xuty8=";
   };
 
-  kernelPatches = map (p: {
-    name = baseNameOf p;
-    patch = p;
-  }) (lib.filesystem.listFilesRecursive ../patches/kernel);
+  kernelPatches =
+    map
+      (p: {
+        name = baseNameOf p;
+        patch = p;
+      })
+      (
+        builtins.filter (p: lib.hasSuffix ".patch" (toString p)) (
+          lib.filesystem.listFilesRecursive ../patches/kernel
+        )
+      );
 
   structuredExtraConfig = with lib.kernel; {
     # FW_LOADER

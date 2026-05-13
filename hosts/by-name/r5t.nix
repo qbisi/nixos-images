@@ -45,6 +45,10 @@
     iperf3
   ];
 
+  boot.extraModulePackages = [
+    (pkgs.sgm37604-backlight.override { linux = config.boot.kernelPackages.kernel; })
+  ];
+
   documentation.enable = false;
 
   nix = {
