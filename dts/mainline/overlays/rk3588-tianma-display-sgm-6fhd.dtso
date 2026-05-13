@@ -9,7 +9,9 @@
 
 / {
 	compatible = "radxa,rock-5t";
+};
 
+&{/} {
 	vcc_tp: vcc-tp {
 		status = "okay";
 		regulator-name = "vcc_tp";
