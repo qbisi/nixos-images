@@ -12,37 +12,18 @@
 };
 
 &{/} {
-	vcc_tp: vcc-tp {
-		status = "okay";
-		regulator-name = "vcc_tp";
-		compatible = "regulator-fixed";
-		gpio = <&gpio0 RK_PD5 GPIO_ACTIVE_LOW>;
-		enable-active-low;
-		regulator-boot-on;
-		regulator-always-on;
-	};
-
-	vcc_lcd_mipi0: vcc-lcd-mipi0 {
+	vcc_lcd_mipi1: vcc-lcd-mipi0 {
 		status = "okay";
 		compatible = "regulator-fixed";
-		regulator-name = "vcc_lcd_mipi0";
-		gpio = <&gpio4 RK_PA4 GPIO_ACTIVE_HIGH>;
+		regulator-name = "vcc_lcd_mipi1";
+		gpio = <&gpio1 RK_PA2 GPIO_ACTIVE_HIGH>;
 		enable-active-high;
 		regulator-boot-on;
 		regulator-always-on;
-		regulator-state-mem {
-			regulator-off-in-suspend;
-		};
 	};
 };
 
-&pwm10 {
-	status = "okay";
-	pinctrl-names = "active";
-	pinctrl-0 = <&pwm10m2_pins>;
-};
-
-&dsi0 {
+&dsi1 {
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -52,10 +33,10 @@
 		compatible = "panel-dsi-simple";
 		reg = <0>;
 		backlight = <&sgm37604_bl>;
-		power-supply = <&vcc_lcd_mipi0>;
-		reset-gpios = <&gpio3 RK_PC5 GPIO_ACTIVE_LOW>;
+		power-supply = <&vcc_lcd_mipi1>;
+		reset-gpios = <&gpio0 RK_PC6 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&dsi0_lcd_rst_gpio>;
+		pinctrl-0 = <&dsi1_lcd_rst_gpio>;
 
 		prepare-delay-ms = <40>;
 		reset-delay-ms = <60>;
@@ -72,17 +53,37 @@
 		dsi,lanes = <4>;
 
 		panel-init-sequence = [
-		05 78 01 11
-		05 0A 01 29
+			39 00 03 9f a5 a5
+			05 78 01 11
+			15 00 02 55 10
+			39 00 03 f0 5a 5a
+			15 00 02 73 94
+			39 00 3d ea 00
+						73 11 1b 23 2a 40 59 70 6e a1 86 92 9f ab b8 4d 59 65 7f 00
+								73 11 1b 23 2a 40 59 70 6e a1 86 92 9f ab b8 4d 59 65 7f 00
+								73 11 1b 23 2a 40 59 70 6e a1 86 92 9f ab b8 4d 59 65 7f
+			39 00 3d eb 00
+						73 11 1b 23 2a 40 59 70 6e a1 86 92 9f ab b8 4d 59 65 7f 00
+						73 11 1b 23 2a 40 59 70 6e a1 86 92 9f ab b8 4d 59 65 7f 00
+						73 11 1b 23 2a 40 59 70 6e a1 86 92 9f ab b8 4d 59 65 7f
+			39 00 03 f0 a5 a5
+			05 00 01 29
+			39 00 03 9f 5a 5a
 		];
 
 		panel-exit-sequence = [
-		05 10 01 28
-		05 78 01 10
+			05 00 01 28
+			05 50 01 10
+			39 00 03 f0 5a 5a
+			15 00 02 73 90
+			39 00 03 f0 a5 a5
+			15 00 02 24 00
+			39 00 03 9f 5a 5a
 		];
 
 		display-timings {
 			native-mode = <&timing0>;
+
 			timing0: timing0 {
 				clock-frequency = <157000000>;
 				hactive = <1080>;
@@ -102,25 +103,25 @@
 
 		port {
 			mipi_panel_in: endpoint {
-				remote-endpoint = <&dsi0_out_panel>;
+				remote-endpoint = <&dsi1_out_panel>;
 			};
 		};
 	};
 };
 
-&dsi0_in {
-	dsi0_in_vp3: endpoint {
-		remote-endpoint = <&vp3_out_dsi0>;
+&dsi1_in {
+	dsi1_in_vp3: endpoint {
+		remote-endpoint = <&vp3_out_dsi1>;
 	};
 };
 
-&dsi0_out {
-	dsi0_out_panel: endpoint {
+&dsi1_out {
+	dsi1_out_panel: endpoint {
 		remote-endpoint = <&mipi_panel_in>;
 	};
 };
 
-&mipidcphy0 {
+&mipidcphy1 {
 	status = "okay";
 };
 
@@ -128,16 +129,16 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 
-	vp3_out_dsi0: endpoint@ROCKCHIP_VOP2_EP_MIPI0 {
-		reg = <ROCKCHIP_VOP2_EP_MIPI0>;
-		remote-endpoint = <&dsi0_in_vp3>;
+	vp3_out_dsi1: endpoint@ROCKCHIP_VOP2_EP_MIPI1 {
+		reg = <ROCKCHIP_VOP2_EP_MIPI1>;
+		remote-endpoint = <&dsi1_in_vp3>;
 	};
 };
 
-&i2c5 {
+&i2c6 {
 	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&i2c5m2_xfer>;
+	pinctrl-0 = <&i2c6m0_xfer>;
 	clock-frequency = <400000>;
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -148,8 +149,10 @@
 		reg = <0x48>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&ts_irq>;
-		sec,irq_gpio = <&gpio3 RK_PC6 GPIO_ACTIVE_LOW>;
+		sec,irq_gpio = <&gpio0 RK_PD3 GPIO_ACTIVE_LOW>;
 		sec,max_coords = <1080>, <2160>;
+		touchscreen-inverted-x = <1>;
+		touchscreen-inverted-y = <1>;
 	};
 
 	sgm37604_bl: backlight@36 {
@@ -158,21 +161,22 @@
 		reg = <0x36>;
 		sgmicro,led-channels = <0x07>;
 		sgmicro,max-current = <0>;
-		default-brightness-level = <30>;
-		enable-gpios = <&gpio3 RK_PC1 GPIO_ACTIVE_HIGH>;
+		default-brightness-level = <48>;
+		enable-gpios = <&gpio2 RK_PC1 GPIO_ACTIVE_HIGH>;
 	};
 };
 
 &pinctrl {
-	dsi0-lcd {
-		dsi0_lcd_rst_gpio: dsi0-lcd-rst-gpio {
-			rockchip,pins = <3 RK_PC5 RK_FUNC_GPIO &pcfg_pull_up>;
+	dsi1-lcd {
+		dsi1_lcd_rst_gpio: dsi0-lcd-rst-gpio {
+			rockchip,pins = <0 RK_PC6 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
+
 	ts {
 		ts_irq: ts_irq {
 			rockchip,pins =
-			<3 RK_PC6 RK_FUNC_GPIO &pcfg_pull_up>;//TP_INT_L
+			<0 RK_PD3 RK_FUNC_GPIO &pcfg_pull_up>;//TP_INT_L
 		};
 	};
 };
