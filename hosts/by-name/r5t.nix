@@ -50,7 +50,7 @@
     cage = {
       enable = true;
       program = "${pkgs.configuration}/bin/configuration";
-      user = config.users.users.admin.name;
+      user = "root";
     };
   };
 
