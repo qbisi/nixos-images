@@ -33,7 +33,7 @@
       overlays = [
         {
           name = "mipi-sgm-6fhd";
-          dtsFile = ../../dts/mainline/overlays/rk3588-tianma-display-sgm-6fhd.dtso;
+          dtsFile = ../../dts/mainline/overlays/rock-5t-radxa-display-6fhd.dtso;
         }
       ];
     };

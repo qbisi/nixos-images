@@ -36,7 +36,7 @@
 /* flush display FIFO on vsync pulse */
 #define MIPI_DSI_MODE_VSYNC_FLUSH	(1 << 8)
 /* disable EoT packets in HS mode */
-#define MIPI_DSI_MODE_EOT_PACKET	(1 << 9)
+#define MIPI_DSI_MODE_NO_EOT_PACKET	(1 << 9)
 /* device supports non-continuous clock behavior (DSI spec 5.6.1) */
 #define MIPI_DSI_CLOCK_NON_CONTINUOUS	(1 << 10)
 /* transmit data in low power */
