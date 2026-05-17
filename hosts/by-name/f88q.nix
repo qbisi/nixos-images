@@ -90,8 +90,7 @@
     usb-rndis.enable = true;
     cage = {
       enable = true;
-      program = "${inputs.optispectrum.packages."aarch64-linux".optispectrum}/bin/optispectrum --fullscreen";
-      environment.LANG = "zh_CN.UTF-8";
+      program = "${pkgs.configuration}/bin/configuration";
       user = config.users.users.admin.name;
     };
   };

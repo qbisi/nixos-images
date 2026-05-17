@@ -47,6 +47,11 @@
 
   services = {
     usb-rndis.enable = true;
+    cage = {
+      enable = true;
+      program = "${pkgs.configuration}/bin/configuration";
+      user = config.users.users.admin.name;
+    };
   };
 
   environment.systemPackages = with pkgs; [
