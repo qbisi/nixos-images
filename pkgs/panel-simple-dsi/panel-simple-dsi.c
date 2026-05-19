@@ -631,6 +631,26 @@ static int panel_simple_remove(struct device *dev)
 	return 0;
 }
 
+static void panel_simple_shutdown(struct device *dev)
+{
+	struct panel_simple *panel = dev_get_drvdata(dev);
+
+	if (!panel)
+		return;
+
+	panel_simple_disable(&panel->base);
+
+	if (panel->prepared) {
+		if (panel->reset_gpio)
+			gpiod_direction_output(panel->reset_gpio, !panel->reset_level);
+
+		if (panel->enable_gpio)
+			gpiod_direction_output(panel->enable_gpio, 0);
+
+		panel_simple_regulator_disable(&panel->base);
+	}
+}
+
 struct panel_desc_dsi {
 	struct panel_desc desc;
 
@@ -734,6 +754,11 @@ static void panel_simple_dsi_remove(struct mipi_dsi_device *dsi)
 	panel_simple_remove(&dsi->dev);
 }
 
+static void panel_simple_dsi_shutdown(struct mipi_dsi_device *dsi)
+{
+	panel_simple_shutdown(&dsi->dev);
+}
+
 static struct mipi_dsi_driver panel_simple_dsi_driver = {
 	.driver = {
 		.name = "panel-dsi-simple",
@@ -741,6 +766,7 @@ static struct mipi_dsi_driver panel_simple_dsi_driver = {
 	},
 	.probe = panel_simple_dsi_probe,
 	.remove = panel_simple_dsi_remove,
+	.shutdown = panel_simple_dsi_shutdown,
 };
 
 module_mipi_dsi_driver(panel_simple_dsi_driver);
