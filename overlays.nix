@@ -28,9 +28,9 @@ self: pkgs: {
       configurePhase = ''
         runHook preConfigure
 
-        cat $extraConfigPath >> configs/${defconfig}
+        printf "%s" "$extraConfig" >> configs/${defconfig}
 
-        make ${defconfig}
+        make -j$NIX_BUILD_CORES ${defconfig}
 
         runHook postConfigure
       '';
@@ -95,6 +95,8 @@ self: pkgs: {
       dtsFile,
       patches ? [ ],
       extraConfig ? "",
+      withLog ? false,
+      withSpi ? false,
       withUsb ? false,
       withNvme ? false,
       withRecovery ? false,
@@ -111,7 +113,7 @@ self: pkgs: {
           "u-boot.itb"
           "idbloader.img"
           "u-boot-rockchip.bin"
-        ];
+        ] ++ pkgs.lib.optional withSpi "u-boot-rockchip-spi.bin";
         prePatch = ''
           cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
         '';
@@ -127,6 +129,31 @@ self: pkgs: {
           CONFIG_OF_UPSTREAM=n
           CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
+        ''
+        + pkgs.lib.optionalString withLog ''
+          CONFIG_LOG=y
+          CONFIG_LOG_MAX_LEVEL=7
+          CONFIG_LOG_DEFAULT_LEVEL=7
+          CONFIG_SPL_LOG=y
+          CONFIG_SPL_LOG_MAX_LEVEL=7
+          CONFIG_SPL_LOG_CONSOLE=y
+          CONFIG_LOGLEVEL=7
+          CONFIG_SPL_LOGLEVEL=7
+        ''
+        + pkgs.lib.optionalString withSpi ''
+          CONFIG_ROCKCHIP_SFC=y
+          CONFIG_ROCKCHIP_SPI_IMAGE=y
+          CONFIG_SF_DEFAULT_SPEED=24000000
+          CONFIG_SF_DEFAULT_MODE=0x2000
+          CONFIG_SF_DEFAULT_BUS=5
+          CONFIG_SPL_SPI_FLASH_SUPPORT=y
+          CONFIG_SPL_SPI=y
+          CONFIG_SPL_SPI_LOAD=y
+          CONFIG_SYS_SPI_U_BOOT_OFFS=0x60000
+          CONFIG_SPI_FLASH_SFDP_SUPPORT=y
+          CONFIG_SPI_FLASH_MACRONIX=y
+          CONFIG_SPI_FLASH_XMC=y
+          CONFIG_SPI_FLASH_XTX=y
         ''
         + pkgs.lib.optionalString (withUsb || withNvme) ''
           CONFIG_USE_PREBOOT=y
@@ -169,6 +196,8 @@ self: pkgs: {
         "withUsb"
         "withNvme"
         "withRecovery"
+        "withSpi"
+        "withLog"
         "patches"
       ]
     );

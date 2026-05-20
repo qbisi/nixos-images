@@ -16,11 +16,14 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      enableESP = true;
+      enableESP = false;
+      partLabel = "nvme";
       fileSystem = "ext4";
-      primaryStart = "16M";
-      uboot.enable = true;
+      primaryStart = "1M";
+      uboot.enable = false;
       uboot.package = pkgs.buildUBootRk3588 {
+        withSpi = true;
+        withNvme = true;
         dtsFile = ../../dts/mainline/rockchip/rk3588-rock-5t.dts;
       };
     };
