@@ -16,7 +16,7 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      enableESP = false;
+      enableESP = true;
       partLabel = "nvme";
       fileSystem = "ext4";
       primaryStart = "1M";
