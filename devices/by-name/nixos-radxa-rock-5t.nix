@@ -24,7 +24,7 @@
       uboot.package = pkgs.buildUBootRk3588 {
         withSpi = true;
         withNvme = true;
-        dtsFile = ../../dts/mainline/rockchip/rk3588-rock-5t.dts;
+        dtsFile = config.hardware.deviceTree.dtsFile;
       };
     };
   };

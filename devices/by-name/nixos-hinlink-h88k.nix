@@ -19,7 +19,10 @@
       fileSystem = "btrfs";
       primaryStart = "16M";
       uboot.enable = true;
-      uboot.package = pkgs.ubootHinlinkH88k;
+      uboot.package = pkgs.buildUBootRk3588 {
+        withNvme = true;
+        dtsFile = config.hardware.deviceTree.dtsFile;
+      };
     };
   };
 

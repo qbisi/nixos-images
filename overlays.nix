@@ -95,11 +95,13 @@ self: pkgs: {
       dtsFile,
       patches ? [ ],
       extraConfig ? "",
+      withMenu ? true,
       withLog ? false,
       withSpi ? false,
-      withUsb ? false,
+      withUsb ? withMenu,
       withNvme ? false,
-      withRecovery ? false,
+      withDrm ? withMenu,
+      withRecovery ? true,
       ...
     }@args:
     self.buildUBoot (
@@ -113,14 +115,17 @@ self: pkgs: {
           "u-boot.itb"
           "idbloader.img"
           "u-boot-rockchip.bin"
-        ] ++ pkgs.lib.optional withSpi "u-boot-rockchip-spi.bin";
+        ]
+        ++ pkgs.lib.optional withSpi "u-boot-rockchip-spi.bin";
         prePatch = ''
           cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
         '';
         patches = [
           ./patches/u-boot/spl-prefer-sdmmc.patch
+          ./patches/u-boot/rk3588-add-bootmenu.patch
           ./patches/u-boot/rk3588-adc-recovery.patch
         ]
+        ++ pkgs.lib.optional withDrm ./patches/u-boot/rockchip-video-drm.patch
         ++ patches;
         extraConfig = ''
           # disable smbios such that sound card can find profile in alsa-ucm-conf
@@ -129,6 +134,10 @@ self: pkgs: {
           CONFIG_OF_UPSTREAM=n
           CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
+        ''
+        + pkgs.lib.optionalString withMenu ''
+          CONFIG_CMD_BOOTMENU=y
+          CONFIG_AUTOBOOT_MENU_SHOW=y
         ''
         + pkgs.lib.optionalString withLog ''
           CONFIG_LOG=y
@@ -188,6 +197,14 @@ self: pkgs: {
           CONFIG_USB_DWC3_GENERIC=y
           CONFIG_USB_KEYBOARD=y
           CONFIG_SYS_USB_EVENT_POLL_VIA_CONTROL_EP=y
+        ''
+        + pkgs.lib.optionalString withDrm ''
+          CONFIG_VIDEO=y
+          CONFIG_DISPLAY=y
+          CONFIG_DRM_ROCKCHIP=y
+          CONFIG_DRM_ROCKCHIP_VIDEO_FRAMEBUFFER=y
+          CONFIG_DRM_ROCKCHIP_DW_HDMI_QP=y
+          CONFIG_PHY_ROCKCHIP_SAMSUNG_HDPTX_HDMI=y
         ''
         + extraConfig;
       }

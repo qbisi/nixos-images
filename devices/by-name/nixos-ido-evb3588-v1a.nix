@@ -21,8 +21,8 @@
       primaryStart = "16M";
       uboot.enable = true;
       uboot.package = pkgs.buildUBootRk3588 {
-        withRecovery = true;
-        dtsFile = ../../dts/mainline/rk3588-ido-evb3588-v1a.dts;
+        withNvme = true;
+        dtsFile = config.hardware.deviceTree.dtsFile;
       };
     };
   };
