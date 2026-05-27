@@ -19,7 +19,7 @@ stdenv.mkDerivation {
   installPhase = ''
     runHook preInstall
 
-    install -D tcpci_husb311.ko $out/lib/modules/${linux.modDirVersion}/kernel/drivers/usb/typec/tcpm/tcpci_husb311.ko
+    install -D tcpci_husb311.ko $out/lib/modules/${linux.modDirVersion}/kernel/tcpci_husb311.ko
 
     runHook postInstall
   '';
