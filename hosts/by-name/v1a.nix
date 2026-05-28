@@ -36,11 +36,6 @@
 
   services = {
     usb-rndis.enable = true;
-    desktopManager.plasma6.enable = true;
-    displayManager.sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
   };
 
   i18n.defaultLocale = "zh_CN.UTF-8";
@@ -70,27 +65,10 @@
       enable = true;
       autosuggestions.enable = true;
       syntaxHighlighting.enable = true;
-      ohMyZsh = {
-        enable = true;
-        theme = "gentoo";
-        plugins = [
-          "git"
-          "history"
-          "wd"
-          "sudo"
-        ];
-      };
     };
-    nix-ld.enable = true;
-    vscode.enable = true;
-    chromium.enable = true;
-    clash-verge.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
-    ffmpeg
-    alsa-utils
-    v4l-utils
     iperf3
   ];
 
@@ -98,9 +76,7 @@
 
   nix = {
     settings = {
-      substituters = [
-        "https://mirrors.ustc.edu.cn/nix-channels/store"
-      ];
+      substituters = lib.mkForce [ ];
       experimental-features = [
         "nix-command"
         "flakes"
