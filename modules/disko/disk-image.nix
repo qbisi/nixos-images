@@ -165,7 +165,7 @@ in
               })
 
               (lib.mkIf (cfg._primaryContent != null) {
-                primary = {
+                nix = {
                   start = lib.mkIf (cfg.primaryStart != null) cfg.primaryStart;
                   size = "100%";
                   content = cfg._primaryContent;
