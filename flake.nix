@@ -22,22 +22,13 @@
       url = "github:zhaofengli/colmena";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    spectrum = {
-      url = "git+ssh://git@github.com:/qbisi/spectrum";
-    };
-    optispectrum = {
-      url = "git+ssh://git@github.com:/qbisi/optispectrum";
-    };
   };
 
   outputs =
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } (
       {
-        lib,
         self,
-        withSystem,
-        getSystemIgnoreWarning,
         ...
       }:
       {
