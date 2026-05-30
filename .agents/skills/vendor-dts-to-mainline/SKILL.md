@@ -16,7 +16,6 @@ Use this skill for RK3588/RK3588S board bring-up in this repo when the input is 
 2. Treat fdtdump phandles as evidence. Decode phandles to controller labels before deciding GPIO bank, pin, and active level.
 3. Translate vendor-specific nodes into upstream bindings; do not copy vendor `*-platdata` or `rockchip,*card` nodes blindly.
 4. Keep changes scoped to the board and the smallest helper files needed. Do not reformat large DTS blocks.
-5. If the user said not to validate, do not run DTS build/validation. Inspection and grep are fine.
 
 ## Rockchip Patterns
 
