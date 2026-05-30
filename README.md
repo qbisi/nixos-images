@@ -2,24 +2,21 @@
 
 ## Introduction
 
-Bootstrap NixOS images for servers, PCs, and SBCs. The provided images use a preset disk partition and will automatically expand to the full size after startup. The system has a passwordless root account that can be accessed locally or remotely, facilitating the deployment of your own NixOS configuration.
-
-**Note:** The bootstrap system disables the firewall and allows root login via SSH without a password. Therefore, leaving the system unchanged on the public internet is unsafe and dangerous. You should set your own password or SSH key as soon as possible.
-
+Generic nixos build/deploy/test framework for **ANY** rk3588-boards.
 ---
 
 ## Features
 
-- Pre-configured NixOS bootstrap images for different environments (servers, PCs, SBCs)
-- Automatic disk resizing to fit the full available space after first boot
-- Passwordless root access for easy configuration deployment
-- Example configurations provided for Colmena deployment
-
+- Generic u-boot recipe for rk3588 boards with support of hdmi-video output, usb keyboard input, efi bootmenu, boot from nvme like edk2-rk3588 does.
+- Refined linux kernel configuration for rk3588 boards with some out-of-tree kernel modules.
+- Bootstrap nixos-images recipe that support extlinux/efi bootloaders and preset ext4/btrfs disk partitions.
+- Easy to use first-login-setup and colmena remote deployment.
+- Agent friendly deploy/test framework to debug your nixos configuration.
 ---
 
 ## Getting Started
 
-### Option 1: Local Installation (PC, SBC, Server)
+### Option 1: Local Installation
 
 1. Download the appropriate NixOS image from the [releases page](#link-to-releases).
 2. Flash the image to your storage media (e.g., using `dd`, Etcher, etc.).
@@ -38,41 +35,22 @@ bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinst
 bash <(curl -L https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh) dd --password 123@@@ --img=https://github.com/qbisi/nixos-images/releases/download/2025.12.3/nixos-aarch64-uefi.raw.xz && reboot
 ```
 
-## Custom your own configuration
-This project provide a init template that accept this repo as a flake inputs.
-```
-nix flake new -t github:qbisi/nixos-images nixos-config
-```
+## Project structure
 
-## Building the Image Yourself
+This repository is organized around flake outputs:
 
-For advanced users looking to build a custom NixOS image from this Nix-based flake source, follow the steps below:
-
-### Prerequisites
-
-Ensure you have the following installed:
-
-- **Nix**: Follow the installation instructions at [nixos.org](https://nixos.org/download.html).
-- **Flakes Support**: Enable flakes in your Nix configuration by adding the following line to `/etc/nix/nix.conf`:
-
-  ```ini
-  experimental-features = nix-command flakes
-  # required for build aarch64 images on x86_64-linux platform
-  extra-platforms = aarch64-linux
-  ```
-
-### Build Process
-
-Use the following command to build your desired NixOS image.
-Replace `${device}` with the appropriate device type (e.g., x86_64-generic).
-Replace `${partlabel}` with the appropriate media type (e.g., nvme, mmc, hdd).
-
-```bash
-PARTLABEL=${partlabel} nix build github:qbisi/nixos-images#nixos-${device} --impure
+```text
+.
+|-- flake.nix             # Top-level flake wiring for packages, modules, templates, hosts, and devices.
+|-- overlays.nix          # Shared overlay entries used by NixOS modules and package builds.
+|-- devices/              # Bootstrap image targets exposed as flake packages and nixosConfigurations.
+|-- hosts/                # Installable/deployable host configurations and Colmena deployment notes.
+|-- modules/              # Reusable NixOS modules for images, boot, disk layout, hardware, and services.
+|-- pkgs/                 # Local package definitions: kernels, firmware, tools, and out-of-tree modules.
+|-- dts/                  # Mainline, vendor, and dumped device-tree sources used for board support.
+|-- patches/              # Kernel and U-Boot patches consumed by local package definitions.
+|-- templates/            # `nix flake new` template for external configuration repositories.
+`-- tools/                # Bring-up and maintenance tooling that is not part of a NixOS module.
 ```
 
-Once the build is complete, the resulting image will be located in the result directory:
-```bash
-ls result/
-```
-You should see the generated NixOS image file.
+Use `hosts/` for post-bootstrap system configurations and remote deployment. See `hosts/README.md` for the local `nixos-rebuild` and Colmena deployment workflow.
