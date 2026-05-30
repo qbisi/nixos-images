@@ -1,6 +1,6 @@
-# SDIO WiFi And UART Bluetooth
+# SDIO WiFi And UART Bluetooth Porting
 
-Use this for AMPAK/Broadcom combo modules on RK3588 boards.
+Use this when translating vendor AMPAK/Broadcom combo module nodes into mainline RK3588 DTS.
 
 ## Vendor To Mainline Translation
 
@@ -77,16 +77,3 @@ Keep the `brcm,bcm4329-fmac` fallback for SDIO Broadcom nodes because brcmfmac O
 	};
 };
 ```
-
-## Boot Log Interpretation
-
-- `pin gpioX-Y already requested ... cannot claim for fe2d0000.mmc`: wrong SDIO pinctrl group or pin shared with another enabled controller.
-- `using brcm/brcmfmac43752-sdio for chip BCM43752/2`: SDIO transport and chip probe work.
-- Missing board-specific `brcmfmac*.board.bin` or `.txt` with `error -2`: file not found; often non-fatal if generic firmware loads.
-- `no txcap_blob available`: expected for SDIO in many kernels; txcap is mainly wired for PCIe.
-- `brcmf_p2p_create_p2pdev timeout`: WiFi Direct/P2P failed, not normal station mode. Disable P2P in wpa_supplicant if not needed:
-  ```nix
-  networking.wireless.extraConfig = ''
-    p2p_disabled=1
-  '';
-  ```

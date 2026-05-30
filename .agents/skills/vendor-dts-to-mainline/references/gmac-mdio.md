@@ -1,19 +1,6 @@
-# GMAC And MDIO
+# GMAC And MDIO Porting
 
-Use this when boot logs mention stmmac, MDIO, missing PHYs, or Ethernet pin/reset problems.
-
-## Log Meanings
-
-`MDIO device at address 1 is missing.`
-
-The kernel attempted to read/register the PHY at MDIO address 1 and got no valid response. Likely causes:
-
-- PHY reset GPIO not asserted/deasserted correctly.
-- Wrong stmmac reset property names for the kernel binding in use.
-- Missing PHY clock or `gmac*_clkinout` pin.
-- Wrong `phy-mode`, MDIO address, or MAC instance.
-- Pinctrl conflict or missing MIIM pins.
-- PHY power rail disabled.
+Use this when translating vendor GMAC, MDIO, RGMII PHY, reset, clock, and pinctrl data into mainline RK3588 DTS.
 
 ## RK3588 Checks
 
@@ -43,18 +30,10 @@ Compare these fields with vendor and known-good RK3588 boards:
 };
 ```
 
-## Kernel Source Anchors
-
-When source is available in `~/linux`:
-
-- `drivers/net/mdio/of_mdio.c`: logs missing MDIO devices.
-- `drivers/net/mdio/fwnode_mdio.c`: reads generic PHY IDs.
-- `drivers/net/ethernet/stmicro/stmmac/stmmac_mdio.c`: stmmac MDIO/reset handling.
-
-## Triage Order
+## Porting Order
 
 1. Confirm the intended MAC instance and aliases.
 2. Confirm MDIO address with vendor DTS/fdtdump.
 3. Confirm reset property names match the running kernel.
 4. Confirm `gmac*_clkinout` is present if vendor had it.
-5. Confirm power rails and pinctrl ownership in boot logs.
+5. Confirm PHY power rails and pinctrl groups against vendor and known-good RK3588 boards.

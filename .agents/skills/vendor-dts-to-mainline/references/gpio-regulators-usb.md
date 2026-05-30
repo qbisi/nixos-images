@@ -1,4 +1,4 @@
-# GPIOs, Regulators, USB Power
+# GPIOs, Regulators, USB Power Porting
 
 Use this for vendor GPIO holder nodes, PCA953x expanders, fixed regulators, and USB port power.
 
@@ -49,12 +49,3 @@ When one RK3588 PHY/controller feeds an external USB hub, and multiple downstrea
 - Do not attach two downstream VBUS regulators as one `phy-supply`.
 - Model downstream port power as always-on fixed regulators if the ports should simply be powered.
 - Keep names explicit (`usb_host3_pwr`, `usb_host4_pwr`) using regulator names or `gpio-line-names`.
-
-## Debug
-
-```sh
-gpioinfo
-cat /sys/kernel/debug/gpio
-dmesg | grep -Ei 'regulator|gpio|usb|xhci|ehci|hub'
-lsusb -t
-```
