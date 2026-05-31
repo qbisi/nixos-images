@@ -43,7 +43,7 @@ This repository is organized around flake outputs:
 .
 |-- flake.nix             # Top-level flake wiring for packages, modules, templates, hosts, and devices.
 |-- overlays.nix          # Shared overlay entries used by NixOS modules and package builds.
-|-- devices/              # Bootstrap image targets exposed as flake packages and nixosConfigurations.
+|-- devices/              # Bootstrap image targets exposed as flake legacyPackages and nixosConfigurations.
 |-- hosts/                # Installable/deployable host configurations and Colmena deployment notes.
 |-- modules/              # Reusable NixOS modules for images, boot, disk layout, hardware, and services.
 |-- pkgs/                 # Local package definitions: kernels, firmware, tools, and out-of-tree modules.
@@ -54,3 +54,14 @@ This repository is organized around flake outputs:
 ```
 
 Use `hosts/` for post-bootstrap system configurations and remote deployment. See `hosts/README.md` for the local `nixos-rebuild` and Colmena deployment workflow.
+
+## Build Images
+
+Image targets are exposed under `legacyPackages.${system}.nixos-*`.
+
+Common usage:
+
+```sh
+nix build .#nixos-x86_64-generic --accept-flake-config
+nix build .#nixos-aarch64-uefi --accept-flake-config
+nix build .#nixos-hinlink-h88k --accept-flake-config
