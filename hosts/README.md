@@ -3,6 +3,17 @@ This folder contains basic nixos configuration that you can switch/deploy to aft
 # Switch Configuration locally
 You can clone this repository and switch configuration locally using `nixos-rebuild switch --flake <path-to-repo>[.#<host>]`.
 
+When `.#<host>` is omitted, `nixos-rebuild switch --flake <path-to-repo>` uses
+the current system hostname as the NixOS configuration name. RK3588 bootstrap
+images set a short default hostname with `networking.hostName = lib.mkDefault
+"<host>"`, for example `e88a`, `f88q`, `r5t`, or `v1a`. If a matching
+`hosts/by-name/<host>.nix` exists, a freshly flashed board can switch to its
+post-bootstrap host configuration without spelling out the target:
+
+```sh
+nixos-rebuild switch --flake <path-to-repo>
+```
+
 To avoid fetching flake inputs from github, we will later use "flake archive" to cache flake inputs locally to bootstrap images.
 We will later implement a switch your configuration prompt on your first login from tty based on this flake repo and your custom name/passwd.
 
