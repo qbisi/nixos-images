@@ -1,74 +1,75 @@
 name: "Build"
 on:
-  repository_dispatch:
-  workflow_dispatch:
-    inputs:
-      release:
-        description: "release"
-        required: true
-        type: string
+    repository_dispatch:
+    workflow_dispatch:
+        inputs:
+            release:
+                description: "release"
+                required: true
+                type: string
 
 env:
-  GH_TOKEN: ${{ github.token }}
+    GH_TOKEN: ${{ github.token }}
 
 jobs:
-  images:
-    strategy:
-      fail-fast: false
-      matrix:
-        device:
-          - x86_64-generic
-          - x86_64-uefi
-          - aarch64-uefi
-          - friendly-nanopc-t6
-          - radxa-rock-5a
-          - radxa-rock-5b
-          - xunlong-orangepi-5-plus
-          - xunlong-orangepi-5
-          - hinlink-h88k
-          - jwipc-e88a
-          - friendlyelec-cm3588-nas
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: docker/setup-qemu-action@v3
-    - uses: cachix/install-nix-action@v31
-      with:
-        enable_kvm: true
-        extra_nix_config: |
-          extra-platforms = aarch64-linux
-          experimental-features = nix-command flakes
-          system-features = nixos-test benchmark big-parallel kvm
-    - name: Set Swap Space
-      uses: pierotofy/set-swap-space@master
-      with:
-        swap-size-gb: 32
-    - name: Build image
-      run: nix build .#nixos-${{ matrix.device }} --accept-flake-config
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: image-${{ matrix.device }}
-        path: result/*.xz
+    images:
+        strategy:
+            fail-fast: false
+            matrix:
+                device:
+                    - x86_64-generic
+                    - x86_64-uefi
+                    - aarch64-uefi
+                    - hinlink-h88k
+                    - jwipc-e88a
+                    - radxa-rock-5t
+                    # - friendly-nanopc-t6
+                    # - radxa-rock-5a
+                    # - radxa-rock-5b
+                    # - xunlong-orangepi-5-plus
+                    # - xunlong-orangepi-5
+                    # - friendlyelec-cm3588-nas
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: docker/setup-qemu-action@v3
+            - uses: cachix/install-nix-action@v31
+              with:
+                  enable_kvm: true
+                  extra_nix_config: |
+                      extra-platforms = aarch64-linux
+                      experimental-features = nix-command flakes
+                      system-features = nixos-test benchmark big-parallel kvm
+            - name: Set Swap Space
+              uses: pierotofy/set-swap-space@master
+              with:
+                  swap-size-gb: 32
+            - name: Build image
+              run: nix build .#nixos-${{ matrix.device }} --accept-flake-config
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: image-${{ matrix.device }}
+                  path: result/*.xz
 
-  release:
-    needs: images   # ← create release ONLY after all succeed
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v4
+    release:
+        needs: images # ← create release ONLY after all succeed
+        runs-on: ubuntu-latest
+        permissions: write-all
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
+            - name: Download all artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  path: artifacts
 
-      - name: Create release if not exists
-        run: |
-          if ! gh release view ${{ inputs.release }}; then
-            gh release create ${{ inputs.release }} --title ${{ inputs.release }}
-          fi
+            - name: Create release if not exists
+              run: |
+                  if ! gh release view ${{ inputs.release }}; then
+                    gh release create ${{ inputs.release }} --title ${{ inputs.release }}
+                  fi
 
-      - name: Upload images to release
-        run: |
-          gh release upload ${{ inputs.release }} artifacts/**/*
+            - name: Upload images to release
+              run: |
+                  gh release upload ${{ inputs.release }} artifacts/**/*
