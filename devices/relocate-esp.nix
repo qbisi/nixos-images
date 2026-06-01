@@ -7,8 +7,8 @@
 }:
 let
   cfg = config.boot.espRelocation;
-  espPartition = config.disko.devices.disk.main.content.partitions.ESP;
-  espMountUnit = "${utils.escapeSystemdPath espPartition.content.mountpoint}.mount";
+  espMountPoint = config.boot.loader.efi.efiSysMountPoint;
+  espMountUnit = "${utils.escapeSystemdPath espMountPoint}.mount";
 in
 {
   options = {
@@ -41,13 +41,16 @@ in
           RemainAfterExit = true;
         };
         path = with pkgs; [
+          coreutils
+          gawk
           gptfdisk
+          gnused
           util-linux
         ];
         script = ''
           set -euo pipefail
 
-          espDeviceSpec="${espPartition.device}"
+          espDeviceSpec="${config.fileSystems.${espMountPoint}.device}"
           espDevice="$(readlink -f "$espDeviceSpec")"
           parentDevice="$espDevice"
           while [ "''${parentDevice%[0-9]}" != "''${parentDevice}" ]; do
@@ -59,16 +62,24 @@ in
           fi
           espBackup="/tmp/relocate-esp.img"
 
+          espPartitionInfo="$(sgdisk --info="$espPartNum" "$parentDevice")"
+          espPartitionLabel="$(printf '%s\n' "$espPartitionInfo" | sed -n "s/^Partition name: '\(.*\)'$/\1/p")"
+          espTypeCode="$(printf '%s\n' "$espPartitionInfo" | awk '/^Partition GUID code:/ { print $4 }')"
+          espAttributes="$(printf '%s\n' "$espPartitionInfo" | awk '/^Attribute flags:/ { print $3 }')"
+
           dd if="$espDevice" of="$espBackup" bs=4M conv=fsync status=none
+          sectorSize="$(blockdev --getss "$parentDevice")"
+          espSizeBytes="$(stat --printf=%s "$espBackup")"
+          espSize="$(((espSizeBytes + sectorSize - 1) / sectorSize))"
 
           sgdisk --move-second-header "$parentDevice"
           sgdisk --delete="$espPartNum" "$parentDevice"
           sgdisk \
             --align-end \
-            --new="$espPartNum:${espPartition.start}:${espPartition.end}" \
-            --change-name="$espPartNum:${espPartition.label}" \
-            --typecode="$espPartNum:EF00" \
-            --attributes="$espPartNum:=:0" \
+            --new="$espPartNum:-$espSize:+$espSize" \
+            --change-name="$espPartNum:$espPartitionLabel" \
+            --typecode="$espPartNum:$espTypeCode" \
+            --attributes="$espPartNum:=:$espAttributes" \
             "$parentDevice"
 
           partx --update --nr "$espPartNum" "$parentDevice"
