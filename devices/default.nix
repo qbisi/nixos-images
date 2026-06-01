@@ -18,7 +18,7 @@
           }
           path
           self.nixosModules.default
-          self.nixosModules.bootstrap
+          ./bootstrap.nix
         ];
       };
     directory = ./by-name;
@@ -45,10 +45,11 @@
                 {
                   disko.bootImage.imageName = lib.removeSuffix ".nix" (baseNameOf path);
                   disko.imageBuilder.pkgs = pkgs;
+                  boot.loader.grub.btrfsPackage = pkgs.btrfs-progs;
                 }
                 path
                 self.nixosModules.default
-                self.nixosModules.bootstrap
+                ./bootstrap.nix
               ];
             };
           in

@@ -20,6 +20,7 @@
           ./overlay/hardware/device-tree.nix
           ./desktop-managers/plasma6.nix
           ./services/usb-rndis.nix
+          ./system/grow-partition.nix
           inputs.disko.nixosModules.default
         ];
 
@@ -30,7 +31,6 @@
 
         system.stateVersion = lib.mkDefault (lib.strings.fileContents "${inputs.nixpkgs}/lib/.version");
       };
-      bootstrap = import ./bootstrap.nix;
     };
   };
 }

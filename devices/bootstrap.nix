@@ -1,16 +1,14 @@
 {
   config,
   lib,
-  pkgs,
   modulesPath,
   ...
 }:
 {
   imports = [
     "${modulesPath}/profiles/minimal.nix"
-    ./config/passless.nix
-    ./system/grow-partition.nix
-    ./system/relocate-esp.nix
+    ./passless.nix
+    ./relocate-esp.nix
   ];
 
   nixpkgs.flake = {
@@ -19,10 +17,8 @@
   };
 
   boot = {
-    bcache.enable = lib.mkDefault false;
-    loader.grub.btrfsPackage = config.disko.imageBuilder.pkgs.btrfs-progs;
     growPartition.enable = true;
-    initrd.availableKernelModules = [
+    initrd.availableKernelModules = lib.mkIf config.hardware.enableAllHardware [
       "mpt3sas"
       "hv_storvsc"
     ];
@@ -30,22 +26,14 @@
 
   hardware.enableAllHardware = lib.mkDefault config.boot.kernelPackages.kernel.configfile.autoModules;
 
-  networking = {
-    firewall.enable = false;
-    useNetworkd = true;
-  };
-
   services = {
     usb-rndis.enable = true;
   };
 
   nix.settings = {
-    substituters = lib.mkForce [ ];
     experimental-features = [
       "nix-command"
       "flakes"
     ];
   };
-
-  system.stateVersion = config.system.nixos.release;
 }

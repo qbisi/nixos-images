@@ -103,7 +103,6 @@ in
     boot.loader = lib.mkIf cfg.enableESP {
       efi.efiSysMountPoint = "/boot/efi";
       grub = {
-        device = "nodev";
         efiSupport = true;
         efiInstallAsRemovable = true;
       };
