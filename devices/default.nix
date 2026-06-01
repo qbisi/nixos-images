@@ -40,7 +40,6 @@
               modules = [
                 {
                   disko.imageBuilder.pkgs = pkgs;
-                  boot.loader.grub.btrfsPackage = pkgs.btrfs-progs;
                 }
               ];
             };

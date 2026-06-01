@@ -109,20 +109,6 @@ in
     };
 
     disko = {
-      memSize = lib.mkDefault 4096;
-
-      imageBuilder = {
-        enableBinfmt = true;
-        kernelPackages = config.disko.imageBuilder.pkgs.linuxPackages;
-        extraPostVM = lib.mkAfter ''
-          ${config.disko.imageBuilder.pkgs.xz}/bin/xz -z $out/*${config.disko.imageBuilder.imageFormat}
-        '';
-      };
-
-      bootImage.partLabel = lib.mkIf (builtins.getEnv "PARTLABEL" != "") (
-        lib.mkForce (builtins.getEnv "PARTLABEL")
-      );
-
       devices = {
         disk.main = {
           name = cfg.partLabel;
