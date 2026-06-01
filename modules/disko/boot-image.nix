@@ -109,6 +109,7 @@ in
                 ESP = {
                   start = "-${cfg.espSize}";
                   size = cfg.espSize;
+                  alignment = 1;
                   type = "EF00";
                   priority = 1;
                   content = {

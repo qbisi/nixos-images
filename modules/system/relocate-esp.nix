@@ -13,9 +13,7 @@ in
 {
   options = {
     boot.espRelocation = {
-      enable = lib.mkEnableOption "esp part relocation in gpt disk" // {
-        default = true;
-      };
+      enable = lib.mkEnableOption "esp part relocation in gpt disk";
     };
   };
 
@@ -41,10 +39,8 @@ in
           RemainAfterExit = true;
         };
         path = with pkgs; [
-          coreutils
           gawk
           gptfdisk
-          gnused
           util-linux
         ];
         script = ''
@@ -67,7 +63,7 @@ in
           espTypeCode="$(printf '%s\n' "$espPartitionInfo" | awk '/^Partition GUID code:/ { print $4 }')"
           espAttributes="$(printf '%s\n' "$espPartitionInfo" | awk '/^Attribute flags:/ { print $3 }')"
 
-          dd if="$espDevice" of="$espBackup" bs=4M conv=fsync status=none
+          dd if="$espDevice" of="$espBackup" bs=1M conv=fsync status=none
           sectorSize="$(blockdev --getss "$parentDevice")"
           espSizeBytes="$(stat --printf=%s "$espBackup")"
           espSize="$(((espSizeBytes + sectorSize - 1) / sectorSize))"
@@ -75,7 +71,7 @@ in
           sgdisk --move-second-header "$parentDevice"
           sgdisk --delete="$espPartNum" "$parentDevice"
           sgdisk \
-            --align-end \
+            --set-alignment=1 \
             --new="$espPartNum:-$espSize:+$espSize" \
             --change-name="$espPartNum:$espPartitionLabel" \
             --typecode="$espPartNum:$espTypeCode" \
@@ -86,7 +82,7 @@ in
           udevadm settle --timeout=30
           espDevice="$(readlink -f "$espDeviceSpec")"
 
-          dd if="$espBackup" of="$espDevice" bs=4M conv=fsync status=none
+          dd if="$espBackup" of="$espDevice" bs=1M conv=fsync status=none
         '';
       };
     };

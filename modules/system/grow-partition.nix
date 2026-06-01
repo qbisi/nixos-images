@@ -11,7 +11,6 @@
 
 let
   cfg = config.boot.growPartition;
-  relocateESP = config.systemd.services.relocate-esp.enable or false;
   rootFsType = config.fileSystems.${cfg.mountPoint}.fsType or null;
   rootIsBtrfs = rootFsType == "btrfs";
   rootIsExt = builtins.elem rootFsType [
@@ -57,8 +56,7 @@ in
     ];
     systemd.services.growpart = {
       wantedBy = [ "-.mount" ];
-      requires = lib.optional relocateESP "relocate-esp.service";
-      after = [ "-.mount" ] ++ lib.optional relocateESP "relocate-esp.service";
+      after = [ "-.mount" ];
       before = [
         "systemd-growfs-root.service"
         "shutdown.target"

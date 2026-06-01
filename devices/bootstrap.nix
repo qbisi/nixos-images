@@ -8,7 +8,6 @@
   imports = [
     "${modulesPath}/profiles/minimal.nix"
     ./passless.nix
-    ./relocate-esp.nix
   ];
 
   nixpkgs.flake = {
@@ -35,6 +34,7 @@
 
   boot = {
     growPartition.enable = true;
+    espRelocation.enable = true;
     loader.grub.btrfsPackage = config.disko.imageBuilder.pkgs.btrfs-progs;
     initrd.availableKernelModules = lib.mkIf config.hardware.enableAllHardware [
       "mpt3sas"
