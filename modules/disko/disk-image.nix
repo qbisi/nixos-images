@@ -68,6 +68,12 @@ in
         description = "esp partition size";
       };
 
+      efiSysMountPoint = lib.mkOption {
+        default = "/boot/efi";
+        type = lib.types.str;
+        description = "Where the EFI System Partition is mounted.";
+      };
+
       _primaryContent = lib.mkOption {
         type = lib.types.nullOr lib.types.attrs;
         internal = true;
@@ -78,11 +84,11 @@ in
 
   config = lib.mkIf (config.disko.enableConfig && cfg.fileSystem != null) {
     boot.loader = {
-      efi.efiSysMountPoint = "/boot/efi";
+      efi.efiSysMountPoint = cfg.efiSysMountPoint;
       grub = {
+        device = lib.mkIf cfg.enableBiosBoot config.disko.devices.disk.main.device;
         efiSupport = true;
         efiInstallAsRemovable = true;
-        device = lib.mkIf cfg.enableBiosBoot config.disko.devices.disk.main.device;
       };
     };
 
@@ -114,22 +120,19 @@ in
                   content = {
                     type = "filesystem";
                     format = "vfat";
-                    mountpoint = "/boot/efi";
+                    mountpoint = cfg.efiSysMountPoint;
                     mountOptions = [
                       "fmask=0077"
                       "dmask=0077"
                     ];
                   };
                 };
-              }
-
-              (lib.mkIf (cfg._primaryContent != null) {
                 nix = {
                   start = lib.mkIf (cfg.primaryStart != null) cfg.primaryStart;
                   size = "100%";
                   content = cfg._primaryContent;
                 };
-              })
+              }
             ];
           };
         };
