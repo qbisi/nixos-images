@@ -53,11 +53,7 @@
               ];
             };
           in
-          nixosSystem.config.system.build.diskoImages
-          // lib.optionalAttrs (nixosSystem.config.hardware.deviceTree.dtsFile != null) {
-            dtb = nixosSystem.config.hardware.deviceTree.package;
-            uboot = nixosSystem.config.disko.bootImage.uboot.package;
-          };
+          nixosSystem.config.system.build.diskoImages;
         directory = ./by-name;
       };
     };
