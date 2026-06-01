@@ -22,9 +22,9 @@
     imageBuilder = {
       enableBinfmt = true;
       kernelPackages = config.disko.imageBuilder.pkgs.linuxPackages;
-      extraPostVM = lib.mkAfter ''
-        ${config.disko.imageBuilder.pkgs.xz}/bin/xz -z $out/*${config.disko.imageBuilder.imageFormat}
-      '';
+      # extraPostVM = lib.mkAfter ''
+      #   ${config.disko.imageBuilder.pkgs.xz}/bin/xz -z $out/*${config.disko.imageBuilder.imageFormat}
+      # '';
     };
 
     bootImage = {
