@@ -11,18 +11,13 @@
         disabledModules = [
           "system/boot/loader/grub/grub.nix"
           "hardware/device-tree.nix"
+          __curPos.file
         ];
 
         imports = [
-          ./disko/disk-image.nix
-          ./hardware/serial.nix
-          ./overlay/system/boot/loader/grub.nix
-          ./overlay/hardware/device-tree.nix
-          ./desktop-managers/plasma6.nix
-          ./services/usb-rndis.nix
-          ./system/grow-partition.nix
           inputs.disko.nixosModules.default
-        ];
+        ]
+        ++ lib.filter (p: lib.hasSuffix ".nix" p) (lib.filesystem.listFilesRecursive ./.);
 
         nixpkgs.overlays = [
           self.overlays.default

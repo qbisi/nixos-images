@@ -9,12 +9,6 @@ let
   cfg = config.disko.bootImage;
 in
 {
-  imports = [
-    ./ext4.nix
-    ./btrfs.nix
-    ./uboot.nix
-  ];
-
   options = {
     disko.bootImage = {
       fileSystem = lib.mkOption {
