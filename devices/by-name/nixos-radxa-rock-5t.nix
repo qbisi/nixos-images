@@ -16,7 +16,6 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      enableESP = true;
       partLabel = "nvme";
       fileSystem = "ext4";
       primaryStart = "1M";
@@ -80,8 +79,6 @@
     ];
     consoleLogLevel = 6;
     loader.timeout = 0;
-    loader.grub.enable = config.disko.bootImage.enableESP;
-    loader.generic-extlinux-compatible.enable = !config.disko.bootImage.enableESP;
   };
 
 }

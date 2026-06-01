@@ -16,7 +16,6 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      enableESP = true;
       fileSystem = "ext4";
       primaryStart = "16M";
       uboot.enable = true;
@@ -78,8 +77,6 @@
     ];
     consoleLogLevel = 6;
     loader.timeout = 0;
-    loader.grub.enable = config.disko.bootImage.enableESP;
-    loader.generic-extlinux-compatible.enable = !config.disko.bootImage.enableESP;
   };
 
 }

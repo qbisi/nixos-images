@@ -30,10 +30,6 @@ in
 
       enableBiosBoot = lib.mkEnableOption "biosboot partition in gpt disk";
 
-      enableESP = lib.mkEnableOption "efi partition in gpt disk" // {
-        default = true;
-      };
-
       imageSize = lib.mkOption {
         type = lib.types.strMatching "[0-9]+[KMGTP]?";
         description = ''
@@ -59,14 +55,6 @@ in
         '';
       };
 
-      type = lib.mkOption {
-        type = lib.types.str;
-        default = "gpt";
-        description = ''
-          disk partition type.
-        '';
-      };
-
       primaryStart = lib.mkOption {
         type = lib.types.nullOr (lib.types.strMatching "[0-9]+[KMGTP]?");
         default = null;
@@ -89,22 +77,12 @@ in
   };
 
   config = lib.mkIf (config.disko.enableConfig && cfg.fileSystem != null) {
-    assertions = [
-      {
-        assertion = cfg.enableBiosBoot -> cfg.type == "gpt";
-        message = "biosboot partition requires gpt disk type.";
-      }
-      {
-        assertion = cfg.enableESP -> cfg.type == "gpt";
-        message = "efi partition requires gpt disk type.";
-      }
-    ];
-
-    boot.loader = lib.mkIf cfg.enableESP {
+    boot.loader = {
       efi.efiSysMountPoint = "/boot/efi";
       grub = {
         efiSupport = true;
         efiInstallAsRemovable = true;
+        device = lib.mkIf cfg.enableBiosBoot config.disko.devices.disk.main.device;
       };
     };
 
@@ -114,14 +92,10 @@ in
           name = cfg.partLabel;
           imageName = cfg.imageName;
           imageSize = cfg.imageSize;
-          device =
-            let
-              device = config.boot.loader.grub.device;
-            in
-            if (device != "nodev") then device else "/dev/disk/by-diskseq/1";
+          device = "/dev/disk/by-diskseq/1";
           type = "disk";
           content = {
-            type = cfg.type;
+            type = "gpt";
             partitions = lib.mkMerge [
               (lib.mkIf cfg.enableBiosBoot {
                 boot = {
@@ -131,7 +105,7 @@ in
                 };
               })
 
-              (lib.mkIf cfg.enableESP {
+              {
                 ESP = {
                   start = "-${cfg.espSize}";
                   size = cfg.espSize;
@@ -147,7 +121,7 @@ in
                     ];
                   };
                 };
-              })
+              }
 
               (lib.mkIf (cfg._primaryContent != null) {
                 nix = {

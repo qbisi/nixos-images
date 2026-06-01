@@ -16,7 +16,6 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      # enableESP = false;
       fileSystem = "ext4";
       primaryStart = "16M";
       uboot.enable = true;

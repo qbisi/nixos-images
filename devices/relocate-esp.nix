@@ -14,7 +14,7 @@ in
   options = {
     boot.espRelocation = {
       enable = lib.mkEnableOption "esp part relocation in gpt disk" // {
-        default = config.disko.bootImage.enableESP;
+        default = true;
       };
     };
   };
