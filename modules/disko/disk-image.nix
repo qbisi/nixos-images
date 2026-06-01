@@ -148,7 +148,7 @@ in
               (lib.mkIf cfg.enableESP {
                 ESP = {
                   start = "-${cfg.espSize}";
-                  size = "100%";
+                  size = cfg.espSize;
                   type = "EF00";
                   priority = 1;
                   content = {
