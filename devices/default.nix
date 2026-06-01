@@ -26,10 +26,8 @@
 
   perSystem =
     {
-      config,
       pkgs,
       lib,
-      system,
       ...
     }:
     {
@@ -37,19 +35,13 @@
         callPackage =
           path: _:
           let
-            nixosSystem = lib.nixosSystem {
-              specialArgs = {
-                inherit inputs self;
-              };
+            device = lib.removeSuffix ".nix" (baseNameOf path);
+            nixosSystem = self.nixosConfigurations."${device}".extendModules {
               modules = [
                 {
-                  disko.bootImage.imageName = lib.removeSuffix ".nix" (baseNameOf path);
                   disko.imageBuilder.pkgs = pkgs;
                   boot.loader.grub.btrfsPackage = pkgs.btrfs-progs;
                 }
-                path
-                self.nixosModules.default
-                ./bootstrap.nix
               ];
             };
           in
