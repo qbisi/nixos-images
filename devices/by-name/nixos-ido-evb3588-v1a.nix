@@ -16,7 +16,7 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      fileSystem = "ext4";
+      fileSystem = "btrfs";
       primaryStart = "16M";
       uboot.enable = true;
       uboot.package = pkgs.buildUBootRk3588 {

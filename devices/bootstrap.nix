@@ -32,7 +32,7 @@ in
     extraDependencies = flakeOutPaths;
     systemBuilderCommands = lib.mkAfter ''
       mkdir -p $out/nixos-config
-      cp -r ${self}/ $out/nixos-config
+      cp -r ${self}/* $out/nixos-config
     '';
   };
 
@@ -48,7 +48,7 @@ in
     };
 
     bootImage = {
-      imageSize = "4G";
+      imageSize = "2G";
       partLabel = lib.mkIf (builtins.getEnv "PARTLABEL" != "") (builtins.getEnv "PARTLABEL");
     };
   };
