@@ -16,7 +16,6 @@
     bootImage = {
       uboot.package = pkgs.buildUBootRk3588 {
         withSpi = true;
-        withNvme = true;
         dtsFile = config.hardware.deviceTree.dtsFile;
       };
     };

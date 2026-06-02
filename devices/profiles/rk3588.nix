@@ -17,7 +17,6 @@
         seek = 64;
         package = lib.mkDefault (
           pkgs.buildUBootRk3588 {
-            withNvme = true;
             dtsFile = config.hardware.deviceTree.dtsFile;
           }
         );

@@ -99,7 +99,7 @@ self: pkgs: {
       withLog ? false,
       withSpi ? false,
       withUsb ? withMenu,
-      withNvme ? false,
+      withNvme ? true,
       withDrm ? withMenu,
       withRecovery ? true,
       ...
