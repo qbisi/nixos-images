@@ -42,8 +42,4 @@
   };
 
   hardware.enableAllHardware = lib.mkDefault config.boot.kernelPackages.kernel.configfile.autoModules;
-
-  services = {
-    # usb-rndis.enable = true;
-  };
 }
