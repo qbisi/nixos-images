@@ -40,6 +40,9 @@
 
   boot = {
     kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18);
+    kernelParams = [
+      "net.ifnames=0"
+    ];
     initrd.allowMissingModules = !config.boot.kernelPackages.kernel.configfile.autoModules;
   };
 

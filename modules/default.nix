@@ -23,6 +23,14 @@
           self.overlays.default
           (import ../overlays.nix)
         ];
+
+        # the only explicit change to the default NixOS config cause we need Nix flakes support
+        nix.settings = {
+          experimental-features = [
+            "nix-command"
+            "flakes"
+          ];
+        };
       };
     };
   };

@@ -1,7 +1,6 @@
 {
   imports = [
     ../btrfs.nix
-    ../common.nix
   ];
 
   nixpkgs = {

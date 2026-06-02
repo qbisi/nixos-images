@@ -8,7 +8,6 @@
   imports = [
     ../rockchip-rk3588.nix
     ../btrfs.nix
-    ../common.nix
   ];
 
   networking.hostName = lib.mkDefault "e88a";
