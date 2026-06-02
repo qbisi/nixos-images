@@ -28,7 +28,7 @@
     enableAllHardware = false;
     wirelessRegulatoryDatabase = true;
     firmware = [
-      pkgs.linux-firmware
+      pkgs.rockchip-firmware
     ];
     serial = {
       enable = true;
