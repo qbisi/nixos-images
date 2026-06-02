@@ -6,8 +6,8 @@
 }:
 {
   imports = [
-    ../rockchip-rk3588.nix
-    ../btrfs.nix
+    ../profiles/rk3588.nix
+    ../profiles/btrfs.nix
   ];
 
   networking.hostName = lib.mkDefault "f88q";

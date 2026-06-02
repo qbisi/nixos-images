@@ -6,7 +6,7 @@
 }:
 {
   imports = [
-    ../rockchip-rk3588.nix
+    ../profiles/rk3588.nix
     ../ext4.nix
   ];
 

@@ -1,6 +1,6 @@
 {
   imports = [
-    ../btrfs.nix
+    ../profiles/btrfs.nix
   ];
 
   nixpkgs = {
