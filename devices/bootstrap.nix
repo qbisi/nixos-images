@@ -9,14 +9,9 @@
     "${modulesPath}/profiles/minimal.nix"
   ];
 
-  nixpkgs.flake = {
-    setFlakeRegistry = false;
-    setNixPath = false;
-  };
-
   system = {
     passless.enable = true;
-    symlinkConfig.enable = true;
+    # symlinkConfig.enable = true;
   };
 
   disko = {
@@ -49,13 +44,6 @@
   hardware.enableAllHardware = lib.mkDefault config.boot.kernelPackages.kernel.configfile.autoModules;
 
   services = {
-    usb-rndis.enable = true;
-  };
-
-  nix.settings = {
-    experimental-features = [
-      "nix-command"
-      "flakes"
-    ];
+    # usb-rndis.enable = true;
   };
 }
