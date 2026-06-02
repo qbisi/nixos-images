@@ -11,7 +11,7 @@
     ../profiles/desktop.nix
   ];
 
-  system.symlinkConfig = true;
+  system.symlinkConfig.enable = true;
 
   services = {
     openssh = {
@@ -37,5 +37,9 @@
         ];
       };
     };
+  };
+
+  nix.settings = {
+    trusted-users = [ config.users.users.admin.name ];
   };
 }

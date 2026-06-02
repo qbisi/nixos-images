@@ -25,7 +25,6 @@
         lib.unique (lib.flatten (collector self));
 
       systemBuilderCommands = lib.mkAfter ''
-        mkdir -p $out/nixos-config
         ln -s ${self} $out/nixos-config
       '';
     };
