@@ -7,7 +7,7 @@
 {
   imports = [
     ../profiles/rk3588.nix
-    ../ext4.nix
+    ../profiles/btrfs.nix
   ];
 
   networking.hostName = lib.mkDefault "v1a";
