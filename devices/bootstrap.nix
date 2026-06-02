@@ -16,7 +16,7 @@
 
   system = {
     passless.enable = true;
-    symlinkConfig = true;
+    symlinkConfig.enable = true;
   };
 
   disko = {

@@ -11,7 +11,7 @@
     };
   };
 
-  config = lib.mkIf config.system.symlinkConfig {
+  config = lib.mkIf config.system.symlinkConfig.enable {
     system = {
       extraDependencies =
         let
