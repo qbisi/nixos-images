@@ -7,7 +7,6 @@
 {
   imports = [
     "${modulesPath}/profiles/minimal.nix"
-    ./passless.nix
   ];
 
   nixpkgs.flake = {
@@ -15,7 +14,10 @@
     setNixPath = false;
   };
 
-  system.symlinkConfig = true;
+  system = {
+    passless.enable = true;
+    symlinkConfig = true;
+  };
 
   disko = {
     memSize = lib.mkDefault 4096;
