@@ -32,7 +32,7 @@
               # SSH to llmnr hosts need retry to wait for hostname resolution.
               # Requires colmena version > 0.5.0.
               deployment = {
-                targetHost = "10.0.10.1";
+                targetHost = lib.mkIf config.services.usb-rndis.enable config.services.usb-rndis.ipv4Address;
                 sshOptions = [ "-o ConnectionAttempts=2" ];
               };
               system.passless.enable = true;

@@ -377,7 +377,3 @@
 		};
 	};
 };
-
-&hdmi0 {
-	status = "disabled";
-};

@@ -74,7 +74,7 @@ in
     boot.loader = {
       efi.efiSysMountPoint = cfg.efiSysMountPoint;
       grub = {
-        device = lib.mkIf cfg.enableBiosBoot config.disko.devices.disk.main.device;
+        device = if cfg.enableBiosBoot then config.disko.devices.disk.main.device else "nodev";
         efiSupport = true;
         efiInstallAsRemovable = true;
       };

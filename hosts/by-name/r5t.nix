@@ -3,8 +3,6 @@
   pkgs,
   lib,
   self,
-  inputs,
-  inputs',
   ...
 }:
 {

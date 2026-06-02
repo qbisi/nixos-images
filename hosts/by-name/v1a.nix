@@ -3,21 +3,9 @@
   pkgs,
   lib,
   self,
-  inputs,
-  inputs',
   ...
 }:
 {
-  deployment = {
-    targetHost = "10.0.10.1";
-    targetUser = "root";
-    buildOnTarget = false;
-  };
-
-  nixpkgs = {
-    config.allowUnfree = true;
-  };
-
   imports = [
     "${self}/devices/by-name/nixos-ido-evb3588-v1a.nix"
   ];
@@ -26,61 +14,11 @@
     graphics.enable = true;
   };
 
-  networking = {
-    firewall.enable = false;
-    nftables.enable = true;
-    nameservers = [ "223.5.5.5" ];
-    networkmanager.enable = true;
-    modemmanager.enable = true;
-  };
-
   services = {
-    usb-rndis.enable = true;
-  };
-
-  i18n.defaultLocale = "zh_CN.UTF-8";
-
-  users = {
-    defaultUserShell = pkgs.zsh;
-    users = {
-      admin = {
-        name = "nix";
-        initialPassword = "1234";
-        uid = 1000;
-        isNormalUser = true;
-        linger = true;
-        extraGroups = [
-          "wheel"
-          "root"
-          "video"
-          "audio"
-          "dialout"
-        ];
-      };
-    };
-  };
-
-  programs = {
-    zsh = {
+    cage = {
       enable = true;
-      autosuggestions.enable = true;
-      syntaxHighlighting.enable = true;
-    };
-  };
-
-  environment.systemPackages = with pkgs; [
-    iperf3
-  ];
-
-  documentation.enable = false;
-
-  nix = {
-    settings = {
-      substituters = lib.mkForce [ ];
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
+      program = "${pkgs.configuration}/bin/configuration";
+      user = "root";
     };
   };
 }
