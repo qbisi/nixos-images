@@ -41,7 +41,7 @@ in
 
       partLabel = lib.mkOption {
         type = lib.types.str;
-        default = "main";
+        default = if (builtins.getEnv "PARTLABEL" != "") then (builtins.getEnv "PARTLABEL") else "main";
         example = "nvme";
         description = ''
           Disko use partlabel to identify and mount disk, use different partlabel
@@ -68,6 +68,12 @@ in
         description = "Where the EFI System Partition is mounted.";
       };
 
+      enableCompression = lib.mkOption {
+        type = lib.types.bool;
+        default = if (builtins.getEnv "DISKO_COMPRESS" != "1") then false else true;
+        description = "final disko image compression";
+      };
+
       _primaryContent = lib.mkOption {
         type = lib.types.nullOr lib.types.attrs;
         internal = true;
@@ -87,6 +93,12 @@ in
     };
 
     disko = {
+      imageBuilder.extraPostVM = lib.mkIf cfg.enableCompression (
+        lib.mkAfter ''
+          ${config.disko.imageBuilder.pkgs.xz}/bin/xz -z $out/${cfg.imageName}.${config.disko.imageBuilder.imageFormat}
+        ''
+      );
+
       devices = {
         disk.main = {
           name = cfg.partLabel;
