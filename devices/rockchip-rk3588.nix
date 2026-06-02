@@ -25,6 +25,8 @@
   };
 
   hardware = {
+    enableAllHardware = false;
+    wirelessRegulatoryDatabase = true;
     firmware = [
       pkgs.linux-firmware
     ];

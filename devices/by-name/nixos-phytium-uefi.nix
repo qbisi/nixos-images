@@ -1,21 +1,16 @@
 {
+  lib,
   pkgs,
   ...
 }:
 {
   imports = [
-    ../common.nix
+    ../aarch64-uefi.nix
   ];
 
-  nixpkgs = {
-    system = "aarch64-linux";
-  };
-
-  disko = {
-    bootImage.fileSystem = "btrfs";
-  };
+  hardware.enableAllHardware = false;
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_phytium_6_6;
+    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_phytium_6_6);
   };
 }

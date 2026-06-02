@@ -41,5 +41,5 @@
     ];
   };
 
-  hardware.enableAllHardware = lib.mkDefault config.boot.kernelPackages.kernel.configfile.autoModules;
+  hardware.enableAllHardware = lib.mkDefault true;
 }
