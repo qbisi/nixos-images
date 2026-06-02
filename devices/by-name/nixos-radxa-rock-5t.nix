@@ -13,7 +13,6 @@
   networking.hostName = lib.mkDefault "r5t";
 
   disko = {
-    enableConfig = true;
     bootImage = {
       uboot.package = pkgs.buildUBootRk3588 {
         withSpi = true;
