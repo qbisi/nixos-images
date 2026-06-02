@@ -7,7 +7,7 @@
 }:
 {
   imports = [
-    "${self}/devices/by-name/nixos-firefly-aio-3588q.nix"
+    ../../devices/by-name/nixos-firefly-aio-3588q.nix
   ];
 
   hardware = {

@@ -46,13 +46,6 @@
 
         flake = {
           overlays.default = final: prev: self.packages."${prev.stdenv.hostPlatform.system}" or { };
-
-          templates = {
-            default = {
-              path = ./templates;
-              description = "init template";
-            };
-          };
         };
 
         perSystem =

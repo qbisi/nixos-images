@@ -7,7 +7,7 @@
 }:
 {
   imports = [
-    "${self}/devices/by-name/nixos-radxa-rock-5t.nix"
+    ../../devices/by-name/nixos-radxa-rock-5t.nix
   ];
 
   boot = {

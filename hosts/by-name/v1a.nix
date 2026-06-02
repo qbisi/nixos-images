@@ -7,18 +7,35 @@
 }:
 {
   imports = [
-    "${self}/devices/by-name/nixos-ido-evb3588-v1a.nix"
+    ../../devices/by-name/nixos-ido-evb3588-v1a.nix
+    ../profiles/desktop.nix
   ];
 
-  hardware = {
-    graphics.enable = true;
-  };
+  system.symlinkConfig = true;
 
   services = {
-    cage = {
+    openssh = {
       enable = true;
-      program = "${pkgs.configuration}/bin/configuration";
-      user = "root";
+      openFirewall = true;
+    };
+  };
+
+  users = {
+    users = {
+      admin = {
+        name = "nix";
+        initialPassword = "1234";
+        uid = 1000;
+        isNormalUser = true;
+        linger = true;
+        extraGroups = [
+          "wheel"
+          "root"
+          "video"
+          "audio"
+          "dialout"
+        ];
+      };
     };
   };
 }
