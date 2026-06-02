@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   modulesPath,
   ...
 }:
@@ -15,15 +16,9 @@
   };
 
   disko = {
-    memSize = lib.mkDefault 4096;
-
     imageBuilder = {
-      enableBinfmt = true;
+      enableBinfmt = config.disko.imageBuilder.pkgs != pkgs;
       kernelPackages = config.disko.imageBuilder.pkgs.linuxPackages;
-    };
-
-    bootImage = {
-      imageSize = "2G";
     };
   };
 

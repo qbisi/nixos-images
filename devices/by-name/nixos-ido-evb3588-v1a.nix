@@ -7,17 +7,11 @@
 {
   imports = [
     ../rockchip-rk3588.nix
+    ../ext4.nix
     ../common.nix
   ];
 
   networking.hostName = lib.mkDefault "v1a";
-
-  disko = {
-    enableConfig = true;
-    bootImage = {
-      fileSystem = "btrfs";
-    };
-  };
 
   hardware = {
     deviceTree = {

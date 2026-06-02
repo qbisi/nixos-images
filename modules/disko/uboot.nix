@@ -24,7 +24,7 @@ in
     };
   };
 
-  config = lib.mkIf (cfg.fileSystem != null && cfg.uboot.enable) {
+  config = lib.mkIf (cfg.primaryContent != null && cfg.uboot.enable) {
     assertions = [
       {
         assertion = cfg.uboot.package != null;

@@ -11,18 +11,13 @@ in
 {
   options = {
     disko.bootImage = {
-      fileSystem = lib.mkOption {
-        type = lib.types.nullOr (
-          lib.types.enum [
-            "ext4"
-            "btrfs"
-          ]
-        );
-        default = null;
-        description = "disko preset bootImage to use";
-      };
-
       enableBiosBoot = lib.mkEnableOption "biosboot partition in gpt disk";
+
+      enableCompression = lib.mkOption {
+        type = lib.types.bool;
+        default = if (builtins.getEnv "DISKO_COMPRESS" != "1") then false else true;
+        description = "final disko image compression";
+      };
 
       imageSize = lib.mkOption {
         type = lib.types.strMatching "[0-9]+[KMGTP]?";
@@ -68,21 +63,14 @@ in
         description = "Where the EFI System Partition is mounted.";
       };
 
-      enableCompression = lib.mkOption {
-        type = lib.types.bool;
-        default = if (builtins.getEnv "DISKO_COMPRESS" != "1") then false else true;
-        description = "final disko image compression";
-      };
-
-      _primaryContent = lib.mkOption {
+      primaryContent = lib.mkOption {
         type = lib.types.nullOr lib.types.attrs;
-        internal = true;
         default = null;
       };
     };
   };
 
-  config = lib.mkIf (config.disko.enableConfig && cfg.fileSystem != null) {
+  config = lib.mkIf (config.disko.enableConfig && cfg.primaryContent != null) {
     boot.loader = {
       efi.efiSysMountPoint = cfg.efiSysMountPoint;
       grub = {
@@ -137,7 +125,7 @@ in
                 nix = {
                   start = lib.mkIf (cfg.primaryStart != null) cfg.primaryStart;
                   size = "100%";
-                  content = cfg._primaryContent;
+                  content = cfg.primaryContent;
                 };
               }
             ];

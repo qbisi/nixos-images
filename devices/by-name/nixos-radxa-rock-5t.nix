@@ -7,6 +7,7 @@
 {
   imports = [
     ../rockchip-rk3588.nix
+    ../btrfs.nix
     ../common.nix
   ];
 
@@ -15,7 +16,6 @@
   disko = {
     enableConfig = true;
     bootImage = {
-      fileSystem = "btrfs";
       uboot.package = pkgs.buildUBootRk3588 {
         withSpi = true;
         withNvme = true;

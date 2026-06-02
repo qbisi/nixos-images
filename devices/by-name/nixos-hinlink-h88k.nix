@@ -7,17 +7,11 @@
 {
   imports = [
     ../rockchip-rk3588.nix
+    ../btrfs.nix
     ../common.nix
   ];
 
   networking.hostName = lib.mkDefault "h88k";
-
-  disko = {
-    enableConfig = true;
-    bootImage = {
-      fileSystem = "btrfs";
-    };
-  };
 
   hardware = {
     deviceTree = {

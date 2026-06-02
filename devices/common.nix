@@ -1,8 +1,4 @@
 {
-  disko = {
-    enableConfig = true;
-  };
-
   hardware = {
     serial.enable = true;
   };
