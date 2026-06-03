@@ -11,9 +11,9 @@
 
   disko = {
     bootImage = {
-      primaryStart = "16M";
+      primaryStart = lib.mkIf config.disko.bootImage.uboot.enable "16M";
       uboot = {
-        enable = true;
+        enable = lib.mkDefault true;
         seek = 64;
         package = lib.mkDefault (
           pkgs.buildUBootRk3588 {
