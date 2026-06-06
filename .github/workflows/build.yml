@@ -23,10 +23,10 @@ jobs:
                     - hinlink-h88k
                     - jwipc-e88a
                     - radxa-rock-5t
+                    - xunlong-orangepi-5-plus
                     # - friendly-nanopc-t6
                     # - radxa-rock-5a
                     # - radxa-rock-5b
-                    # - xunlong-orangepi-5-plus
                     # - xunlong-orangepi-5
                     # - friendlyelec-cm3588-nas
         runs-on: ubuntu-latest
