@@ -15,6 +15,7 @@
   disko = {
     bootImage = {
       partLabel = lib.mkDefault "NVME";
+      primaryStart = "1M";
       uboot = {
         enable = false;
         package = pkgs.buildUBootRk3588 {
