@@ -41,26 +41,13 @@ in
     };
   };
 
-  config = mkMerge [
-    {
-      boot.loader = mkDefault {
-        efi.efiSysMountPoint = "/boot/efi";
-        grub = {
-          device = "nodev";
-          efiSupport = true;
-          efiInstallAsRemovable = true;
-        };
-      };
-    }
+  config = mkIf cfg.enable {
+    boot.loader.grub.extraConfig = ''
+      serial --unit=${toString cfg.unit} --speed=${toString cfg.baudrate} --word=${toString cfg.word} --parity=${cfg.parity} --stop=${toString cfg.stop}
+      terminal_input --append serial
+      terminal_output --append serial
+    '';
 
-    (mkIf cfg.enable {
-      boot.loader.grub.extraConfig = ''
-        serial --unit=${toString cfg.unit} --speed=${toString cfg.baudrate} --word=${toString cfg.word} --parity=${cfg.parity} --stop=${toString cfg.stop}
-        terminal_input --append serial
-        terminal_output --append serial
-      '';
-
-      boot.kernelParams = (mkBefore [ "console=ttyS${toString cfg.unit},${toString cfg.baudrate}" ]);
-    })
-  ];
+    boot.kernelParams = (mkBefore [ "console=ttyS${toString cfg.unit},${toString cfg.baudrate}" ]);
+  };
 }

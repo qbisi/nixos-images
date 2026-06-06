@@ -1,0 +1,38 @@
+commit ff80015e8b422558386b2049ee2309a60f2f9d0e
+Author: qbisi <qbisicwate@gmail.com>
+Date:   Thu May 28 00:39:00 2026 +0800
+
+    board: rockchip: add bootmenu setings
+
+diff --git a/include/configs/rk3588_common.h b/include/configs/rk3588_common.h
+index 2f0d40deb64..9e2ed89fbd6 100644
+--- a/include/configs/rk3588_common.h
++++ b/include/configs/rk3588_common.h
+@@ -34,6 +34,7 @@
+ 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0"	\
+ 	ENV_MEM_LAYOUT_SETTINGS		\
+ 	ROCKCHIP_DEVICE_SETTINGS	\
++	BOOTMENU_SETTINGS \
+ 	"boot_targets=" BOOT_TARGETS "\0"
+ 
+ #endif /* __CONFIG_RK3588_COMMON_H */
+diff --git a/include/configs/rockchip-common.h b/include/configs/rockchip-common.h
+index d5550a46575..3372d7d8fba 100644
+--- a/include/configs/rockchip-common.h
++++ b/include/configs/rockchip-common.h
+@@ -17,6 +17,15 @@
+ #define BOOT_TARGETS	"mmc1 mmc0 nvme scsi usb pxe dhcp spi"
+ #endif
+ 
++#ifdef CONFIG_CMD_BOOTMENU
++#define BOOTMENU_SETTINGS \
++		"bootmenu_0=UEFI Boot Manager=bootefi bootmgr\0" \
++		"bootmenu_1=Standard Boot=bootflow scan -blG\0" \
++		"bootmenu_2=UEFI Maintenance Menu=eficonfig\0"
++#else
++#define BOOTMENU_SETTINGS
++#endif
++
+ #ifdef CONFIG_ARM64
+ #define ROOT_UUID "B921B045-1DF0-41C3-AF44-4C6F280D3FAE;\0"
+ #else

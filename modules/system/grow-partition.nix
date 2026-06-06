@@ -11,7 +11,13 @@
 
 let
   cfg = config.boot.growPartition;
-  rootIsBtrfs = config.fileSystems.${cfg.mountPoint}.fsType or null == "btrfs";
+  rootFsType = config.fileSystems.${cfg.mountPoint}.fsType or null;
+  rootIsBtrfs = rootFsType == "btrfs";
+  rootIsExt = builtins.elem rootFsType [
+    "ext2"
+    "ext3"
+    "ext4"
+  ];
 in
 
 {
@@ -65,7 +71,9 @@ in
         # growpart returns 1 if the partition is already grown
         SuccessExitStatus = "0 1";
       };
-      path = with pkgs; [ cloud-utils.guest ] ++ lib.optional rootIsBtrfs btrfs-progs;
+      path =
+        with pkgs;
+        [ cloud-utils.guest ] ++ lib.optional rootIsBtrfs btrfs-progs ++ lib.optional rootIsExt e2fsprogs;
       script = ''
         rootDevice="${config.fileSystems.${cfg.mountPoint}.device}"
         rootDevice="$(readlink -f "$rootDevice")"
@@ -78,6 +86,9 @@ in
           parentDevice="''${parentDevice%p}"
         fi
         growpart "$parentDevice" "$partNum"
+      ''
+      + lib.optionalString rootIsExt ''
+        resize2fs "$rootDevice"
       ''
       + lib.optionalString rootIsBtrfs ''
         btrfs filesystem resize max ${cfg.mountPoint}

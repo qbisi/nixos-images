@@ -1,4 +1,5 @@
 {
+  lib,
   self,
   inputs,
   ...
@@ -10,21 +11,27 @@
         disabledModules = [
           "system/boot/loader/grub/grub.nix"
           "hardware/device-tree.nix"
+          __curPos.file
         ];
 
         imports = [
-          ./disko/disk-image.nix
-          ./hardware/serial.nix
-          ./overlay/system/boot/loader/grub.nix
-          ./overlay/hardware/device-tree.nix
           inputs.disko.nixosModules.default
-        ];
+        ]
+        ++ lib.filter (p: lib.hasSuffix ".nix" p) (lib.filesystem.listFilesRecursive ./.);
 
         nixpkgs.overlays = [
           self.overlays.default
+          (import ../overlays.nix)
         ];
+
+        # the only explicit change to the default NixOS config cause we need Nix flakes support
+        nix.settings = {
+          experimental-features = [
+            "nix-command"
+            "flakes"
+          ];
+        };
       };
-      bootstrap = import ./bootstrap.nix;
     };
   };
 }

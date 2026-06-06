@@ -9,7 +9,7 @@
   };
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -21,6 +21,7 @@
     colmena = {
       url = "github:zhaofengli/colmena";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.stable.follows = "nixpkgs";
     };
   };
 
@@ -28,10 +29,7 @@
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } (
       {
-        lib,
         self,
-        withSystem,
-        getSystemIgnoreWarning,
         ...
       }:
       {
@@ -43,17 +41,11 @@
         imports = [
           ./devices
           ./modules
+          ./hosts
         ];
 
         flake = {
           overlays.default = final: prev: self.packages."${prev.stdenv.hostPlatform.system}" or { };
-
-          templates = {
-            default = {
-              path = ./templates;
-              description = "init template";
-            };
-          };
         };
 
         perSystem =

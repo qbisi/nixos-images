@@ -2,3 +2,4 @@ result*
 source
 outputs
 .direnv
+__pycache__

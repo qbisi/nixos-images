@@ -1,51 +1,36 @@
 {
   config,
-  pkgs,
   lib,
-  inputs,
-  self,
+  pkgs,
   ...
 }:
 {
-  nixpkgs = {
-    system = "aarch64-linux";
-  };
+  imports = [
+    ../../profiles/rk3588.nix
+    ../../profiles/btrfs.nix
+  ];
 
-  networking.hostName = lib.mkDefault "opi5-plus";
+  networking.hostName = lib.mkDefault "o5p";
 
   disko = {
-    enableConfig = true;
     bootImage = {
-      fileSystem = "btrfs";
-      espStart = "16M";
-      uboot.enable = true;
-      uboot.package = pkgs.ubootOrangePi5Plus;
+      partLabel = lib.mkDefault "NVME";
+      primaryStart = "1M";
+      uboot = {
+        enable = false;
+        package = pkgs.buildUBootRk3588 {
+          withSpi = true;
+          dtsFile = config.hardware.deviceTree.dtsFile;
+        };
+      };
     };
   };
 
   hardware = {
-    firmware = [
-      pkgs.armbian-firmware
-    ];
     deviceTree = {
       name = "rockchip/rk3588-orangepi-5-plus.dtb";
-    };
-    serial = {
-      enable = true;
-      unit = 2;
-      baudrate = 1500000;
+      platform = "rockchip";
+      dtsFile = ../../dts/mainline/rockchip/rk3588-orangepi-5-plus.dts;
     };
   };
-
-  boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18;
-    initrd.allowMissingModules = !config.boot.kernelPackages.kernel.configfile.autoModules;
-    kernelParams = [
-      "net.ifnames=0"
-      "console=tty1"
-      "earlycon"
-    ];
-    loader.grub.enable = true;
-  };
-
 }

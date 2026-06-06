@@ -4,5 +4,4 @@
   ];
 
   disko.bootImage.enableBiosBoot = true;
-  boot.loader.grub.device = "/dev/disk/by-diskseq/1";
 }

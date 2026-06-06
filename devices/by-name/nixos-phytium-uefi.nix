@@ -1,33 +1,16 @@
 {
-  config,
-  pkgs,
   lib,
-  inputs,
-  self,
+  pkgs,
   ...
 }:
 {
-  nixpkgs = {
-    system = "aarch64-linux";
-  };
+  imports = [
+    ./nixos-aarch64-uefi.nix
+  ];
 
-  disko = {
-    enableConfig = true;
-    bootImage.fileSystem = "btrfs";
-  };
-
-  hardware = {
-    serial.enable = true;
-  };
+  hardware.enableAllHardware = false;
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor pkgs.linux_phytium_6_6;
-    kernelParams = [
-      "net.ifnames=0"
-      "console=tty1"
-      "earlycon"
-    ];
-    loader.grub.enable = true;
+    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_phytium_6_6);
   };
-
 }

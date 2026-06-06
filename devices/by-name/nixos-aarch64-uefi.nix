@@ -1,35 +1,9 @@
 {
-  config,
-  pkgs,
-  lib,
-  inputs,
-  self,
-  ...
-}:
-{
+  imports = [
+    ../../profiles/btrfs.nix
+  ];
+
   nixpkgs = {
     system = "aarch64-linux";
   };
-
-  disko = {
-    enableConfig = true;
-    bootImage.fileSystem = "btrfs";
-  };
-
-  hardware = {
-    serial = {
-      enable = true;
-    };
-  };
-
-  boot = {
-    kernelParams = [
-      "net.ifnames=0"
-      "console=tty1"
-      "earlycon"
-    ];
-
-    loader.grub.enable = true;
-  };
-
 }
