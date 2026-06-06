@@ -20,7 +20,8 @@ Generic nixos build/deploy/test framework for **ANY** rk3588-boards.
 
 1. Download the appropriate NixOS image from the [releases page](#link-to-releases).
 2. Flash the image to your storage media (e.g., using `dd`, Etcher, etc.).
-3. Boot the device — the root partition will resize automatically.
+3. For RK3588 boards installed locally, see [tools/README.md](tools/README.md#rk3588-local-installation-with-rkdeveloptool) for `rkdeveloptool` flashing notes, including SPI U-Boot on Rock 5T and Orange Pi 5 Plus.
+4. Boot the device — the root partition will resize automatically.
 
 ### Option 2: Cloud Server Installation
 
@@ -65,3 +66,7 @@ Common usage:
 nix build .#nixos-x86_64-generic --accept-flake-config
 nix build .#nixos-aarch64-uefi --accept-flake-config
 nix build .#nixos-hinlink-h88k --accept-flake-config
+```
+
+For RK3588 board installation from local build outputs, see
+[tools/README.md](tools/README.md#rk3588-local-installation-with-rkdeveloptool).

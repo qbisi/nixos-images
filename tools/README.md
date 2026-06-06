@@ -70,3 +70,41 @@ rkdeveloptool rd
 These loader blobs are temporary USB-side helpers for recovery and flashing.
 They are separate from the normal boot artifacts built by U-Boot, such as
 `idbloader.img`, `u-boot.itb`, and `u-boot-rockchip.bin`.
+
+## RK3588 local installation with rkdeveloptool
+
+Build outputs and release artifacts can be written with `rkdeveloptool` after
+the RK3588 loader is accepted. If a release artifact is compressed as
+`*.raw.xz`, decompress it before writing.
+
+For common RK3588 boards whose U-Boot is already embedded in the raw image,
+write the image to the board's eMMC or other Rockchip flash at LBA 0:
+
+```sh
+unxz --keep nixos-<board>.raw.xz
+rkdeveloptool read-flash-info
+rkdeveloptool wl 0 nixos-<board>.raw
+rkdeveloptool rd
+```
+
+When using a local build result, use the exact raw image path under `result/`.
+For example:
+
+```sh
+rkdeveloptool read-flash-info
+rkdeveloptool wl 0 result/nixos-<board>.raw
+rkdeveloptool rd
+```
+
+Rock 5T and Orange Pi 5 Plus boards with SPI flash use a separate SPI U-Boot
+artifact. Their targets export `*-u-boot-rockchip-spi.bin` beside the raw image.
+Flash that file to SPI NOR at offset 0:
+
+```sh
+rkdeveloptool read-flash-info
+rkdeveloptool wl 0 result/*-u-boot-rockchip-spi.bin
+rkdeveloptool rd
+```
+
+This SPI command writes only U-Boot. Put the matching NixOS raw image on the
+boot storage the board will use, such as NVMe, eMMC, or SD.
