@@ -17,6 +17,12 @@ in
         default = null;
       };
 
+      imageFile = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = "U-Boot image file in the package to write into the disk image.";
+      };
+
       seek = lib.mkOption {
         type = lib.types.number;
         default = 0;
@@ -28,7 +34,11 @@ in
     assertions = [
       {
         assertion = cfg.uboot.package != null;
-        message = "disko.bootImage.uboot.pacakges should not be null";
+        message = "disko.bootImage.uboot.package should not be null";
+      }
+      {
+        assertion = cfg.uboot.imageFile != null;
+        message = "disko.bootImage.uboot.imageFile should not be null";
       }
     ];
 
@@ -44,7 +54,7 @@ in
           name="$(basename "$src")"
           cp -a "$src" "$out/${assetPrefix}-$name"
         done
-        ${config.disko.imageBuilder.pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.package}/u-boot-rockchip.bin seek=${toString cfg.uboot.seek} conv=notrunc
+        ${config.disko.imageBuilder.pkgs.coreutils}/bin/dd of="$out/${imageName}" if="${cfg.uboot.package}/${cfg.uboot.imageFile}" seek=${toString cfg.uboot.seek} conv=notrunc
       '';
   };
 }

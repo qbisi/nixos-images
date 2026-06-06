@@ -14,6 +14,7 @@
       primaryStart = lib.mkIf config.disko.bootImage.uboot.enable "16M";
       uboot = {
         enable = lib.mkDefault true;
+        imageFile = "u-boot-rockchip.bin";
         seek = 64;
         package = lib.mkDefault (
           pkgs.buildUBootRk3588 {
