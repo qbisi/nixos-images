@@ -11,6 +11,7 @@
   ];
 
   system = {
+    firstLoginSetup.enable = true;
     passless.enable = true;
     symlinkConfig.enable = true;
   };

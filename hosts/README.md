@@ -15,7 +15,7 @@ nixos-rebuild switch --flake <path-to-repo>
 ```
 
 To avoid fetching flake inputs from github, we will later use "flake archive" to cache flake inputs locally to bootstrap images.
-We will later implement a switch your configuration prompt on your first login from tty based on this flake repo and your custom name/passwd.
+Bootstrap images prompt on the first local tty login for a username and password, switch to this flake with `USER=<username>`, and set the password directly after the switch.
 
 # Remote Deployment
 Remote deploy via "colmena apply --on <host>", see "colmena apply --help" for details.
