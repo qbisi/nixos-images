@@ -12,6 +12,12 @@
 
   networking.hostName = "f88q-mobile";
 
+  boot = {
+    extraModulePackages = [
+      (pkgs.panel-simple-dsi.override { linux = config.boot.kernelPackages.kernel; })
+    ];
+  };
+
   hardware = {
     deviceTree = {
       dtboBuildExtraIncludePaths = lib.mkAfter [ ../../dts/mainline ];
