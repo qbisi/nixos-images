@@ -3,7 +3,10 @@
     memSize = 4096;
     enableConfig = true;
     bootImage = {
-      imageSize = "2G";
+      # efi only keep grub.efi such that it can be small
+      espSize = "4M";
+      efiSysMountPoint = "/boot/efi";
+      imageSize = "2560M";
       primaryContent = {
         type = "btrfs";
         extraArgs = [ "-f" ];
