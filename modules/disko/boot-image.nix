@@ -53,7 +53,7 @@ in
 
       espSize = lib.mkOption {
         type = lib.types.strMatching "[0-9]+[KMGTP]?";
-        default = "4M";
+        default = "512M";
         description = "esp partition size";
       };
 
