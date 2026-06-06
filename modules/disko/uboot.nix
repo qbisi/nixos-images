@@ -6,6 +6,9 @@
 }:
 let
   cfg = config.disko.bootImage;
+  diskoCfg = config.disko;
+  imageName = "${diskoCfg.bootImage.imageName}.${diskoCfg.imageBuilder.imageFormat}";
+  assetPrefix = diskoCfg.bootImage.imageName;
 in
 {
   options = {
@@ -30,31 +33,36 @@ in
     };
   };
 
-  config = lib.mkIf (cfg.primaryContent != null && cfg.uboot.enable) {
-    assertions = [
-      {
-        assertion = cfg.uboot.package != null;
-        message = "disko.bootImage.uboot.package should not be null";
-      }
-      {
-        assertion = cfg.uboot.imageFile != null;
-        message = "disko.bootImage.uboot.imageFile should not be null";
-      }
-    ];
-
-    disko.imageBuilder.extraPostVM =
-      let
-        diskoCfg = config.disko;
-        imageName = "${diskoCfg.bootImage.imageName}.${diskoCfg.imageBuilder.imageFormat}";
-        assetPrefix = diskoCfg.bootImage.imageName;
-      in
-      lib.mkBefore ''
+  config = lib.mkMerge [
+    (lib.mkIf (cfg.uboot.package != null) {
+      disko.imageBuilder.extraPostVM = lib.mkBefore ''
         for src in ${cfg.uboot.package}/*; do
           [ -f "$src" ] || continue
           name="$(basename "$src")"
           cp -a "$src" "$out/${assetPrefix}-$name"
         done
-        ${config.disko.imageBuilder.pkgs.coreutils}/bin/dd of="$out/${imageName}" if="${cfg.uboot.package}/${cfg.uboot.imageFile}" seek=${toString cfg.uboot.seek} conv=notrunc
       '';
-  };
+    })
+
+    (lib.mkIf (cfg.primaryContent != null && cfg.uboot.enable) {
+      assertions = [
+        {
+          assertion = cfg.uboot.package != null;
+          message = "disko.bootImage.uboot.package should not be null";
+        }
+        {
+          assertion = cfg.uboot.imageFile != null;
+          message = "disko.bootImage.uboot.imageFile should not be null";
+        }
+      ];
+
+      disko.imageBuilder.extraPostVM =
+        lib.mkIf (cfg.uboot.package != null && cfg.uboot.imageFile != null)
+          (
+            lib.mkBefore ''
+              ${config.disko.imageBuilder.pkgs.coreutils}/bin/dd of="$out/${imageName}" if="${cfg.uboot.package}/${cfg.uboot.imageFile}" seek=${toString cfg.uboot.seek} conv=notrunc
+            ''
+          );
+    })
+  ];
 }
