@@ -45,7 +45,9 @@ jobs:
               with:
                   swap-size-gb: 32
             - name: Build image
-              run: nix build .#nixos-${{ matrix.device }} --accept-flake-config
+              env:
+                  DISKO_COMPRESS: "1"
+              run: nix build .#nixos-${{ matrix.device }} --accept-flake-config --impure
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
