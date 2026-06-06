@@ -24,11 +24,11 @@ jobs:
                     - jwipc-e88a
                     - radxa-rock-5t
                     - xunlong-orangepi-5-plus
+                    - friendlyelec-cm3588-nas
                     # - friendly-nanopc-t6
                     # - radxa-rock-5a
                     # - radxa-rock-5b
                     # - xunlong-orangepi-5
-                    # - friendlyelec-cm3588-nas
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
