@@ -10,6 +10,8 @@
     ../../devices/by-name/nixos-firefly-aio-3588q.nix
   ];
 
+  networking.hostName = "f88q-mobile";
+
   hardware = {
     deviceTree = {
       dtboBuildExtraIncludePaths = lib.mkAfter [ ../../dts/mainline ];

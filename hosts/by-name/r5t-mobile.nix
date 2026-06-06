@@ -10,6 +10,8 @@
     ../../devices/by-name/nixos-radxa-rock-5t.nix
   ];
 
+  networking.hostName = "r5t-mobile";
+
   boot = {
     extraModulePackages = [
       (pkgs.panel-simple-dsi.override { linux = config.boot.kernelPackages.kernel; })
