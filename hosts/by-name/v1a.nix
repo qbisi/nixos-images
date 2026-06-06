@@ -41,5 +41,9 @@
 
   nix.settings = {
     trusted-users = [ config.users.users.admin.name ];
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
   };
 }

@@ -33,4 +33,11 @@
   };
 
   hardware.enableAllHardware = lib.mkDefault true;
+
+  nix.settings = {
+    experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
+  };
 }
