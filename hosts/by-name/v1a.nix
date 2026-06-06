@@ -23,7 +23,7 @@
   users = {
     users = {
       admin = {
-        name = "nix";
+        name = if builtins.elem (builtins.getEnv "USER") ["root" ""] then "nix" else builtins.getEnv "USER";
         initialPassword = "1234";
         uid = 1000;
         isNormalUser = true;
