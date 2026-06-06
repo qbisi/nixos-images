@@ -39,7 +39,7 @@ in
         default = if (builtins.getEnv "PARTLABEL" != "") then (builtins.getEnv "PARTLABEL") else "main";
         example = "nvme";
         description = ''
-          Disko use partlabel to identify and mount disk, use different partlabel
+          Disko use partLabel to identify and mount disk, use different partLabel
           for different media.
         '';
       };

@@ -14,9 +14,13 @@
 
   disko = {
     bootImage = {
-      uboot.package = pkgs.buildUBootRk3588 {
-        withSpi = true;
-        dtsFile = config.hardware.deviceTree.dtsFile;
+      partLabel = lib.mkDefault "NVME";
+      uboot = {
+        enable = false;
+        package = pkgs.buildUBootRk3588 {
+          withSpi = true;
+          dtsFile = config.hardware.deviceTree.dtsFile;
+        };
       };
     };
   };
