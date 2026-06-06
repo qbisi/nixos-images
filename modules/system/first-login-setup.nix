@@ -140,6 +140,28 @@ let
       exit 0
     fi
 
+    home_dir="$(getent passwd "$username" | cut -d: -f6)"
+    config_dest="$home_dir/nixos-config"
+
+    if [ -z "$home_dir" ] || [ ! -d "$home_dir" ]; then
+      printf '\nBootstrap setup prepared the next boot, but could not find home directory for %s.\n' "$username"
+      printf 'Copy %s manually after reboot.\n' "$flake_path"
+    elif [ -e "$config_dest" ]; then
+      printf '\nConfiguration copy skipped: %s already exists.\n' "$config_dest"
+    else
+      if ! mkdir -p "$config_dest"; then
+        printf '\nBootstrap setup prepared the next boot, but could not create %s.\n' "$config_dest"
+        printf 'Copy %s manually after reboot.\n' "$flake_path"
+      elif ! cp -R --no-preserve=mode,ownership "$flake_path"/. "$config_dest"/; then
+        printf '\nBootstrap setup prepared the next boot, but could not copy %s to %s.\n' "$flake_path" "$config_dest"
+        printf 'Copy it manually after reboot.\n'
+      else
+        primary_group="$(id -gn "$username")"
+        chown -R "$username:$primary_group" "$config_dest"
+        printf '\nCopied NixOS config to %s.\n' "$config_dest"
+      fi
+    fi
+
     unset password password_confirm
 
     printf '\nSetup complete. User %s is ready.\n' "$username"
