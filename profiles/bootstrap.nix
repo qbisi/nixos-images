@@ -35,6 +35,8 @@
 
   hardware.enableAllHardware = lib.mkDefault true;
 
+  services.getty.autologinUser = "root";
+
   nix.settings = {
     experimental-features = [
       "nix-command"

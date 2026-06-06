@@ -81,15 +81,61 @@ let
       break
     done
 
-    printf '\nSwitching to %s with user %s...\n' "$flake_path" "$username"
+    printf '\nPreparing next boot from %s with user %s...\n' "$flake_path" "$username"
 
-    if ! env USER="$username" ${config.system.build.nixos-rebuild}/bin/nixos-rebuild switch --flake "$flake_path" --accept-flake-config --impure; then
+    if ! env USER="$username" ${config.system.build.nixos-rebuild}/bin/nixos-rebuild boot --flake "$flake_path" --accept-flake-config --impure; then
       printf '\nBootstrap setup failed during nixos-rebuild. Log in again on this TTY to retry.\n'
       exit 0
     fi
 
-    if ! printf '%s:%s\n' "$username" "$password" | chpasswd; then
-      printf '\nBootstrap setup switched configuration, but could not set the password for %s.\n' "$username"
+    if ! getent passwd "$username" >/dev/null; then
+      if getent passwd 1000 >/dev/null; then
+        printf '\nBootstrap setup prepared the next boot, but UID 1000 is already in use.\n'
+        printf 'Create %s or set its password manually, then reboot.\n' "$username"
+        exit 0
+      fi
+
+      extra_groups=
+      for group in wheel root video audio dialout; do
+        if getent group "$group" >/dev/null; then
+          if [ -z "$extra_groups" ]; then
+            extra_groups="$group"
+          else
+            extra_groups="$extra_groups,$group"
+          fi
+        fi
+      done
+
+      useradd_args=(
+        --create-home
+        --uid 1000
+        --shell ${lib.escapeShellArg "${pkgs.bashInteractive}/bin/bash"}
+      )
+
+      if getent group users >/dev/null; then
+        useradd_args+=(--gid users)
+      fi
+
+      if [ -n "$extra_groups" ]; then
+        useradd_args+=(--groups "$extra_groups")
+      fi
+
+      if ! ${pkgs.shadow}/bin/useradd "''${useradd_args[@]}" "$username"; then
+        printf '\nBootstrap setup prepared the next boot, but could not create user %s.\n' "$username"
+        printf 'Create %s manually, then reboot.\n' "$username"
+        exit 0
+      fi
+    else
+      existing_uid="$(getent passwd "$username" | cut -d: -f3)"
+      if [ "$existing_uid" != 1000 ]; then
+        printf '\nBootstrap setup prepared the next boot, but user %s already exists with UID %s.\n' "$username" "$existing_uid"
+        printf 'The configured system expects UID 1000. Fix the user manually, then reboot.\n'
+        exit 0
+      fi
+    fi
+
+    if ! printf '%s:%s\n' "$username" "$password" | ${pkgs.shadow}/bin/chpasswd; then
+      printf '\nBootstrap setup prepared the next boot, but could not set the password for %s.\n' "$username"
       printf 'Run passwd %s manually.\n' "$username"
       exit 0
     fi
@@ -97,6 +143,7 @@ let
     unset password password_confirm
 
     printf '\nSetup complete. User %s is ready.\n' "$username"
+    printf 'Reboot now to start the configured system. Some configuration, such as desktop services, only takes effect after reboot.\n'
   '';
 in
 {
