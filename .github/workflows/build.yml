@@ -67,9 +67,18 @@ jobs:
                   path: artifacts
 
             - name: Create release if not exists
+              env:
+                  RELEASE_TAG: ${{ inputs.release }}
               run: |
-                  if ! gh release view ${{ inputs.release }}; then
-                    gh release create ${{ inputs.release }} --title ${{ inputs.release }}
+                  create_args=("$RELEASE_TAG" --title "$RELEASE_TAG" --target "$GITHUB_SHA")
+                  if [ "$GITHUB_REF_NAME" = "stage" ]; then
+                    create_args+=(--prerelease)
+                  fi
+
+                  if ! gh release view "$RELEASE_TAG"; then
+                    gh release create "${create_args[@]}"
+                  elif [ "$GITHUB_REF_NAME" = "stage" ]; then
+                    gh release edit "$RELEASE_TAG" --prerelease
                   fi
 
             - name: Upload images to release
