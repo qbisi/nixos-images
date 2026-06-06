@@ -51,8 +51,6 @@ self: pkgs: {
           ROCKCHIP_TPL = "${pkgs.rkbin}/bin/rk33/rk3399_ddr_800MHz_v1.30.bin";
         };
         filesToInstall = [
-          "u-boot.itb"
-          "idbloader.img"
           "u-boot-rockchip.bin"
         ];
         prePatch = ''
@@ -112,8 +110,6 @@ self: pkgs: {
           ROCKCHIP_TPL = pkgs.rkbin.TPL_RK3588;
         };
         filesToInstall = [
-          "u-boot.itb"
-          "idbloader.img"
           "u-boot-rockchip.bin"
         ]
         ++ pkgs.lib.optional withSpi "u-boot-rockchip-spi.bin";

@@ -35,9 +35,15 @@ in
     disko.imageBuilder.extraPostVM =
       let
         diskoCfg = config.disko;
-        imageName = "${diskoCfg.devices.disk.main.imageName}.${diskoCfg.imageBuilder.imageFormat}";
+        imageName = "${diskoCfg.bootImage.imageName}.${diskoCfg.imageBuilder.imageFormat}";
+        assetPrefix = diskoCfg.bootImage.imageName;
       in
       lib.mkBefore ''
+        for src in ${cfg.uboot.package}/*; do
+          [ -f "$src" ] || continue
+          name="$(basename "$src")"
+          cp -a "$src" "$out/${assetPrefix}-$name"
+        done
         ${config.disko.imageBuilder.pkgs.coreutils}/bin/dd of=$out/${imageName} if=${cfg.uboot.package}/u-boot-rockchip.bin seek=${toString cfg.uboot.seek} conv=notrunc
       '';
   };
