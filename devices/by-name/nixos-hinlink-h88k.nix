@@ -6,8 +6,8 @@
 }:
 {
   imports = [
-    ../profiles/rk3588.nix
-    ../profiles/btrfs.nix
+    ../../profiles/rk3588.nix
+    ../../profiles/btrfs.nix
   ];
 
   networking.hostName = lib.mkDefault "h88k";

@@ -5,7 +5,7 @@
 }:
 {
   imports = [
-    ../aarch64-uefi.nix
+    ./nixos-aarch64-uefi.nix
   ];
 
   hardware.enableAllHardware = false;

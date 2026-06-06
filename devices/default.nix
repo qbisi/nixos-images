@@ -18,7 +18,7 @@
           }
           path
           self.nixosModules.default
-          ./profiles/bootstrap.nix
+          ../profiles/bootstrap.nix
         ];
       };
     directory = ./by-name;
