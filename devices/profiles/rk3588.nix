@@ -31,7 +31,7 @@
       pkgs.rockchip-firmware
     ];
     serial = {
-      enable = true;
+      enable = lib.mkDefault true;
       unit = 2;
       baudrate = 1500000;
     };
@@ -46,7 +46,7 @@
   };
 
   services = {
-    usb-rndis.enable = true;
+    usb-rndis.enable = lib.mkDefault true;
   };
 
   environment = {
@@ -60,6 +60,7 @@
       libgpiod
       minicom
       ethtool
+      vim
     ];
   };
 }
