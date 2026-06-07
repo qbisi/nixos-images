@@ -23,6 +23,7 @@ jobs:
                     - hinlink-h88k
                     - jwipc-e88a
                     - radxa-rock-5t
+                    - radxa-rock-5-itx
                     - xunlong-orangepi-5-plus
                     - friendlyelec-cm3588-nas
                     - ido-evb3588-v1a
