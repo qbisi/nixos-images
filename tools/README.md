@@ -62,7 +62,6 @@ After the loader is accepted, `rkdeveloptool` can access the board's flash. For
 example:
 
 ```sh
-rkdeveloptool read-flash-info
 rkdeveloptool wl 0 image.img
 rkdeveloptool rd
 ```
@@ -82,7 +81,6 @@ write the image to the board's eMMC or other Rockchip flash at LBA 0:
 
 ```sh
 unxz --keep nixos-<board>.raw.xz
-rkdeveloptool read-flash-info
 rkdeveloptool wl 0 nixos-<board>.raw
 rkdeveloptool rd
 ```
@@ -91,7 +89,6 @@ When using a local build result, use the exact raw image path under `result/`.
 For example:
 
 ```sh
-rkdeveloptool read-flash-info
 rkdeveloptool wl 0 result/nixos-<board>.raw
 rkdeveloptool rd
 ```
@@ -101,7 +98,7 @@ artifact. Their targets export `*-u-boot-rockchip-spi.bin` beside the raw image.
 Flash that file to SPI NOR at offset 0:
 
 ```sh
-rkdeveloptool read-flash-info
+rkdeveloptool cs 9
 rkdeveloptool wl 0 result/*-u-boot-rockchip-spi.bin
 rkdeveloptool rd
 ```
