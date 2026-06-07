@@ -7,7 +7,7 @@ index 587eef9504e..6a862e8dcf1 100644
  
  	chosen {
 -		u-boot,spl-boot-order = "same-as-spl", &sdhci, &sdmmc;
-+		u-boot,spl-boot-order = &sdmmc, &sdhci, "same-as-spl";
++		u-boot,spl-boot-order = &sdmmc, "same-as-spl", &sdhci;
  	};
  
  	pmusgrf: syscon@ff330000 {
@@ -20,7 +20,7 @@ index 71fd352f640..3548901b453 100644
  
  	chosen {
 -		u-boot,spl-boot-order = "same-as-spl", &sdmmc, &sdhci;
-+		u-boot,spl-boot-order = &sdmmc, &sdhci, "same-as-spl";
++		u-boot,spl-boot-order = &sdmmc, "same-as-spl", &sdhci;
  	};
  
  	dmc {
