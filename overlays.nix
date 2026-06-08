@@ -118,8 +118,8 @@ self: pkgs: {
         '';
         patches = [
           ./patches/u-boot/spl-prefer-sdmmc.patch
-          ./patches/u-boot/rk3588-add-bootmenu.patch
           ./patches/u-boot/rk3588-adc-recovery.patch
+          ./patches/u-boot/cmd-add-bootconfig.patch
           ./patches/u-boot/clk-enhance-clk-gpio-to-also-handle-gated-fixed-clock.patch
         ]
         ++ pkgs.lib.optional withDrm ./patches/u-boot/rockchip-video-drm.patch
@@ -129,11 +129,14 @@ self: pkgs: {
           # see https://github.com/alsa-project/alsa-ucm-conf/pull/374
           CONFIG_SMBIOS=n
           CONFIG_OF_UPSTREAM=n
+          CONFIG_ENV_IS_IN_MMC=y
           CONFIG_DEFAULT_DEVICE_TREE="${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}"
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
         ''
         + pkgs.lib.optionalString withMenu ''
           CONFIG_CMD_BOOTMENU=y
+          CONFIG_CMD_BOOTCONFIG=y
+          CONFIG_BOOTCMD="bootflow scan -lbG"
           CONFIG_AUTOBOOT_MENU_SHOW=y
         ''
         + pkgs.lib.optionalString withLog ''
@@ -147,6 +150,7 @@ self: pkgs: {
           CONFIG_SPL_LOGLEVEL=7
         ''
         + pkgs.lib.optionalString withSpi ''
+          CONFIG_ENV_IS_IN_SPI_FLASH=y
           CONFIG_ROCKCHIP_SFC=y
           CONFIG_ROCKCHIP_SPI_IMAGE=y
           CONFIG_SF_DEFAULT_SPEED=24000000
