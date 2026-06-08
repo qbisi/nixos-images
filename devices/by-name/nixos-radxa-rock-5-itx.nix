@@ -21,6 +21,9 @@
         package = pkgs.buildUBootRk3588 {
           withSpi = true;
           dtsFile = config.hardware.deviceTree.dtsFile;
+          extraConfig = ''
+            CONFIG_CLK_GPIO=y
+          '';
         };
       };
     };

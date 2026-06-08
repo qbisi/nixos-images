@@ -120,6 +120,7 @@ self: pkgs: {
           ./patches/u-boot/spl-prefer-sdmmc.patch
           ./patches/u-boot/rk3588-add-bootmenu.patch
           ./patches/u-boot/rk3588-adc-recovery.patch
+          ./patches/u-boot/clk-enhance-clk-gpio-to-also-handle-gated-fixed-clock.patch
         ]
         ++ pkgs.lib.optional withDrm ./patches/u-boot/rockchip-video-drm.patch
         ++ patches;
