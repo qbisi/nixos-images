@@ -1,4 +1,4 @@
-commit 9ccbe8171a0f0e4a40d2ad987c630690ed234d49
+commit 8c44a2b45da9d1b061915885df419ac608c54d24
 Author: qbisi <qbisicwate@gmail.com>
 Date:   Thu May 28 00:42:28 2026 +0800
 
@@ -7304,10 +7304,10 @@ index 00000000000..3d95f6b46a7
 +#endif /* __IMX_HDMI_H__ */
 diff --git a/drivers/video/drm/dw_hdmi_qp.c b/drivers/video/drm/dw_hdmi_qp.c
 new file mode 100644
-index 00000000000..c66c7d95079
+index 00000000000..d806e804522
 --- /dev/null
 +++ b/drivers/video/drm/dw_hdmi_qp.c
-@@ -0,0 +1,1449 @@
+@@ -0,0 +1,1455 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (c) 2021 Fuzhou Rockchip Electronics Co., Ltd
@@ -8373,8 +8373,6 @@ index 00000000000..c66c7d95079
 +	// if (true) {
 +		printf("%s HDMI mode\n", __func__);
 +		hdmi_modb(hdmi, 0, OPMODE_DVI, LINK_CONFIG0);
-+		hdmi_modb(hdmi, HDCP2_BYPASS, HDCP2_BYPASS, HDCP2LOGIC_CONFIG0);
-+		hdmi_modb(hdmi, KEEPOUT_REKEY_ALWAYS, KEEPOUT_REKEY_CFG, FRAME_COMPOSER_CONFIG9);
 +		hdmi_writel(hdmi, 0, FLT_CONFIG0);
 +		if (hdmi_info->scdc.supported)
 +			drm_scdc_writeb(&hdmi->adap, 0x31, 0);
@@ -8400,13 +8398,18 @@ index 00000000000..c66c7d95079
 +		hdmi_config_vendor_specific_infoframe(hdmi, mode);
 +		hdmi_config_CVTEM(hdmi, link_cfg);
 +		hdmi_set_op_mode(hdmi, link_cfg, state, conn);
++		/*
++		 * RK3588 HDMI1 aborts on these controller register reads before
++		 * the PHY has been initialized.
++		 */
++		hdmi_modb(hdmi, HDCP2_BYPASS, HDCP2_BYPASS, HDCP2LOGIC_CONFIG0);
++		hdmi_modb(hdmi, KEEPOUT_REKEY_ALWAYS, KEEPOUT_REKEY_CFG, FRAME_COMPOSER_CONFIG9);
 +		/* clear avmute */
 +		mdelay(50);
 +		hdmi_writel(hdmi, 2, PKTSCHED_PKT_CONTROL0);
 +		hdmi_modb(hdmi, PKTSCHED_GCP_TX_EN, PKTSCHED_GCP_TX_EN,
 +			  PKTSCHED_PKT_EN);
 +	} else {
-+		hdmi_modb(hdmi, HDCP2_BYPASS, HDCP2_BYPASS, HDCP2LOGIC_CONFIG0);
 +		hdmi_modb(hdmi, OPMODE_DVI, OPMODE_DVI, LINK_CONFIG0);
 +		hdmi_writel(hdmi, 2, PKTSCHED_PKT_CONTROL0);
 +		hdmi_modb(hdmi, PKTSCHED_GCP_TX_EN, PKTSCHED_GCP_TX_EN, PKTSCHED_PKT_EN);
@@ -8414,6 +8417,7 @@ index 00000000000..c66c7d95079
 +		if (ret)
 +			return ret;
 +		hdmi->phy.enabled = true;
++		hdmi_modb(hdmi, HDCP2_BYPASS, HDCP2_BYPASS, HDCP2LOGIC_CONFIG0);
 +		printf("%s DVI mode\n", __func__);
 +	}
 +
@@ -8462,6 +8466,8 @@ index 00000000000..c66c7d95079
 +		return -ENOMEM;
 +
 +	memset(hdmi, 0, sizeof(struct dw_hdmi_qp));
++	/* U-Boot's framebuffer is RGB; keep EDID hotplug paths in RGB too. */
++	hdmi->output_bus_format_rgb = true;
 +	mode_buf = malloc(MODE_LEN * sizeof(struct drm_display_mode));
 +	if (!mode_buf)
 +		return -ENOMEM;
@@ -8469,7 +8475,7 @@ index 00000000000..c66c7d95079
 +	hdmi->rk_hdmi = rk_hdmi;
 +	hdmi->id = of_alias_get_id(ofnode_to_np(hdmi_node), "hdmi");
 +	if (hdmi->id < 0)
-+		hdmi->id = 0;
++		hdmi->id = dev_read_addr(conn->dev) == 0xfdea0000 ? 1 : 0;
 +	conn_state->disp_info = rockchip_get_disp_info(conn_state->type, hdmi->id);
 +
 +	memset(mode_buf, 0, MODE_LEN * sizeof(struct drm_display_mode));
