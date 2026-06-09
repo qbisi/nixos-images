@@ -1,10 +1,8 @@
-commit 70f2eeeebef70e2b7db280b065bbb5692d1e21d0
+commit 9c59eb794599082ad47de7295d1c19a3cad7b350
 Author: qbisi <qbisicwate@gmail.com>
-Date:   Tue Jun 9 00:47:13 2026 +0800
+Date:   Tue Jun 9 15:14:44 2026 +0800
 
-    cmd: add bootconfig
-    
-    rockchip-common.h: set bootmenu
+    patches: u-boot: add cmd bootconfig
 
 diff --git a/cmd/Kconfig b/cmd/Kconfig
 index 322ebe600c5..efd25371de5 100644
@@ -347,34 +345,3 @@ index 00000000000..3f50ea45789
 +	"Boot configuration menu",
 +	"Provides a menu to edit boot_targets"
 +);
-diff --git a/include/configs/rk3588_common.h b/include/configs/rk3588_common.h
-index 2f0d40deb64..9e2ed89fbd6 100644
---- a/include/configs/rk3588_common.h
-+++ b/include/configs/rk3588_common.h
-@@ -34,6 +34,7 @@
- 	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0"	\
- 	ENV_MEM_LAYOUT_SETTINGS		\
- 	ROCKCHIP_DEVICE_SETTINGS	\
-+	BOOTMENU_SETTINGS \
- 	"boot_targets=" BOOT_TARGETS "\0"
- 
- #endif /* __CONFIG_RK3588_COMMON_H */
-diff --git a/include/configs/rockchip-common.h b/include/configs/rockchip-common.h
-index 1a99a1740b7..4234ac8b93f 100644
---- a/include/configs/rockchip-common.h
-+++ b/include/configs/rockchip-common.h
-@@ -17,6 +17,14 @@
- #define BOOT_TARGETS	"mmc1 mmc0 nvme scsi usb pxe dhcp spi"
- #endif
- 
-+#ifdef CONFIG_CMD_BOOTMENU
-+#define BOOTMENU_SETTINGS \
-+		"bootmenu_0=Standard Boot=run bootcmd\0" \
-+		"bootmenu_1=Boot Order Maintenance Menu=bootconfig\0"
-+#else
-+#define BOOTMENU_SETTINGS
-+#endif
-+
- #ifdef CONFIG_ARM64
- #define ROOT_UUID "B921B045-1DF0-41C3-AF44-4C6F280D3FAE;\0"
- #else

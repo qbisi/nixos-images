@@ -120,6 +120,7 @@ self: pkgs: {
           ./patches/u-boot/spl-prefer-sdmmc.patch
           ./patches/u-boot/rk3588-adc-recovery.patch
           ./patches/u-boot/cmd-add-bootconfig.patch
+          ./patches/u-boot/bootflow-menu-countdown.patch
           ./patches/u-boot/clk-enhance-clk-gpio-to-also-handle-gated-fixed-clock.patch
         ]
         ++ pkgs.lib.optional withDrm ./patches/u-boot/rockchip-video-drm.patch
@@ -134,10 +135,12 @@ self: pkgs: {
           CONFIG_DEFAULT_FDT_FILE="rockchip/${pkgs.lib.removeSuffix ".dts" (baseNameOf dtsFile)}.dtb"
         ''
         + pkgs.lib.optionalString withMenu ''
-          CONFIG_CMD_BOOTMENU=y
+          CONFIG_USE_PREBOOT=y
+          CONFIG_PREBOOT="usb start; setenv boot_targets \"mmc1 nvme mmc0\""
           CONFIG_CMD_BOOTCONFIG=y
-          CONFIG_BOOTCMD="bootflow scan -lbG"
-          CONFIG_AUTOBOOT_MENU_SHOW=y
+          CONFIG_EXPO=y
+          CONFIG_BOOTDELAY=0
+          CONFIG_BOOTCOMMAND="bootflow scan -mbG"
         ''
         + pkgs.lib.optionalString withLog ''
           CONFIG_LOG=y
@@ -150,6 +153,7 @@ self: pkgs: {
           CONFIG_SPL_LOGLEVEL=7
         ''
         + pkgs.lib.optionalString withSpi ''
+          CONFIG_ENV_IS_IN_MMC=n
           CONFIG_ENV_IS_IN_SPI_FLASH=y
           CONFIG_ROCKCHIP_SFC=y
           CONFIG_ROCKCHIP_SPI_IMAGE=y
@@ -164,10 +168,6 @@ self: pkgs: {
           CONFIG_SPI_FLASH_MACRONIX=y
           CONFIG_SPI_FLASH_XMC=y
           CONFIG_SPI_FLASH_XTX=y
-        ''
-        + pkgs.lib.optionalString (withUsb || withNvme) ''
-          CONFIG_USE_PREBOOT=y
-          CONFIG_PREBOOT="${pkgs.lib.optionalString withUsb "usb start;"}${pkgs.lib.optionalString withNvme "pci enum; nvme scan;"}"
         ''
         + pkgs.lib.optionalString withRecovery ''
           CONFIG_ADC=y
