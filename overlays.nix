@@ -93,6 +93,12 @@ self: pkgs: {
       dtsFile,
       patches ? [ ],
       extraConfig ? "",
+      extraMakeFlags ? [ ],
+      bootTargets ? [
+        "mmc1"
+        "nvme"
+        "mmc0"
+      ],
       withMenu ? true,
       withLog ? false,
       withSpi ? false,
@@ -113,13 +119,16 @@ self: pkgs: {
           "u-boot-rockchip.bin"
         ]
         ++ pkgs.lib.optional withSpi "u-boot-rockchip-spi.bin";
+        extraMakeFlags = [
+          ''KCFLAGS=-DBOOT_TARGETS="\"${toString bootTargets}\""''
+        ]
+        ++ extraMakeFlags;
         prePatch = ''
           cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
         '';
         patches = [
           ./patches/u-boot/spl-prefer-sdmmc.patch
           ./patches/u-boot/rk3588-adc-recovery.patch
-          ./patches/u-boot/cmd-add-bootconfig.patch
           ./patches/u-boot/bootflow-menu-countdown.patch
           ./patches/u-boot/bootflow-menu-central.patch
           ./patches/u-boot/clk-enhance-clk-gpio-to-also-handle-gated-fixed-clock.patch
@@ -137,10 +146,11 @@ self: pkgs: {
         ''
         + pkgs.lib.optionalString withMenu ''
           CONFIG_USE_PREBOOT=y
-          CONFIG_PREBOOT="usb start; setenv boot_targets \"mmc1 nvme mmc0\""
-          CONFIG_CMD_BOOTCONFIG=y
+          CONFIG_PREBOOT="usb start"
           CONFIG_EXPO=y
           CONFIG_BOOTDELAY=0
+          CONFIG_AUTOBOOT_KEYED=y
+          CONFIG_AUTOBOOT_KEYED_CTRLC=y
           CONFIG_BOOTCOMMAND="bootflow scan -mbG"
         ''
         + pkgs.lib.optionalString withLog ''
