@@ -128,12 +128,12 @@ self: pkgs: {
         '';
         patches = [
           ./patches/u-boot/usb-stop.patch
+          ./patches/u-boot/rockchip-video-drm.patch
           ./patches/u-boot/rk3588-adc-recovery.patch
-          ./patches/u-boot/bootflow-menu-countdown.patch
           ./patches/u-boot/bootflow-menu-central.patch
+          ./patches/u-boot/bootflow-menu-countdown.patch
           ./patches/u-boot/clk-enhance-clk-gpio-to-also-handle-gated-fixed-clock.patch
         ]
-        ++ pkgs.lib.optional withDrm ./patches/u-boot/rockchip-video-drm.patch
         ++ patches;
         extraConfig = ''
           # disable smbios such that sound card can find profile in alsa-ucm-conf
