@@ -1,0 +1,22 @@
+diff --git a/drivers/usb/host/ehci-generic.c b/drivers/usb/host/ehci-generic.c
+index 1ae3619ce25..8075fb069f1 100644
+--- a/drivers/usb/host/ehci-generic.c
++++ b/drivers/usb/host/ehci-generic.c
+@@ -167,5 +167,5 @@ U_BOOT_DRIVER(ehci_generic) = {
+ 	.remove = ehci_usb_remove,
+ 	.ops	= &ehci_usb_ops,
+ 	.priv_auto	= sizeof(struct generic_ehci),
+-	.flags	= DM_FLAG_ALLOC_PRIV_DMA,
++	.flags	= DM_FLAG_ALLOC_PRIV_DMA | DM_FLAG_OS_PREPARE,
+ };
+diff --git a/drivers/usb/host/ohci-generic.c b/drivers/usb/host/ohci-generic.c
+index cc44226f5e0..66f1fd6fd66 100644
+--- a/drivers/usb/host/ohci-generic.c
++++ b/drivers/usb/host/ohci-generic.c
+@@ -110,5 +110,5 @@ U_BOOT_DRIVER(ohci_generic) = {
+ 	.remove = ohci_usb_remove,
+ 	.ops	= &ohci_usb_ops,
+ 	.priv_auto	= sizeof(struct generic_ohci),
+-	.flags	= DM_FLAG_ALLOC_PRIV_DMA,
++	.flags	= DM_FLAG_ALLOC_PRIV_DMA | DM_FLAG_OS_PREPARE,
+ };

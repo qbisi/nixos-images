@@ -127,6 +127,7 @@ self: pkgs: {
           cp ${dtsFile} arch/arm/dts/${baseNameOf dtsFile}
         '';
         patches = [
+          ./patches/u-boot/usb-stop.patch
           ./patches/u-boot/rk3588-adc-recovery.patch
           ./patches/u-boot/bootflow-menu-countdown.patch
           ./patches/u-boot/bootflow-menu-central.patch

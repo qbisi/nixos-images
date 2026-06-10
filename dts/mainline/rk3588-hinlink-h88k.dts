@@ -1091,7 +1091,6 @@
 	status = "okay";
 };
 
-#ifndef CONFIG_OF_CONTROL
 &usb_host0_ehci {
 	status = "okay";
 };
@@ -1099,7 +1098,6 @@
 &usb_host0_ohci {
 	status = "okay";
 };
-#endif
 
 /* Type C port */
 &usb_host0_xhci {
