@@ -1,0 +1,173 @@
+commit a637b5072f8a52e25bfb0dae3ccfbb0e680496bd
+Author: qbisi <qbisicwate@gmail.com>
+Date:   Wed Jun 10 23:29:10 2026 +0800
+
+    bootflow: central menu
+
+diff --git a/boot/bootflow_menu.c b/boot/bootflow_menu.c
+index 33e62b337e9..77ff0134afd 100644
+--- a/boot/bootflow_menu.c
++++ b/boot/bootflow_menu.c
+@@ -17,10 +17,12 @@
+ #include <expo.h>
+ #include <malloc.h>
+ #include <menu.h>
++#include <video.h>
+ #include <video_console.h>
+ #include <watchdog.h>
+ #include <linux/delay.h>
+ #include "bootflow_internal.h"
++#include "scene_internal.h"
+ 
+ /**
+  * struct menu_priv - information about the menu
+@@ -35,6 +37,76 @@ struct menu_priv {
+ 	struct abuf *autoboot_buf;
+ };
+ 
++#define BOOTFLOW_MENU_WIDTH	1280
++#define BOOTFLOW_MENU_HEIGHT	720
++
++static int bootflow_menu_center(struct scene *scn)
++{
++	struct scene_obj *logo;
++	int xofs = 0, yofs = 0;
++	int ret;
++
++	if (scn->expo->display) {
++		int xsize = video_get_xsize(scn->expo->display);
++		int ysize = video_get_ysize(scn->expo->display);
++
++		if (xsize > BOOTFLOW_MENU_WIDTH)
++			xofs = (xsize - BOOTFLOW_MENU_WIDTH) / 2;
++		if (ysize > BOOTFLOW_MENU_HEIGHT)
++			yofs = (ysize - BOOTFLOW_MENU_HEIGHT) / 2;
++	}
++
++	ret = scene_obj_set_bbox(scn, OBJ_BOX,
++				 xofs + 30, yofs + 90,
++				 xofs + BOOTFLOW_MENU_WIDTH - 30,
++				 yofs + BOOTFLOW_MENU_HEIGHT - 48);
++	if (ret)
++		return log_msg_ret("box", ret);
++	ret = scene_obj_set_pos(scn, OBJ_MENU, xofs + MARGIN_LEFT, yofs + 100);
++	if (ret)
++		return log_msg_ret("men", ret);
++	ret = scene_obj_set_bbox(scn, OBJ_MENU_TITLE, xofs, yofs + 32,
++				 xofs + BOOTFLOW_MENU_WIDTH, yofs + 30);
++	if (ret)
++		return log_msg_ret("tit", ret);
++
++	logo = scene_obj_find(scn, OBJ_U_BOOT_LOGO, SCENEOBJT_NONE);
++	if (logo) {
++		ret = scene_obj_set_pos(scn, OBJ_U_BOOT_LOGO,
++					xofs + BOOTFLOW_MENU_WIDTH - 201,
++					yofs + 100);
++		if (ret)
++			return log_msg_ret("log", ret);
++	}
++
++	ret = scene_obj_set_bbox(scn, OBJ_PROMPT1A, xofs,
++				 yofs + BOOTFLOW_MENU_HEIGHT - 178,
++				 xofs + BOOTFLOW_MENU_WIDTH,
++				 yofs + 30);
++	if (ret)
++		return log_msg_ret("p1a", ret);
++	ret = scene_obj_set_bbox(scn, OBJ_PROMPT1B, xofs,
++				 yofs + BOOTFLOW_MENU_HEIGHT - 148,
++				 xofs + BOOTFLOW_MENU_WIDTH,
++				 yofs + 30);
++	if (ret)
++		return log_msg_ret("p1b", ret);
++	ret = scene_obj_set_bbox(scn, OBJ_PROMPT2, xofs + 100,
++				 yofs + BOOTFLOW_MENU_HEIGHT - 118,
++				 xofs + BOOTFLOW_MENU_WIDTH - 100,
++				 yofs + BOOTFLOW_MENU_HEIGHT - 68);
++	if (ret)
++		return log_msg_ret("p2", ret);
++	ret = scene_obj_set_bbox(scn, OBJ_AUTOBOOT, xofs,
++				 yofs + BOOTFLOW_MENU_HEIGHT - 48,
++				 xofs + BOOTFLOW_MENU_WIDTH,
++				 yofs + BOOTFLOW_MENU_HEIGHT - 18);
++	if (ret)
++		return log_msg_ret("aut", ret);
++
++	return 0;
++}
++
+ int bootflow_menu_new(struct expo **expp)
+ {
+ 	struct scene_obj_menu *menu;
+@@ -60,7 +132,9 @@ int bootflow_menu_new(struct expo **expp)
+ 	ret = scene_box(scn, "box", OBJ_BOX, 2, NULL);
+ 	if (ret < 0)
+ 		return log_msg_ret("bmb", ret);
+-	ret |= scene_obj_set_bbox(scn, OBJ_BOX, 30, 90, 1366 - 30, 720);
++	ret |= scene_obj_set_bbox(scn, OBJ_BOX, 30, 90,
++				  BOOTFLOW_MENU_WIDTH - 30,
++				  BOOTFLOW_MENU_HEIGHT - 48);
+ 
+ 	ret = scene_menu(scn, "main", OBJ_MENU, &menu);
+ 	ret |= scene_obj_set_pos(scn, OBJ_MENU, MARGIN_LEFT, 100);
+@@ -73,7 +147,8 @@ int bootflow_menu_new(struct expo **expp)
+ 	logo = video_get_u_boot_logo();
+ 	if (logo) {
+ 		ret |= scene_img(scn, "ulogo", OBJ_U_BOOT_LOGO, logo, NULL);
+-		ret |= scene_obj_set_pos(scn, OBJ_U_BOOT_LOGO, 1165, 100);
++		ret |= scene_obj_set_pos(scn, OBJ_U_BOOT_LOGO,
++					 BOOTFLOW_MENU_WIDTH - 201, 100);
+ 	}
+ 
+ 	ret |= scene_txt_str(scn, "prompt1a", OBJ_PROMPT1A, STR_PROMPT1A,
+@@ -89,14 +164,20 @@ int bootflow_menu_new(struct expo **expp)
+ 	ret |= scene_txt_str(scn, "autoboot", OBJ_AUTOBOOT, STR_AUTOBOOT,
+ 	     "The highlighted entry will be executed automatically in %ds.",
+ 	     NULL);
+-	ret |= scene_obj_set_bbox(scn, OBJ_PROMPT1A, 0, 590,
++	ret |= scene_obj_set_bbox(scn, OBJ_PROMPT1A, 0,
++				  BOOTFLOW_MENU_HEIGHT - 178,
+ 				  SCENEOB_DISPLAY_MAX, 30);
+-	ret |= scene_obj_set_bbox(scn, OBJ_PROMPT1B, 0, 620,
++	ret |= scene_obj_set_bbox(scn, OBJ_PROMPT1B, 0,
++				  BOOTFLOW_MENU_HEIGHT - 148,
+ 				  SCENEOB_DISPLAY_MAX, 30);
+-	ret |= scene_obj_set_bbox(scn, OBJ_PROMPT2, 100, 650,
+-				  1366 - 100, 700);
+-	ret |= scene_obj_set_bbox(scn, OBJ_AUTOBOOT, 0, 720,
+-				  SCENEOB_DISPLAY_MAX, 750);
++	ret |= scene_obj_set_bbox(scn, OBJ_PROMPT2, 100,
++				  BOOTFLOW_MENU_HEIGHT - 118,
++				  BOOTFLOW_MENU_WIDTH - 100,
++				  BOOTFLOW_MENU_HEIGHT - 68);
++	ret |= scene_obj_set_bbox(scn, OBJ_AUTOBOOT, 0,
++				  BOOTFLOW_MENU_HEIGHT - 48,
++				  SCENEOB_DISPLAY_MAX,
++				  BOOTFLOW_MENU_HEIGHT - 18);
+ 	ret |= scene_obj_set_halign(scn, OBJ_PROMPT1A, SCENEOA_CENTRE);
+ 	ret |= scene_obj_set_halign(scn, OBJ_PROMPT1B, SCENEOA_CENTRE);
+ 	ret |= scene_obj_set_halign(scn, OBJ_PROMPT2, SCENEOA_CENTRE);
+@@ -304,16 +385,20 @@ int bootflow_menu_start(struct bootstd_priv *std, bool text_mode,
+ 			return log_msg_ret("thm", ret);
+ 	}
+ 
+-	ret = expo_calc_dims(exp);
+-	if (ret)
+-		return log_msg_ret("bmd", ret);
+-
+ 	ret = expo_first_scene_id(exp);
+ 	if (ret < 0)
+ 		return log_msg_ret("scn", ret);
+ 	scene_id = ret;
+ 	scn = expo_lookup_scene_id(exp, scene_id);
+ 
++	ret = bootflow_menu_center(scn);
++	if (ret)
++		return log_msg_ret("cen", ret);
++
++	ret = expo_calc_dims(exp);
++	if (ret)
++		return log_msg_ret("bmd", ret);
++
+ 	scene_set_highlight_id(scn, OBJ_MENU);
+ 
+ 	ret = scene_arrange(scn);
