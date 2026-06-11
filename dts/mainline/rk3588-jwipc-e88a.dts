@@ -994,8 +994,9 @@
 };
 
 &usb_host0_xhci {
+	extcon = <&u2phy0>;
+	maximum-speed = "high-speed";
 	status = "okay";
-	dr_mode = "host";
 };
 
 &combphy2_psu {
@@ -1062,7 +1063,7 @@
 &dp0 {
     pinctrl-names = "default";
     pinctrl-0 = <&dp0m0_pins>;
-	status = "okay";
+	status = "disabled";
 };
 
 &dp0_in {
