@@ -768,6 +768,24 @@
 	};
 };
 
+&i2c8 {
+	clock-frequency = <150000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c8m2_xfer>;
+	status = "okay";
+
+	pca9538: gpio@73 {
+		compatible = "nxp,pca9538";
+		reg = <0x73>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <RK_PB3 IRQ_TYPE_LEVEL_LOW>;
+	};
+};
+
 &tsadc {
 	status = "okay";
 };
