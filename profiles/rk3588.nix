@@ -39,7 +39,7 @@
   };
 
   boot = {
-    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_rockchip64_6_18);
+    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_rockchip64_7_0);
     kernelParams = [
       "net.ifnames=0"
     ];
