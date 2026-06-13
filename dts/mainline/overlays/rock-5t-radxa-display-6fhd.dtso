@@ -33,7 +33,7 @@
 
 	dsi0_panel: panel@0 {
 		status = "okay";
-		compatible = "panel-dsi-simple";
+		compatible = "panel-simple-dsi";
 		reg = <0>;
 		backlight = <&sgm37604_bl>;
 		power-supply = <&vcc_lcd_mipi1>;

@@ -35,7 +35,7 @@
 
 	panel@0 {
 		status = "okay";
-		compatible = "panel-dsi-simple";
+		compatible = "panel-simple-dsi";
 		reg = <0>;
 		backlight = <&backlight>;
 

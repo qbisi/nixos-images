@@ -691,7 +691,7 @@ static const struct panel_desc_dsi panasonic_vvx10f004b00 = {
 
 static const struct of_device_id dsi_of_match[] = {
 	{
-		.compatible = "panel-dsi-simple",
+		.compatible = "panel-simple-dsi",
 		.data = NULL
 	}, {
 		/* sentinel */
@@ -761,7 +761,7 @@ static void panel_simple_dsi_shutdown(struct mipi_dsi_device *dsi)
 
 static struct mipi_dsi_driver panel_simple_dsi_driver = {
 	.driver = {
-		.name = "panel-dsi-simple",
+		.name = "panel-simple-dsi",
 		.of_match_table = dsi_of_match,
 	},
 	.probe = panel_simple_dsi_probe,

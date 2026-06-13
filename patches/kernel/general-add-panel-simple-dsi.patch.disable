@@ -752,7 +752,7 @@ index 000000000000..111111111111
 +
 +static const struct of_device_id dsi_of_match[] = {
 +	{
-+		.compatible = "panel-dsi-simple",
++		.compatible = "panel-simple-dsi",
 +		.data = NULL
 +	}, {
 +		/* sentinel */
@@ -817,7 +817,7 @@ index 000000000000..111111111111
 +
 +static struct mipi_dsi_driver panel_simple_dsi_driver = {
 +	.driver = {
-+		.name = "panel-dsi-simple",
++		.name = "panel-simple-dsi",
 +		.of_match_table = dsi_of_match,
 +	},
 +	.probe = panel_simple_dsi_probe,
