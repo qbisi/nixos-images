@@ -28,6 +28,7 @@
   hardware = {
     enableAllHardware = false;
     wirelessRegulatoryDatabase = true;
+    deviceTree.enable = true;
     firmware = [
       pkgs.rockchip-firmware
     ];
