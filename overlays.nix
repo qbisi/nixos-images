@@ -243,19 +243,22 @@ self: pkgs: {
       defconfigFile ? null,
       ...
     }@args:
-    (pkgs.buildLinux args).override (prev: {
-      defconfig = if isNull defconfigFile then prev.defconfig or null else "fromfile_defconfig";
-      kernelPatches =
-        prev.kernelPatches or [ ]
-        ++ pkgs.lib.optional (!(isNull defconfigFile)) {
-          name = "symlink-defconfigFile-to-kernel-defconfig";
-          patch = self.makePatch {
-            src = pkgs.emptyDirectory;
-            patchCommands = ''
-              mkdir -p arch/${kernalArch}/configs
-              ln -s ${defconfigFile} arch/${kernalArch}/configs/fromfile_defconfig
-            '';
-          };
-        };
-    });
+    if isNull defconfigFile then
+      pkgs.buildLinux args
+    else
+      (pkgs.buildLinux args).override (prev: {
+        defconfig = "fromfile_defconfig";
+        kernelPatches = prev.kernelPatches or [ ] ++ [
+          {
+            name = "symlink-defconfigFile-to-kernel-defconfig";
+            patch = self.makePatch {
+              src = pkgs.emptyDirectory;
+              patchCommands = ''
+                mkdir -p arch/${kernalArch}/configs
+                ln -s ${defconfigFile} arch/${kernalArch}/configs/fromfile_defconfig
+              '';
+            };
+          }
+        ];
+      });
 }
