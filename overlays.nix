@@ -1,4 +1,29 @@
 self: pkgs: {
+  vmTools = pkgs.vmTools // {
+    override =
+      args:
+      let
+        usesAggregateKernel =
+          args ? kernel
+          && builtins.isAttrs args.kernel
+          && !(args.kernel ? target)
+          && (args.kernel.name or null) == "kernel-modules";
+      in
+      pkgs.vmTools.override (
+        if usesAggregateKernel then
+          (removeAttrs args [
+            "kernel"
+            "kernelModules"
+          ])
+          // {
+            kernel = pkgs.linuxPackages.kernel;
+            kernelModules = args.kernelModules or args.kernel;
+          }
+        else
+          args
+      );
+  };
+
   makePatch =
     {
       name ? "unnamed",

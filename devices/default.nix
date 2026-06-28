@@ -39,7 +39,7 @@
             nixosSystem = self.nixosConfigurations."${device}".extendModules {
               modules = [
                 {
-                  disko.imageBuilder.pkgs = pkgs;
+                  disko.imageBuilder.pkgs = pkgs.extend (import ../overlays.nix);
                 }
               ];
             };
