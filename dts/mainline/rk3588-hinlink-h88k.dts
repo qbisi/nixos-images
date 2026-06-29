@@ -442,7 +442,7 @@
 	status = "okay";
 
 	husb311@4e {
-		compatible = "hynetek,husb311";
+		compatible = "richtek,rt1711h";
 		reg = <0x4e>;
 		interrupt-parent = <&gpio1>;
 		interrupts = <RK_PA0 IRQ_TYPE_LEVEL_LOW>;
