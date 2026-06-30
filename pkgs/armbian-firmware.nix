@@ -9,7 +9,7 @@ let
     find . -type f -path './${f}' -exec cp --parents {} $out/lib/firmware \;
   '';
 in
-stdenvNoCC.mkDerivation rec {
+stdenvNoCC.mkDerivation {
   pname = "armbian-firmware";
   version = "unstable-2026-03-01";
 
@@ -20,11 +20,10 @@ stdenvNoCC.mkDerivation rec {
     hash = "sha256-/JxCWvpRtGW4hwqqtDJ7OutyyQXMdkJ1h6vzDsrmCkc=";
   };
 
-  installPhase =
-    ''
-      mkdir -p $out/lib/firmware
-    ''
-    + lib.concatMapStringsSep "\n" installFilter filters;
+  installPhase = ''
+    mkdir -p $out/lib/firmware
+  ''
+  + lib.concatMapStringsSep "\n" installFilter filters;
 
   # Firmware blobs do not need fixing and should not be modified
   dontBuild = true;
