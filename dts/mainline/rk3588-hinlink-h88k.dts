@@ -425,6 +425,22 @@
 &i2c2 {
 	status = "okay";
 
+	vdd_npu_s0: regulator@42 {
+		compatible = "rockchip,rk8602";
+		reg = <0x42>;
+		fcs,suspend-voltage-selector = <1>;
+		regulator-name = "vdd_npu_s0";
+		regulator-boot-on;
+		regulator-min-microvolt = <550000>;
+		regulator-max-microvolt = <950000>;
+		regulator-ramp-delay = <2300>;
+		vin-supply = <&vcc5v0_sys>;
+
+		regulator-state-mem {
+			regulator-off-in-suspend;
+		};
+	};
+
 	hym8563: rtc@51 {
 		compatible = "haoyu,hym8563";
 		reg = <0x51>;
@@ -455,17 +471,9 @@
 			compatible = "usb-c-connector";
 			label = "USB-C";
 			data-role = "dual";
-			power-role = "dual";
-			try-power-role = "sink";
-			op-sink-microwatt = <1000000>;
-			sink-pdos =
-			<PDO_FIXED(5000, 1000, PDO_FIXED_DUAL_ROLE |
-			PDO_FIXED_USB_COMM |
-			PDO_FIXED_DATA_SWAP)>;
+			power-role = "source";
 			source-pdos =
-			<PDO_FIXED(5000, 3000, PDO_FIXED_DUAL_ROLE |
-			PDO_FIXED_USB_COMM |
-			PDO_FIXED_DATA_SWAP)>;
+			<PDO_FIXED(5000, 3000, PDO_FIXED_USB_COMM | PDO_FIXED_DATA_SWAP)>;
 
 			altmodes {
 				displayport {
@@ -641,6 +649,36 @@
 			rockchip,pins = <1 RK_PA0 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
 	};
+};
+
+&rknn_core_0 {
+	npu-supply = <&vdd_npu_s0>;
+	sram-supply = <&vdd_npu_s0>;
+	status = "okay";
+};
+
+&rknn_core_1 {
+	npu-supply = <&vdd_npu_s0>;
+	sram-supply = <&vdd_npu_s0>;
+	status = "okay";
+};
+
+&rknn_core_2 {
+	npu-supply = <&vdd_npu_s0>;
+	sram-supply = <&vdd_npu_s0>;
+	status = "okay";
+};
+
+&rknn_mmu_0 {
+	status = "okay";
+};
+
+&rknn_mmu_1 {
+	status = "okay";
+};
+
+&rknn_mmu_2 {
+	status = "okay";
 };
 
 &saradc {
