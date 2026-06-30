@@ -63,6 +63,7 @@
       minicom
       ethtool
       vim
+      rktop
     ];
   };
 }

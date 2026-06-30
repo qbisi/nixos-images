@@ -1,0 +1,9 @@
+[package]
+name = "rktop"
+version = "0.1.0"
+edition = "2024"
+authors = ["qbisi"]
+description = "CPU/GPU monitor for Rockchip RK3588 systems on mainline Linux"
+license = "MIT"
+
+[dependencies]
