@@ -39,7 +39,34 @@
             nixosSystem = self.nixosConfigurations."${device}".extendModules {
               modules = [
                 {
-                  disko.imageBuilder.pkgs = pkgs.extend (import ../overlays.nix);
+                  disko.imageBuilder.pkgs = pkgs.extend (
+                    final: prev: {
+                      vmTools = prev.vmTools // {
+                        override =
+                          args:
+                          let
+                            usesAggregateKernel =
+                              args ? kernel
+                              && builtins.isAttrs args.kernel
+                              && !(args.kernel ? target)
+                              && (args.kernel.name or null) == "kernel-modules";
+                          in
+                          prev.vmTools.override (
+                            if usesAggregateKernel then
+                              (removeAttrs args [
+                                "kernel"
+                                "kernelModules"
+                              ])
+                              // {
+                                kernel = prev.linuxPackages.kernel;
+                                kernelModules = args.kernelModules or args.kernel;
+                              }
+                            else
+                              args
+                          );
+                      };
+                    }
+                  );
                 }
               ];
             };
