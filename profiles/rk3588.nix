@@ -49,6 +49,66 @@
 
   services = {
     usb-rndis.enable = lib.mkDefault true;
+
+    pipewire.wireplumber.extraConfig = {
+      rk3588-sound = {
+        "monitor.alsa.rules" = [
+          {
+            matches = [
+              {
+                "device.name" = "alsa_card.platform-hdmi0-sound";
+              }
+            ];
+            actions = {
+              update-props = {
+                "device.description" = "HDMI 0";
+                "device.form-factor" = "hdmi";
+                "device.icon-name" = "video-display";
+              };
+            };
+          }
+          {
+            matches = [
+              {
+                "device.name" = "alsa_card.platform-hdmi1-sound";
+              }
+            ];
+            actions = {
+              update-props = {
+                "device.description" = "HDMI 1";
+                "device.form-factor" = "hdmi";
+                "device.icon-name" = "video-display";
+              };
+            };
+          }
+          {
+            matches = [
+              {
+                "device.name" = "alsa_card.platform-analog-sound";
+              }
+            ];
+            actions = {
+              update-props = {
+                "device.description" = "Cuffie / Line Out";
+              };
+            };
+          }
+          {
+            matches = [
+              {
+                "node.name" = "alsa_output.platform-hdmi0-sound.stereo-fallback";
+              }
+            ];
+            actions = {
+              update-props = {
+                "node.description" = "HDMI 0 (LG TV)";
+                "node.nick" = "HDMI 0";
+              };
+            };
+          }
+        ];
+      };
+    };
   };
 
   environment = {
