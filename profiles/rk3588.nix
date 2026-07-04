@@ -33,7 +33,7 @@
       overlays = [
         {
           name = "gpu-opp-table";
-          dtsFile = ../../dts/mainline/overlays/rk3588-gpu-opp-voltage-fix.dtso.dtso;
+          dtsFile = ../dts/mainline/overlays/rk3588-gpu-opp-voltage-fix.dtso;
         }
       ];
     };
