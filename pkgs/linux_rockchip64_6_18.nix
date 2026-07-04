@@ -11,7 +11,7 @@ buildLinux {
 
   defconfigFile = fetchurl {
     url = "https://raw.githubusercontent.com/armbian/build/559a605841fb02592d8a2db3edd614d80dd236aa/config/kernel/linux-rockchip64-current.config";
-    hash = "sha256-1gb5wrqm3h7hfcqiilzysdhywxnpmkiv71r2kwd6v5vhiqnvwh0k";
+    hash = "sha256-E0C+LY5wl20anyKHs+Os13buYdP+0xgxc/DAUXHmZb0=";
   };
 
   kernelPatches =
