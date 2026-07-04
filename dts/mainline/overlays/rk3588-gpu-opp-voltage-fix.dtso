@@ -8,10 +8,10 @@
 /plugin/;
 
 / {
-	compatible = "rockchip,rk3588";
+	compatible = "rockchip,ido-evb3588-v1a";
 };
 
-&{/gpu-opp-table} {
+&gpu_opp_table {
 	opp-900000000 {
 		opp-hz = /bits/ 64 <900000000>;
 		opp-microvolt = <900000 900000 950000>;
