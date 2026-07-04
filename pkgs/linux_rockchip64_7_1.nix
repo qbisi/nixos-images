@@ -3,15 +3,15 @@
   fetchurl,
   fetchFromGitHub,
   buildLinux,
-  linux_7_0,
+  linux_7_1,
   ...
 }:
 buildLinux {
-  inherit (linux_7_0) version src;
+  inherit (linux_7_1) version src;
 
   defconfigFile = fetchurl {
-    url = "https://raw.githubusercontent.com/armbian/build/39fdcef4ceda49b6967e9e16b187119ec8ad0336/config/kernel/linux-rockchip64-edge.config";
-    hash = "sha256-VKM1wy4oVNvB8gInkRELNiEapkB3KC+ts9E+b5Xuty8=";
+    url = "https://raw.githubusercontent.com/armbian/build/559a605841fb02592d8a2db3edd614d80dd236aa/config/kernel/linux-rockchip64-edge.config";
+    hash = "sha256-vdUMm0mBtzlSHawpnVkLOfLUOlnKlMx7kxvzR7pH1mg=";
   };
 
   kernelPatches =

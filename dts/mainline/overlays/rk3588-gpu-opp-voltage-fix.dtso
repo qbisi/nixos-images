@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// DTS overlay: raise GPU OPP voltages to reach 900/1000 MHz
+// The PVTPLL ring oscillator frequency is voltage-dependent.
+// Default OPP voltages (825/875 mV) are too low for the PVTPLL
+// to produce 900/1000 MHz, causing BL31 to fall back to NPLL at 850 MHz.
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "rockchip,rk3588";
+};
+
+&{/gpu-opp-table} {
+	opp-900000000 {
+		opp-hz = /bits/ 64 <900000000>;
+		opp-microvolt = <900000 900000 950000>;
+	};
+
+	opp-1000000000 {
+		opp-hz = /bits/ 64 <1000000000>;
+		opp-microvolt = <950000 950000 950000>;
+	};
+};

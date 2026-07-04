@@ -10,8 +10,8 @@ buildLinux {
   inherit (linux_6_18) version src;
 
   defconfigFile = fetchurl {
-    url = "https://raw.githubusercontent.com/armbian/build/39fdcef4ceda49b6967e9e16b187119ec8ad0336/config/kernel/linux-rockchip64-current.config";
-    hash = "sha256-T4etkfX7PqwAZmGRgsTi+tfZ5XAZowtFTsEKLn77b+Q=";
+    url = "https://raw.githubusercontent.com/armbian/build/559a605841fb02592d8a2db3edd614d80dd236aa/config/kernel/linux-rockchip64-current.config";
+    hash = "sha256-1gb5wrqm3h7hfcqiilzysdhywxnpmkiv71r2kwd6v5vhiqnvwh0k";
   };
 
   kernelPatches =

@@ -28,7 +28,15 @@
   hardware = {
     enableAllHardware = false;
     wirelessRegulatoryDatabase = true;
-    deviceTree.enable = true;
+    deviceTree = {
+      enable = true;
+      overlays = [
+        {
+          name = "gpu-opp-table";
+          dtsFile = ../../dts/mainline/overlays/rk3588-gpu-opp-voltage-fix.dtso.dtso;
+        }
+      ];
+    };
     firmware = [
       pkgs.rockchip-firmware
     ];
@@ -40,7 +48,7 @@
   };
 
   boot = {
-    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_rockchip64_7_0);
+    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_rockchip64_7_1);
     kernelParams = [
       "net.ifnames=0"
     ];
