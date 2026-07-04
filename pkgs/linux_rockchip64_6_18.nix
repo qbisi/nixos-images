@@ -1,7 +1,6 @@
 {
   lib,
   fetchurl,
-  fetchFromGitHub,
   buildLinux,
   linux_6_18,
   ...
