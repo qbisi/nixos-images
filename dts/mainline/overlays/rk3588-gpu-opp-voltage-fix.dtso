@@ -8,7 +8,7 @@
 /plugin/;
 
 / {
-	compatible = "rockchip,ido-evb3588-v1a";
+	compatible = "rockchip,rk3588";
 };
 
 &gpu_opp_table {
