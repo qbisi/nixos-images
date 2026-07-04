@@ -48,6 +48,10 @@ in
       terminal_output --append serial
     '';
 
-    boot.kernelParams = (mkBefore [ "console=ttyS${toString cfg.unit},${toString cfg.baudrate}" ]);
+    boot.kernelParams = [
+      "console=ttyS${toString cfg.unit},${toString cfg.baudrate}"
+      "console=tty1"
+      "console=both"
+    ];
   };
 }
