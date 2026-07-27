@@ -1,20 +1,17 @@
 {
   lib,
   buildLinux,
-  fetchFromGitHub,
+  fetchgit,
   ...
 }:
 buildLinux {
   version = "6.6.0-phytium";
   modDirVersion = "6.6.0";
 
-  src = fetchFromGitHub {
-    githubBase = "gitee.com";
-    owner = "phytium_opensource";
-    repo = "linux";
-    rev = "Phytium-6.6.2";
-    forceFetchGit = true;
-    hash = "sha256-gzm/lmqQdIiTkhtzbj6/tHg1I8PrY9RznUpTO8+l1dE=";
+  src = fetchgit {
+    url = "https://gitee.com/phytium_opensource/linux.git";
+    tag = "Phytium-6.6.0";
+    hash = "sha256-6u9VQdmKUrUOmE+K1z38pDwKmmb0LiUA7LeCl7oJmGw=";
   };
 
   structuredExtraConfig = with lib.kernel; {
