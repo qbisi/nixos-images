@@ -1,0 +1,173 @@
+name: Release images
+
+on:
+  push:
+    tags:
+      - "*"
+
+concurrency:
+  group: release-images-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Prepare release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      devices: ${{ steps.devices.outputs.devices }}
+      on_master: ${{ steps.branch.outputs.on_master }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Check tag commit is on master
+        id: branch
+        run: |
+          git fetch --no-tags origin master:refs/remotes/origin/master
+          if git merge-base --is-ancestor "${GITHUB_SHA}^{commit}" refs/remotes/origin/master; then
+            echo "on_master=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "on_master=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping tag ${GITHUB_REF_NAME}: its commit is not on master."
+          fi
+
+      - name: Collect devices
+        id: devices
+        run: |
+          devices="$(
+            find devices/by-name -maxdepth 1 -type f -name '*.nix' -printf '%f\n' |
+              sed 's/\.nix$//' |
+              sort |
+              jq --raw-input --slurp --compact-output 'split("\n") | map(select(length > 0))'
+          )"
+
+          if [ "$devices" = "[]" ]; then
+            echo "::error::No device definitions found in devices/by-name."
+            exit 1
+          fi
+
+          echo "devices=$devices" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build ${{ matrix.device }}
+    needs: prepare
+    if: needs.prepare.outputs.on_master == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        device: ${{ fromJSON(needs.prepare.outputs.devices) }}
+    runs-on: ubuntu-24.04
+    environment: cachix
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
+        with:
+          github_access_token: ${{ github.token }}
+          enable_kvm: true
+          extra_nix_config: |
+            extra-platforms = aarch64-linux
+            experimental-features = nix-command flakes
+            system-features = nixos-test benchmark big-parallel kvm
+
+      - name: Check Cachix configuration
+        env:
+          CACHIX_CACHE_NAME: ${{ vars.CACHIX_CACHE_NAME }}
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: |
+          test -n "$CACHIX_CACHE_NAME" || {
+            echo "::error::Set the CACHIX_CACHE_NAME environment variable."
+            exit 1
+          }
+          test -n "$CACHIX_AUTH_TOKEN" || {
+            echo "::error::Set the CACHIX_AUTH_TOKEN environment secret."
+            exit 1
+          }
+
+      - name: Configure Cachix
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+        with:
+          name: ${{ vars.CACHIX_CACHE_NAME }}
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Set swap space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 32
+
+      - name: Build image
+        env:
+          DISKO_COMPRESS: "1"
+        run: nix build ".#${{ matrix.device }}" --accept-flake-config --impure
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.device }}
+          path: result/*
+          if-no-files-found: error
+
+  release:
+    name: Create prerelease
+    needs:
+      - prepare
+      - build
+    if: needs.prepare.outputs.on_master == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download image artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: image-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          previous_tag="$(
+            gh release list \
+              --repo "$GITHUB_REPOSITORY" \
+              --exclude-drafts \
+              --limit 1 \
+              --json tagName \
+              --jq '.[0].tagName // ""'
+          )"
+
+          release_args=(
+            "$GITHUB_REF_NAME"
+            --repo "$GITHUB_REPOSITORY"
+            --title "$GITHUB_REF_NAME"
+            --verify-tag
+            --prerelease
+            --generate-notes
+          )
+
+          if [ -n "$previous_tag" ]; then
+            release_args+=(--notes-start-tag "$previous_tag")
+          fi
+
+          mapfile -d '' -t artifacts < <(find artifacts -type f -print0 | sort -z)
+          if [ "${#artifacts[@]}" -eq 0 ]; then
+            echo "::error::No image artifacts were downloaded."
+            exit 1
+          fi
+
+          gh release create "${release_args[@]}" "${artifacts[@]}"
