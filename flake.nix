@@ -1,10 +1,10 @@
 {
   nixConfig = {
     extra-substituters = [
-      "https://cache.qbisi.cc"
+      "https://qbisi.cachix.org"
     ];
     extra-trusted-public-keys = [
-      "cache.qbisi.cc-1:xEChzP5k8fj+7wajY+e9IDORRTGMhViP5NaqMShGGjQ="
+      "qbisi.cachix.org-1:FUbVbR4ivzvO+Dxu88VHuTbOT7zfH75rRnTn4dZB8+g="
     ];
   };
 
