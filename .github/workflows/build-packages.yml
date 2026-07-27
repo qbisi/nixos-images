@@ -1,0 +1,88 @@
+name: Build packages
+
+on:
+  push:
+    branches:
+      - master
+      - stage
+  pull_request:
+    branches:
+      - master
+      - stage
+
+concurrency:
+  group: build-packages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build ${{ matrix.system }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - system: aarch64-linux
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    environment: cachix
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
+        with:
+          github_access_token: ${{ github.token }}
+
+      - name: Check Cachix configuration
+        if: github.event_name == 'push'
+        env:
+          CACHIX_CACHE_NAME: ${{ vars.CACHIX_CACHE_NAME }}
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        run: |
+          test -n "$CACHIX_CACHE_NAME" || {
+            echo "::error::Set the CACHIX_CACHE_NAME environment variable."
+            exit 1
+          }
+          test -n "$CACHIX_AUTH_TOKEN" || {
+            echo "::error::Set the CACHIX_AUTH_TOKEN environment secret."
+            exit 1
+          }
+
+      - name: Configure Cachix
+        if: github.event_name == 'push'
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+        with:
+          name: ${{ vars.CACHIX_CACHE_NAME }}
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Build all packages
+        env:
+          SYSTEM: ${{ matrix.system }}
+        run: |
+          # shellcheck disable=SC2016
+          mapfile -t packages < <(
+            nix eval --impure --raw --expr '
+              let
+                flake = builtins.getFlake (toString ./.);
+                system = builtins.getEnv "SYSTEM";
+              in
+              (builtins.concatStringsSep "\n" (builtins.attrNames flake.packages.${system})) + "\n"
+            '
+          )
+
+          if [ "${#packages[@]}" -eq 0 ]; then
+            echo "::error::packages.${SYSTEM} does not contain any packages."
+            exit 1
+          fi
+
+          installables=()
+          for package in "${packages[@]}"; do
+            installables+=(".#packages.${SYSTEM}.${package}")
+          done
+
+          printf 'Building %s\n' "${installables[@]}"
+          nix build --no-link --print-build-logs "${installables[@]}"
