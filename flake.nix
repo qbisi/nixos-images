@@ -27,7 +27,12 @@
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
+    inputs.flake-parts.lib.mkFlake {
+      inherit inputs;
+      specialArgs = {
+        lib = inputs.nixpkgs.lib.extend (lib: _: import ./lib.nix lib);
+      };
+    } (
       {
         self,
         ...
@@ -68,7 +73,7 @@
 
             formatter = pkgs.nixfmt-rfc-style;
 
-            legacyPackages = lib.makeScope pkgs.newScope (
+            legacyPackages = lib.makeScope (scope: pkgs.newScope ({ inherit lib; } // scope)) (
               self:
               (lib.packagesFromDirectoryRecursive {
                 inherit (self) callPackage;
