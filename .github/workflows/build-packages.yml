@@ -15,15 +15,50 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  prepare:
+    name: Prepare package matrix
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      packages: ${{ steps.packages.outputs.packages }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
+        with:
+          github_access_token: ${{ github.token }}
+
+      - name: Collect packages
+        id: packages
+        run: |
+          packages="$(
+            nix eval --impure --json --expr '
+              let
+                flake = builtins.getFlake (toString ./.);
+              in
+              builtins.attrNames flake.packages.aarch64-linux
+            '
+          )"
+
+          if [ "$packages" = "[]" ]; then
+            echo "::error::packages.aarch64-linux does not contain any packages."
+            exit 1
+          fi
+
+          echo "packages=$packages" >> "$GITHUB_OUTPUT"
+
   build:
-    name: Build ${{ matrix.system }}
+    name: Build ${{ matrix.package }}
+    needs: prepare
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - system: aarch64-linux
-            runner: ubuntu-24.04-arm
-    runs-on: ${{ matrix.runner }}
+        package: ${{ fromJSON(needs.prepare.outputs.packages) }}
+    runs-on: ubuntu-24.04-arm
     environment: cachix
     permissions:
       contents: read
@@ -59,30 +94,5 @@ jobs:
           name: ${{ vars.CACHIX_CACHE_NAME }}
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
-      - name: Build all packages
-        env:
-          SYSTEM: ${{ matrix.system }}
-        run: |
-          # shellcheck disable=SC2016
-          mapfile -t packages < <(
-            nix eval --impure --raw --expr '
-              let
-                flake = builtins.getFlake (toString ./.);
-                system = builtins.getEnv "SYSTEM";
-              in
-              (builtins.concatStringsSep "\n" (builtins.attrNames flake.packages.${system})) + "\n"
-            '
-          )
-
-          if [ "${#packages[@]}" -eq 0 ]; then
-            echo "::error::packages.${SYSTEM} does not contain any packages."
-            exit 1
-          fi
-
-          installables=()
-          for package in "${packages[@]}"; do
-            installables+=(".#packages.${SYSTEM}.${package}")
-          done
-
-          printf 'Building %s\n' "${installables[@]}"
-          nix build --no-link --print-build-logs "${installables[@]}"
+      - name: Build package
+        run: nix build --no-link --print-build-logs ".#${{ matrix.package }}"
