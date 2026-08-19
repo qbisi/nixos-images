@@ -132,7 +132,6 @@ self: pkgs: {
           ./patches/u-boot/rk3588-adc-recovery.patch
           ./patches/u-boot/bootflow-menu-central.patch
           ./patches/u-boot/bootflow-menu-countdown.patch
-          ./patches/u-boot/clk-enhance-clk-gpio-to-also-handle-gated-fixed-clock.patch
         ]
         ++ patches;
         extraConfig = ''
