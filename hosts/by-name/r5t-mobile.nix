@@ -34,6 +34,7 @@
   };
 
   services = {
+    services.usb-ether.enable = true;
     udev.extraRules = ''
       # Hide HDMI CEC/RC input devices from libinput. They expose REL_X/REL_Y
       # and look pointer-capable, but this image only needs the panel touch input.

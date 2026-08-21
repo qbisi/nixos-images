@@ -11,4 +11,6 @@
     ../../profiles/desktop.nix
     ../../profiles/common.nix
   ];
+
+  services.usb-ether.enable = true;
 }
