@@ -260,4 +260,12 @@ self: pkgs: {
           }
         ];
       });
+
+  chromium = pkgs.chromium.override {
+    commandLineArgs = pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isAarch64 ''
+      --enable-features=AcceleratedVideoDecoder,AcceleratedVideoDecodeLinuxGL,AcceleratedVideoDecodeLinuxZeroCopyGL \
+      --ignore-gpu-blocklist \
+      --enable-zero-copy
+    '';
+  };
 }
