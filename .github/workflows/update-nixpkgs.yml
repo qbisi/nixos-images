@@ -1,0 +1,89 @@
+name: Update nixpkgs
+
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: update-nixpkgs
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update flake input
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    outputs:
+      changed: ${{ steps.update.outputs.changed }}
+      commit: ${{ steps.update.outputs.commit }}
+
+    steps:
+      - name: Check out master
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
+        with:
+          github_access_token: ${{ github.token }}
+
+      - name: Update nixpkgs
+        id: update
+        run: |
+          nix flake update nixpkgs
+
+          if git diff --quiet -- flake.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "commit=" >> "$GITHUB_OUTPUT"
+            echo "nixpkgs is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -C automation/update-nixpkgs
+          git add flake.lock
+          git commit -m "flake.lock: update nixpkgs"
+          git push --force origin HEAD:refs/heads/automation/update-nixpkgs
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build-packages:
+    name: Build updated packages
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    uses: ./.github/workflows/build-packages.yml
+    with:
+      checkout_ref: ${{ needs.update.outputs.commit }}
+
+  merge:
+    name: Merge update into master
+    needs:
+      - update
+      - build-packages
+    if: needs.update.outputs.changed == 'true' && needs.build-packages.result == 'success'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out master
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Fast-forward master
+        env:
+          UPDATE_COMMIT: ${{ needs.update.outputs.commit }}
+        run: |
+          git fetch origin refs/heads/automation/update-nixpkgs
+          test "$(git rev-parse FETCH_HEAD)" = "$UPDATE_COMMIT"
+          git merge-base --is-ancestor origin/master "$UPDATE_COMMIT"
+          git push origin "$UPDATE_COMMIT":refs/heads/master
+          git push origin --delete automation/update-nixpkgs

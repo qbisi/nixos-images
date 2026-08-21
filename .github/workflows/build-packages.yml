@@ -1,6 +1,12 @@
 name: Build packages
 
 on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        description: Git ref to build instead of the triggering commit
+        required: false
+        type: string
   push:
     branches:
       - master
@@ -11,7 +17,7 @@ on:
       - stage
 
 concurrency:
-  group: build-packages-${{ github.event.pull_request.number || github.ref }}
+  group: build-packages-${{ inputs.checkout_ref || github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -26,6 +32,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Install Nix
         uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
@@ -66,6 +74,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Install Nix
         uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
