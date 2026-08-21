@@ -35,7 +35,10 @@
 
   hardware.enableAllHardware = lib.mkDefault true;
 
-  services.getty.autologinUser = "root";
+  services = {
+    getty.autologinUser = "root";
+    usb-ether.enable = true;
+  };
 
   nix.settings = {
     experimental-features = [

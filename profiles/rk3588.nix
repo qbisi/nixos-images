@@ -56,8 +56,6 @@
   };
 
   services = {
-    usb-rndis.enable = lib.mkDefault true;
-
     pipewire.wireplumber.extraConfig = {
       rk3588-sound = {
         "monitor.alsa.rules" = [

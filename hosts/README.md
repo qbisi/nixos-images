@@ -23,7 +23,7 @@ Before applying to a board:
 
 1. Confirm the target host name from `hosts/by-name/`, `devices/by-name/`.
 2. Check whether the board is a local-network SBC or a VPS.
-3. Make sure you have connected the target usb typec-otg port and you local machine with usb cord. The target board bootstrap with usb-rndis server and fixed ip 10.0.10.1 on usb0 iface.
+3. Make sure you have connected the target usb typec-otg port and you local machine with usb cord. The target board bootstrap with usb-ether server and fixed ip 10.0.10.1 on usb0 iface.
 4. Decide whether the change requires reboot:
    - kernel, initrd, bootloader, device tree, firmware, and early boot changes usually need `--reboot`
    - user services and many NixOS option changes may not
