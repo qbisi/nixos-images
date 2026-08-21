@@ -43,7 +43,7 @@
     '';
     cage = {
       enable = true;
-      program = "${pkgs.configuration}/bin/configuration";
+      program = "${lib.getExe pkgs.chromium} --kiosk";
       user = "root";
     };
   };
