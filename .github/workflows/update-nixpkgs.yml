@@ -60,6 +60,7 @@ jobs:
     uses: ./.github/workflows/build-packages.yml
     with:
       checkout_ref: ${{ needs.update.outputs.commit }}
+      upload_to_cachix: true
 
   merge:
     name: Merge update into master
