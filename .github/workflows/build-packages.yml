@@ -7,6 +7,11 @@ on:
         description: Git ref to build instead of the triggering commit
         required: false
         type: string
+      upload_to_cachix:
+        description: Upload build results to Cachix
+        required: false
+        type: boolean
+        default: false
   push:
     branches:
       - master
@@ -83,7 +88,7 @@ jobs:
           github_access_token: ${{ github.token }}
 
       - name: Check Cachix configuration
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || inputs.upload_to_cachix
         env:
           CACHIX_CACHE_NAME: ${{ vars.CACHIX_CACHE_NAME }}
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -98,7 +103,7 @@ jobs:
           }
 
       - name: Configure Cachix
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || inputs.upload_to_cachix
         uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: ${{ vars.CACHIX_CACHE_NAME }}
