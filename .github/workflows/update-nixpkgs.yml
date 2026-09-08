@@ -58,6 +58,7 @@ jobs:
     needs: update
     if: needs.update.outputs.changed == 'true'
     uses: ./.github/workflows/build-packages.yml
+    secrets: inherit
     with:
       checkout_ref: ${{ needs.update.outputs.commit }}
       upload_to_cachix: true
