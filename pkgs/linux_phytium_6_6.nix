@@ -14,6 +14,13 @@ buildLinux {
     hash = "sha256-6u9VQdmKUrUOmE+K1z38pDwKmmb0LiUA7LeCl7oJmGw=";
   };
 
+  kernelPatches = [
+    {
+      name = "libbpf-fix-discarded-qualifiers-under-c23";
+      patch = ../patches/kernel/6.6/libbpf-fix-discarded-qualifiers-under-c23.patch;
+    }
+  ];
+
   structuredExtraConfig = with lib.kernel; {
     DRM_AST = yes;
   };
