@@ -68,6 +68,7 @@ let
   };
 
   filteredKernelSource = lib.overrideDerivation (pkgs.srcOnly cfg.kernelPackage) (oldAttrs: {
+    preUnpack = "";
     installPhase = ''
       mkdir -p $out
       rsync -avL scripts/dtc/include-prefixes/ $out \
