@@ -13,7 +13,7 @@ buildLinux {
     hash = "sha256-E0C+LY5wl20anyKHs+Os13buYdP+0xgxc/DAUXHmZb0=";
   };
 
-  kernelPatches = lib.patchesIn ../patches/kernel;
+  kernelPatches = linux_6_18.kernelPatches ++ lib.patchesIn ../patches/kernel;
 
   structuredExtraConfig = with lib.kernel; {
     # FW_LOADER

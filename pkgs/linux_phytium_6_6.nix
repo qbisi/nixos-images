@@ -2,6 +2,7 @@
   lib,
   buildLinux,
   fetchgit,
+  linux_6_6,
   ...
 }:
 buildLinux {
@@ -14,7 +15,7 @@ buildLinux {
     hash = "sha256-6u9VQdmKUrUOmE+K1z38pDwKmmb0LiUA7LeCl7oJmGw=";
   };
 
-  kernelPatches = [
+  kernelPatches = linux_6_6.kernelPatches ++ [
     {
       name = "libbpf-fix-discarded-qualifiers-under-c23";
       patch = ../patches/kernel/6.6/libbpf-fix-discarded-qualifiers-under-c23.patch;

@@ -2,21 +2,23 @@
   lib,
   fetchurl,
   buildLinux,
-  linux_7_2,
+  linux_7_3,
   ...
 }:
 buildLinux {
-  inherit (linux_7_2) version src;
+  inherit (linux_7_3) version src;
 
   defconfigFile = fetchurl {
-    url = "https://raw.githubusercontent.com/armbian/build/bb3eb9b7d99855fc80f9afa8b0997b47a5a25f47/config/kernel/linux-rockchip64-edge.config";
-    hash = "sha256-+pZWmADJL88RVn/YSf5v8hl8xkP8ixninylPmfT1ZsI=";
+    url = "https://raw.githubusercontent.com/armbian/build/18e87d5385f9191419e6afa646080b68fbe7a1d5/config/kernel/linux-rockchip64-edge.config";
+    hash = "sha256-IWDzY/Y0Ou1TfFa1A9DxrXDAnE9ptpFZAeGrJgUKT38=";
   };
 
-  kernelPatches = lib.concatMap lib.patchesIn [
-    ../patches/kernel/7.2
-    ../patches/kernel
-  ];
+  kernelPatches =
+    linux_7_3.kernelPatches
+    ++ lib.concatMap lib.patchesIn [
+      ../patches/kernel/7.3
+      ../patches/kernel
+    ];
 
   structuredExtraConfig = with lib.kernel; {
     # FW_LOADER
